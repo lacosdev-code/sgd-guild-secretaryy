@@ -7,6 +7,7 @@ import Badge from '@/components/ui/Badge'
 import StatusPill from '@/components/ui/StatusPill'
 import { formatDeadline } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { Avatar } from '@/components/ui/Avatar'
 import type { Quest, Attachment, User } from '@/types'
 import type { UserRole } from '@/types'
 
@@ -306,8 +307,22 @@ export default function QuestSheet({
 
         {/* ── Quest info grid ──────────────────────────────────────────── */}
         <div className="px-6 py-5 space-y-2.5 border-b" style={{ borderColor: '#E8E5E0' }}>
-          <InfoRow label="Quest Giver" value={creator?.nama ?? '—'} />
-          <InfoRow label="Assigned"    value={assignee?.nama ?? <em className="text-gray-400">Unassigned</em>} />
+          <InfoRow label="Quest Giver" value={
+            <div className="flex items-center gap-2">
+              <Avatar url={creator?.avatar_url} name={creator?.nama || '?'} size="sm" />
+              <span>{creator?.nama ?? '—'}</span>
+            </div>
+          } />
+          <InfoRow label="Assigned" value={
+            assignee ? (
+              <div className="flex items-center gap-2">
+                <Avatar url={assignee.avatar_url} name={assignee.nama} size="sm" />
+                <span>{assignee.nama}</span>
+              </div>
+            ) : (
+              <em className="text-gray-400">Unassigned</em>
+            )
+          } />
           <InfoRow
             label="Deadline"
             value={

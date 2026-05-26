@@ -10,16 +10,15 @@ interface NavItem {
   icon: React.ReactNode
 }
 
-import { LayoutDashboard, ScrollText, UserCircle, Trophy } from 'lucide-react'
+import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users } from 'lucide-react'
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
   { label: 'Leaderboard', href: '/leaderboard', icon: <Trophy size={18} /> },
   { label: 'Quests',    href: '/quests',    icon: <ScrollText size={18} /> },
+  { label: 'Members',   href: '/members',   icon: <Users size={18} /> },
   { label: 'Profile',   href: '/profile',   icon: <UserCircle size={18} /> },
 ]
-
-
 
 interface SidebarProps {
   /** Pass true on mobile when sidebar is open (drawer mode) */
@@ -27,8 +26,24 @@ interface SidebarProps {
   onClose?: () => void
 }
 
+import { useState, useEffect, useMemo } from 'react'
+import { createClient } from '@/lib/supabase/client'
+
 export default function Sidebar({ open = true, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const [role, setRole] = useState<string | null>(null)
+  const supabase = useMemo(() => createClient(), [])
+
+  useEffect(() => {
+    async function fetchRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
+        if (data) setRole(data.role)
+      }
+    }
+    fetchRole()
+  }, [supabase])
 
   return (
     <>
@@ -71,6 +86,7 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
             Navigation
           </p>
           {NAV_ITEMS.map((item) => {
+            if (item.href === '/members' && role !== 'guild_master') return null
             const active = pathname === item.href ||
               (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (

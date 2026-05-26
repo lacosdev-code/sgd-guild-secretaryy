@@ -1,30 +1,76 @@
 -- ============================================================
 -- SGD Guild Secretary — Supabase Seed File
 -- Jalankan di: Supabase Dashboard → SQL Editor
+-- CATATAN: File ini menggunakan hardcoded UUID yang berbeda dari
+--          auth.users yang sebenarnya. Gunakan 005_seed_dummy_data.sql
+--          untuk data dummy yang lebih lengkap.
 -- ============================================================
 
--- Bersihkan data lama
-TRUNCATE TABLE point_logs, attachments, quests, users CASCADE;
+-- Bersihkan data lama (cascade untuk hapus foreign key dependencies)
+TRUNCATE TABLE
+  public.point_logs,
+  public.quest_comments,
+  public.notifications,
+  public.attachments,
+  public.quests,
+  public.users
+CASCADE;
 
 -- ============================================================
--- SEED: USERS
+-- SEED: AUTH USERS (wajib ada sebelum insert ke public.users)
+-- Hardcoded UUID agar relasi bisa dipakai langsung
+-- ============================================================
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email,
+  encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data,
+  created_at, updated_at,
+  confirmation_token, email_change, email_change_token_new, recovery_token
+)
+VALUES
+  ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'reza@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'pris@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'ervan@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'siska@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'santi@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'christian@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'bruno@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- SEED: PUBLIC USERS
 -- UUID di-hardcode agar relasi di bawah bisa pakai langsung
 -- ============================================================
 
-INSERT INTO users (id, nama, role, total_points) VALUES
+INSERT INTO public.users (id, nama, role, total_points) VALUES
   ('00000000-0000-0000-0000-000000000001', 'Reza',      'guild_master', 340),
   ('00000000-0000-0000-0000-000000000002', 'Pris',      'adventurer',   210),
   ('00000000-0000-0000-0000-000000000003', 'Ervan',     'adventurer',   185),
   ('00000000-0000-0000-0000-000000000004', 'Siska',     'adventurer',   270),
   ('00000000-0000-0000-0000-000000000005', 'Santi',     'adventurer',   155),
   ('00000000-0000-0000-0000-000000000006', 'Christian', 'adventurer',   300),
-  ('00000000-0000-0000-0000-000000000007', 'Bruno',     'adventurer',    90);
+  ('00000000-0000-0000-0000-000000000007', 'Bruno',     'adventurer',    90)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
 -- SEED: QUESTS (10 quest, lintas status)
 -- ============================================================
 
-INSERT INTO quests (
+INSERT INTO public.quests (
   id, title, description, assigned_to, created_by,
   difficulty, deadline, success_parameter, reward_points,
   status, detail_completed, detail_completed_at, created_at
@@ -158,13 +204,14 @@ INSERT INTO quests (
   NULL,
   NULL,
   110, 'Draft', false, NULL, now() - interval '2 hours'
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
 -- SEED: ATTACHMENTS
 -- ============================================================
 
-INSERT INTO attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES
+INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES
 
 -- Q1: Perbaikan AC ICU — 2 attachments
 (
@@ -220,13 +267,14 @@ INSERT INTO attachments (id, quest_id, file_url, file_type, uploaded_by, uploade
   'image/jpeg',
   '00000000-0000-0000-0000-000000000006',
   now() - interval '1 day'
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
 -- SEED: POINT LOGS
 -- ============================================================
 
-INSERT INTO point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES
+INSERT INTO public.point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES
 (
   'c0000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000006',
@@ -274,4 +322,5 @@ INSERT INTO point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES
   -20,
   'Penalti GM: detail quest belum lengkap melewati 00:00',
   now() - interval '1 hour'
-);
+)
+ON CONFLICT (id) DO NOTHING;

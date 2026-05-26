@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getRankInfo } from '@/lib/rankUtils'
 import { Trophy, Medal, Award } from 'lucide-react'
+import { Avatar } from '@/components/ui/Avatar'
 
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<any[]>([])
@@ -15,7 +16,7 @@ export default function LeaderboardPage() {
       // Fetch all adventurers ordered by points descending
       const { data, error } = await supabase
         .from('users')
-        .select('id, nama, total_points')
+        .select('id, nama, total_points, avatar_url')
         .eq('role', 'adventurer')
         .order('total_points', { ascending: false })
 
@@ -79,10 +80,8 @@ export default function LeaderboardPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-navy flex items-center justify-center text-gold text-xs font-bold shrink-0">
-                        {user.nama.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-bold text-charcoal">{user.nama}</span>
+                      <Avatar url={user.avatar_url} name={user.nama} size="md" />
+                      <span className="font-bold text-charcoal dark:text-gray-200">{user.nama}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">

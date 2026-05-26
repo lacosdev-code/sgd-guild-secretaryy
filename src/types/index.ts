@@ -9,6 +9,7 @@ export interface User {
   nama: string;
   role: UserRole;
   total_points: number;
+  avatar_url?: string;
   created_at: string;
 }
 

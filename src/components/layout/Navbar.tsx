@@ -3,6 +3,7 @@
 import { useUser } from '@/hooks/useUser'
 import { ThemeToggle } from './ThemeToggle'
 import { NotificationsDropdown } from './NotificationsDropdown'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface NavbarProps {
   onMenuClick?: () => void
@@ -59,7 +60,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
         <img 
           src="https://ik.imagekit.io/Sgd/Logo%20Landscape.png?updatedAt=1771273586511" 
           alt="SGD Care" 
-          className="hidden sm:block h-6 object-contain dark:invert dark:opacity-80" 
+          className="hidden sm:block h-6 object-contain" 
         />
         <span
           className="hidden sm:block text-xs font-bold tracking-[0.18em] uppercase border-l border-gray-300 dark:border-gray-700 pl-3 ml-1"
@@ -97,14 +98,8 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               </span>
             </div>
 
-            {/* Avatar circle */}
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-              style={{ background: '#1B2E52', color: '#C9A227' }}
-              title={user.nama}
-            >
-              {user.nama.charAt(0).toUpperCase()}
-            </div>
+            {/* Avatar */}
+            <Avatar url={user.avatar_url} name={user.nama} size="md" />
 
             {/* Logout */}
             <button

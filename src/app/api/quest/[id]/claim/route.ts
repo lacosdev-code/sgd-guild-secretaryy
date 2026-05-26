@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   const questId = params.id
-  
+
   // Verify authenticated user
   const userClient = createServerClient()
   const { data: { user } } = await userClient.auth.getUser()
@@ -17,11 +17,7 @@ export async function POST(
   }
 
   // Init admin client
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  )
+  const supabaseAdmin = createAdminClient()
 
   // Verify the quest is unassigned
   const { data: quest, error: questError } = await supabaseAdmin
@@ -53,7 +49,7 @@ export async function POST(
   if (gmUsers && gmUsers.length > 0) {
     const { data: currentUser } = await supabaseAdmin.from('users').select('nama').eq('id', user.id).single()
     const userName = currentUser?.nama || 'Someone'
-    
+
     const notifications = gmUsers.map((gm: any) => ({
       user_id: gm.id,
       title: 'Quest Claimed',
