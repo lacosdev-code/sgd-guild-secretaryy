@@ -1,0 +1,243 @@
+{
+  "name": "Bonus GM: Fast Detail Completion",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "bonus-gm",
+        "httpMethod": "POST",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n// Convert to Asia/Jakarta (UTC+7)\nconst gmt7Time = new Date(now.getTime() + (7 * 60 * 60 * 1000));\nconst hour = gmt7Time.getUTCHours();\n// If before 21:00\nconst isBefore21 = hour < 21;\nreturn [{ json: { ...$input.all()[0].json, isBefore21 } }];"
+      },
+      "name": "Check Time",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.isBefore21}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "If Before 21:00",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/users?role=eq.guild_master&select=id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get GM ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        700,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/rpc/increment_user_points",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_user_id",
+              "value": "={{$json[0].id}}"
+            },
+            {
+              "name": "p_delta",
+              "value": 30
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Add Points",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        900,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/point_logs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{$json[0].id}}"
+            },
+            {
+              "name": "quest_id",
+              "value": "={{$('Webhook').all()[0].json.body.quest_id}}"
+            },
+            {
+              "name": "delta",
+              "value": 30
+            },
+            {
+              "name": "reason",
+              "value": "Bonus GM: detail quest lengkap sebelum 21:00"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Bonus",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.NOTIFICATION_WEBHOOK_URL}}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=🌟 BONUS GM: +30 points karena quest \"{{$('Webhook').all()[0].json.body.quest_title}}\" selesai detailnya sebelum 21:00!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Notify Bonus",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1100,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Time": {
+      "main": [
+        [
+          {
+            "node": "If Before 21:00",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Before 21:00": {
+      "main": [
+        [
+          {
+            "node": "Get GM ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get GM ID": {
+      "main": [
+        [
+          {
+            "node": "Add Points",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Bonus",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Bonus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

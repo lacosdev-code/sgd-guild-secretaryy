@@ -1,0 +1,48 @@
+export type UserRole = 'guild_master' | 'adventurer';
+
+export type DifficultyRank = 'F' | 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
+
+export type QuestStatus = 'Draft' | 'Active' | 'Submitted' | 'Approved' | 'Revise' | 'Failed';
+
+export interface User {
+  id: string;
+  nama: string;
+  role: UserRole;
+  total_points: number;
+  created_at: string;
+}
+
+export interface Quest {
+  id: string;
+  title: string;
+  description: string | null;
+  assigned_to: string | null; // uuid of User
+  created_by: string; // uuid of User
+  difficulty: DifficultyRank | null;
+  deadline: string | null;
+  success_parameter: string | null;
+  reward_points: number | null;
+  status: QuestStatus;
+  detail_completed: boolean;
+  detail_completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Attachment {
+  id: string;
+  quest_id: string;
+  file_url: string;
+  file_type: string | null;
+  uploaded_by: string; // uuid of User
+  uploaded_at: string;
+}
+
+export interface PointLog {
+  id: string;
+  user_id: string;
+  quest_id: string | null;
+  delta: number;
+  reason: string | null;
+  created_at: string;
+}

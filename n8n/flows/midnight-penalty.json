@@ -1,0 +1,285 @@
+{
+  "name": "Midnight Penalty: Incomplete Quests",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/quests?status=in.(Draft,Active)&detail_completed=eq.false",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Incomplete Quests",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$input.all()[0].json.length > 0}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "If Has Quests",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/users?role=eq.guild_master&select=id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get GM ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        700,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const quests = $('Get Incomplete Quests').all()[0].json;\nconst gmId = $('Get GM ID').all()[0].json[0].id;\nconst penaltyItems = quests.map(q => ({\n  gmId: gmId,\n  questId: q.id,\n  title: q.title,\n  delta: -20,\n  reason: `Penalti GM: detail quest belum lengkap melewati 00:00 - ${q.title}`\n}));\nreturn penaltyItems.map(item => ({ json: item }));"
+      },
+      "name": "Prepare Penalties",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/rpc/increment_user_points",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_user_id",
+              "value": "={{$json.gmId}}"
+            },
+            {
+              "name": "p_delta",
+              "value": "={{$json.delta}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Deduct Points",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1100,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/point_logs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{$json.gmId}}"
+            },
+            {
+              "name": "quest_id",
+              "value": "={{$json.questId}}"
+            },
+            {
+              "name": "delta",
+              "value": "={{$json.delta}}"
+            },
+            {
+              "name": "reason",
+              "value": "={{$json.reason}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Penalty",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.NOTIFICATION_WEBHOOK_URL}}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=⚠️ PENALTI GM: -20 points karena quest \"{{$json.title}}\" belum lengkap melewati 00:00."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Notify Penalty",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1300,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Incomplete Quests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Incomplete Quests": {
+      "main": [
+        [
+          {
+            "node": "If Has Quests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Has Quests": {
+      "main": [
+        [
+          {
+            "node": "Get GM ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get GM ID": {
+      "main": [
+        [
+          {
+            "node": "Prepare Penalties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Penalties": {
+      "main": [
+        [
+          {
+            "node": "Deduct Points",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Penalty",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Penalty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
