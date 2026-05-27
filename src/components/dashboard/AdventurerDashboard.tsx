@@ -115,7 +115,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AdventurerDashboard() {
   const { user } = useUser()
-  const { quests, loading } = useQuests({ assignedTo: user?.id })
+  const { quests, loading, error } = useQuests({ assignedTo: user?.id })
 
   const activeQuests    = quests.filter((q) => ['Active', 'Submitted', 'Revise', 'Draft'].includes(q.status))
   const overdueQuests   = activeQuests.filter(isOverdue)
@@ -155,7 +155,11 @@ export default function AdventurerDashboard() {
       {/* ── Active quests ─────────────────────────────────────────────── */}
       <div>
         <SectionLabel>Quest Aktif</SectionLabel>
-        {loading ? (
+        {error ? (
+          <div className="bg-red-50 text-red-600 rounded-xl border border-red-200 py-12 text-center text-sm">
+            {error}
+          </div>
+        ) : loading ? (
           <div className="py-10 flex justify-center">
             <span
               className="inline-block w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
