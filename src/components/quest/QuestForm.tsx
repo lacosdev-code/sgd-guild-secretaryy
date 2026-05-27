@@ -278,6 +278,19 @@ export default function QuestForm({
           .single()
         if (e) throw e
         questId = data.id
+
+        // Trigger PWA Push Notification
+        fetch('/api/push/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'new_quest',
+            questId: questId,
+            title: payload.title,
+            assignedTo: payload.assigned_to
+          })
+        }).catch(console.error)
+
       } else {
         const { error: e } = await supabase
           .from('quests')
