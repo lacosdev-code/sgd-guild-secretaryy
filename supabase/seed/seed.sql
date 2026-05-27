@@ -29,25 +29,25 @@ INSERT INTO auth.users (
 )
 VALUES
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'reza@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   'reza@sgd-corp.com', crypt('admin123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'pris@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   'pris@sgd-corp.com', crypt('admin123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'ervan@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   'ervan@sgd-corp.com', crypt('admin123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'siska@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   'siska@sgd-corp.com', crypt('admin123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'santi@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   'santi@sgd-corp.com', crypt('admin123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'christian@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   'christian@sgd-corp.com', crypt('admin123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'bruno@sgd.com', crypt('password123', gen_salt('bf')), now(),
+   'bruno@sgd-corp.com', crypt('admin123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', '')
 ON CONFLICT (id) DO NOTHING;
 
