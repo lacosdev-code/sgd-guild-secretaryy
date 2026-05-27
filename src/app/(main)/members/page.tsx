@@ -165,7 +165,7 @@ export default function MembersPage() {
           onClose={() => setShowAddModal(false)}
           onSuccess={() => {
             setShowAddModal(false)
-            fetchUsers() // Refresh list
+            fetchUsers(true) // Refresh list
           }}
         />
       )}
