@@ -244,10 +244,7 @@ export default function LoginPage() {
 
         </div>
 
-        {/* Footer branding */}
-        <p className="text-center text-[11px] text-gray-400 mt-6 tracking-wider uppercase">
-          SGD Care · Internal Tool · v1.0 MVP
-        </p>
+
       </div>
     </div>
   )
