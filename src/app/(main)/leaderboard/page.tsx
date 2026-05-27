@@ -11,25 +11,28 @@ export default function LeaderboardPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [supabase] = useState(() => createClient())
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
     async function fetchLeaderboard() {
       try {
-        // Fetch all adventurers ordered by points descending
         const { data, error } = await supabase
           .from('users')
           .select('id, nama, total_points, avatar_url')
           .eq('role', 'adventurer')
           .order('total_points', { ascending: false })
 
-        if (!error && data && isMounted) {
+        if (error) throw error
+
+        if (data && isMounted) {
           setUsers(data)
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(err)
+        if (isMounted) setError(err.message || 'Gagal memuat leaderboard.')
       } finally {
-        setLoading(false)
+        if (isMounted) setLoading(false)
       }
     }
 
@@ -43,6 +46,17 @@ export default function LeaderboardPage() {
         <div className="flex flex-col items-center gap-3">
           <span className="inline-block w-8 h-8 rounded-full border-2 border-navy dark:border-white border-t-transparent animate-spin" />
           <p className="text-sm text-gray-400 dark:text-gray-500">Loading leaderboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-64">
+        <div className="flex flex-col items-center gap-3 text-red-500 text-sm">
+          <p>⚠ {error}</p>
+          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-navy text-white rounded">Coba Lagi</button>
         </div>
       </div>
     )
