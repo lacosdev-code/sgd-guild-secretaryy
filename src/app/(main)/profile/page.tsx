@@ -89,10 +89,24 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="flex h-64 items-center justify-center text-charcoal/50 dark:text-gray-500">
         <div className="w-6 h-6 border-2 border-t-charcoal dark:border-t-gray-400 rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center text-red-500">
+        <p className="mb-4">Gagal memuat profil pengguna.</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-4 py-2 bg-navy text-white rounded hover:bg-navy/90 transition-colors"
+        >
+          Coba Lagi
+        </button>
       </div>
     )
   }

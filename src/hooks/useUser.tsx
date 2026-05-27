@@ -62,18 +62,39 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true
 
+    // ── Initial session check ──────────────────────────────────────────────
+    async function getInitialSession() {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) throw error
+
+        if (session?.user) {
+          await fetchUserProfile(session.user.id)
+        } else {
+          if (isMounted) {
+            setUser(null)
+            setRole(null)
+          }
+        }
+      } catch (err: any) {
+        console.error('[useUser] getSession error:', err.message)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    getInitialSession()
+
     // ── Auth state listener ────────────────────────────────────────────────
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return
 
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session?.user) {
           await fetchUserProfile(session.user.id)
-        } else {
-          setUser(null)
-          setRole(null)
         }
         setLoading(false)
       } else if (event === 'SIGNED_OUT') {
