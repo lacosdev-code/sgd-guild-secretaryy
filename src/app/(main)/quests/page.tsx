@@ -12,6 +12,36 @@ import type { QuestStatus } from '@/types'
 
 const ALL_STATUSES: QuestStatus[] = ['Draft', 'Active', 'Submitted', 'Approved', 'Revise', 'Failed']
 
+const STATUS_COLORS: Record<string, string> = {
+  Semua: 'text-navy dark:text-white',
+  Draft: 'text-gray-600 dark:text-gray-400',
+  Active: 'text-blue-600 dark:text-blue-400',
+  Submitted: 'text-amber-600 dark:text-amber-400',
+  Approved: 'text-emerald-600 dark:text-emerald-400',
+  Revise: 'text-orange-600 dark:text-orange-400',
+  Failed: 'text-red-600 dark:text-red-400',
+}
+
+const BADGE_COLORS: Record<string, string> = {
+  Semua: 'bg-navy text-gold dark:bg-white dark:text-navy',
+  Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-400',
+  Active: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+  Submitted: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+  Approved: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+  Revise: 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400',
+  Failed: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+}
+
+const ACTIVE_BORDER: Record<string, string> = {
+  Semua: 'border-navy dark:border-white',
+  Draft: 'border-gray-400 dark:border-gray-500',
+  Active: 'border-blue-500 dark:border-blue-400',
+  Submitted: 'border-amber-500 dark:border-amber-400',
+  Approved: 'border-emerald-500 dark:border-emerald-400',
+  Revise: 'border-orange-500 dark:border-orange-400',
+  Failed: 'border-red-500 dark:border-red-400',
+}
+
 function FilterTab({
   label,
   count,
@@ -23,25 +53,25 @@ function FilterTab({
   active: boolean
   onClick: () => void
 }) {
+  const badgeColor = BADGE_COLORS[label] || BADGE_COLORS.Semua
+  const textColor = active 
+    ? (STATUS_COLORS[label] || STATUS_COLORS.Semua) 
+    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+  const borderColor = active 
+    ? (ACTIVE_BORDER[label] || ACTIVE_BORDER.Semua) 
+    : 'border-transparent hover:border-gray-200 dark:hover:border-gray-800'
+
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold tracking-widest uppercase border-b-2 transition-all whitespace-nowrap"
-      style={{
-        borderColor: active ? '#1B2E52' : 'transparent',
-        color: active ? '#1B2E52' : '#6B7280',
-      }}
+      className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold tracking-widest uppercase border-b-2 transition-all whitespace-nowrap ${textColor} ${borderColor}`}
     >
       {label}
       {count != null && count > 0 && (
         <span
-          className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold"
-          style={{
-            background: active ? '#1B2E52' : '#E5E2DC',
-            color: active ? '#C9A227' : '#6B7280',
-          }}
+          className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold ${badgeColor}`}
         >
-          {count > 9 ? '9+' : count}
+          {count > 99 ? '99+' : count}
         </span>
       )}
     </button>

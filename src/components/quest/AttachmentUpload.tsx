@@ -55,29 +55,31 @@ interface UploadItem {
 // ── Attachment thumbnail ──────────────────────────────────────────────────────
 
 function AttachmentThumb({ attachment }: { attachment: Attachment }) {
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   const isImg  = attachment.file_type?.startsWith('image/') ?? false
-  const name   = attachment.file_url.split('/').pop() ?? 'file'
+  let name   = attachment.file_url.split('/').pop() ?? 'file'
   const ext    = ACCEPTED_MIME[attachment.file_type ?? ''] ?? attachment.file_type?.split('/').pop()?.toUpperCase() ?? '?'
 
-  return (
-    <a
-      href={attachment.file_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2.5 px-3 py-2.5 border hover:bg-gray-50 transition-colors group"
-      style={{ borderColor: '#E8E5E0' }}
-    >
+  // Clean up ugly generated filenames (e.g., 1779857117107_1phjtb833pd.jpg)
+  if (/^\d{13}_/.test(name)) {
+    name = isImg ? `Foto Lampiran` : `Dokumen Lampiran`
+  } else {
+    name = decodeURIComponent(name)
+  }
+
+  const content = (
+    <>
       {isImg ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={attachment.file_url}
           alt={name}
-          className="w-10 h-10 object-cover border shrink-0"
+          className="w-12 h-12 object-cover rounded-md border shrink-0 group-hover:ring-2 ring-gold/50 transition-all"
           style={{ borderColor: '#E8E5E0' }}
         />
       ) : (
         <div
-          className="w-10 h-10 flex items-center justify-center text-xl shrink-0 border"
+          className="w-12 h-12 rounded-md flex items-center justify-center text-xl shrink-0 border group-hover:ring-2 ring-gold/50 transition-all"
           style={{ background: '#F5F3EE', borderColor: '#E8E5E0' }}
         >
           {fileIcon(attachment.file_type ?? '')}
@@ -85,19 +87,86 @@ function AttachmentThumb({ attachment }: { attachment: Attachment }) {
       )}
 
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-charcoal truncate group-hover:underline">
+        <p className="text-sm font-bold text-charcoal truncate group-hover:text-gold transition-colors">
           {name}
         </p>
-        <p className="text-[10px] text-gray-400 mt-0.5">{ext}</p>
+        <p className="text-[11px] font-medium text-gray-400 mt-0.5 uppercase tracking-wider">{ext}</p>
       </div>
 
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 shrink-0">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-        <polyline points="15 3 21 3 21 9" />
-        <line x1="10" y1="14" x2="21" y2="3" />
-      </svg>
-    </a>
+      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-50 group-hover:bg-gold/10 transition-colors shrink-0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:text-gold transition-colors">
+          {isImg ? (
+            // Eye icon for viewing image
+            <>
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </>
+          ) : (
+            // External link for documents
+            <>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </>
+          )}
+        </svg>
+      </div>
+    </>
+  )
+
+  return (
+    <>
+      {isImg ? (
+        <button
+          onClick={() => setLightboxOpen(true)}
+          className="w-full text-left flex items-center gap-3.5 px-4 py-3 hover:bg-gray-50 transition-colors group"
+        >
+          {content}
+        </button>
+      ) : (
+        <a
+          href={attachment.file_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3.5 px-4 py-3 hover:bg-gray-50 transition-colors group"
+        >
+          {content}
+        </a>
+      )}
+
+      {/* Lightbox Modal for Images */}
+      {lightboxOpen && isImg && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <div className="relative max-w-5xl max-h-[90vh] flex flex-col items-center">
+            {/* Close button */}
+            <button 
+              className="absolute -top-12 right-0 text-white hover:text-gold transition-colors p-2"
+              onClick={() => setLightboxOpen(false)}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={attachment.file_url}
+              alt={name}
+              className="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <p className="text-white mt-4 font-medium tracking-wide">
+              {name}
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -161,7 +230,7 @@ export default function AttachmentUpload({
   attachments,
 }: AttachmentUploadProps) {
   const router       = useRouter()
-  const supabase     = createClient()
+  const [supabase]   = useState(() => createClient())
   const inputRef     = useRef<HTMLInputElement>(null)
   const [queue, setQueue]     = useState<UploadItem[]>([])
   const [dragging, setDragging] = useState(false)
@@ -188,7 +257,10 @@ export default function AttachmentUpload({
       .from('attachments')
       .upload(path, file, { contentType: file.type, upsert: false })
 
-    if (storageError) return { error: storageError.message }
+    if (storageError) {
+      console.error('Storage Upload Error:', storageError)
+      return { error: `Storage Error: ${storageError.message}` }
+    }
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
@@ -203,7 +275,10 @@ export default function AttachmentUpload({
       uploaded_by: currentUserId,
     })
 
-    if (dbError) return { error: dbError.message }
+    if (dbError) {
+      console.error('Database Insert Error:', dbError)
+      return { error: `Database Error: ${dbError.message}` }
+    }
 
     return { url: publicUrl }
   }

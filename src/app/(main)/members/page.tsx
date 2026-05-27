@@ -6,37 +6,66 @@ import { AddMemberModal } from '@/components/members/AddMemberModal'
 import { Avatar } from '@/components/ui/Avatar'
 import { UserPlus, Shield, Users } from 'lucide-react'
 import { getRankInfo } from '@/lib/rankUtils'
+import Link from 'next/link'
 
 export default function MembersPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
-  const supabase = useMemo(() => createClient(), [])
+  const [supabase] = useState(() => createClient())
 
   useEffect(() => {
-    fetchUsers()
-    checkRole()
-  }, [])
+    let isMounted = true
+    fetchUsers(isMounted)
+    checkRole(isMounted)
 
-  async function checkRole() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
-      if (data) setCurrentUserRole(data.role)
+    // Realtime subscription for automatic syncing
+    const channel = supabase
+      .channel('users_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'users' },
+        () => {
+          fetchUsers(isMounted)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      isMounted = false
+      supabase.removeChannel(channel)
+    }
+  }, [supabase])
+
+  async function checkRole(isMounted: boolean) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
+        if (data && isMounted) setCurrentUserRole(data.role)
+      }
+    } catch (err) {
+      console.error(err)
     }
   }
 
-  async function fetchUsers() {
+  async function fetchUsers(isMounted: boolean) {
+    if (!isMounted) return
     setLoading(true)
-    const { data } = await supabase
-      .from('users')
-      .select('*')
-      .order('role', { ascending: false }) // guild_master first usually
-      .order('nama', { ascending: true })
-    
-    if (data) setUsers(data)
-    setLoading(false)
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('*')
+        .order('role', { ascending: false }) // guild_master first usually
+        .order('nama', { ascending: true })
+      
+      if (data && isMounted) setUsers(data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      if (isMounted) setLoading(false)
+    }
   }
 
   return (
@@ -63,10 +92,10 @@ export default function MembersPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-navy/20">
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Points</th>
+                <th className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
+                <th className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rank</th>
+                <th className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Points</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -84,20 +113,21 @@ export default function MembersPage() {
 
                   return (
                     <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link href={`/members/${user.id}`} className="flex items-center gap-3 group">
                           <Avatar 
                             url={user.avatar_url} 
                             name={user.nama} 
                             size="sm" 
+                            className="group-hover:ring-2 ring-gold transition-all"
                           />
                           <div>
-                            <div className="font-bold text-navy dark:text-white">{user.nama}</div>
+                            <div className="font-bold text-navy dark:text-white group-hover:text-gold transition-colors">{user.nama}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-0.5">ID: {user.id.substring(0,8)}</div>
                           </div>
-                        </div>
+                        </Link>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
                           user.role === 'guild_master' 
                             ? 'bg-gold/10 text-gold border-gold/20'
@@ -107,16 +137,16 @@ export default function MembersPage() {
                           {user.role === 'guild_master' ? 'Guild Master' : 'Adventurer'}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         {rank ? (
-                          <span className="px-2 py-1 rounded text-xs font-bold bg-navy dark:bg-white/10 text-gold">
+                          <span className="px-2 py-1 rounded text-xs font-bold bg-navy dark:bg-white/10 text-gold whitespace-nowrap">
                             RANK {rank.currentRank}
                           </span>
                         ) : (
                           <span className="text-gray-400 text-sm">-</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="font-bold text-navy dark:text-white tabular-nums">
                           {user.total_points.toLocaleString('id-ID')}
                         </div>

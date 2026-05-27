@@ -1,19 +1,21 @@
 import type { QuestStatus } from '@/types'
 
-interface StatusConfig {
-  bg: string
-  text: string
-  border: string
-  dot: string
+const STATUS_CLASSES: Record<QuestStatus, string> = {
+  Draft:     'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800/60 dark:text-gray-400 dark:border-gray-700',
+  Active:    'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
+  Submitted: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+  Approved:  'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+  Revise:    'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20',
+  Failed:    'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20',
 }
 
-const STATUS_CONFIG: Record<QuestStatus, StatusConfig> = {
-  Draft:     { bg: '#F3F2F0', text: '#6B7280', border: '#D1D5DB',   dot: '#9CA3AF' },
-  Active:    { bg: '#EBF0F8', text: '#1B2E52', border: '#1B2E5230', dot: '#1B2E52' },
-  Submitted: { bg: '#FDF5DC', text: '#92600A', border: '#C9A22740', dot: '#C9A227' },
-  Approved:  { bg: '#EAF4F0', text: '#0A5742', border: '#0F6E5640', dot: '#0F6E56' },
-  Revise:    { bg: '#FEF3E2', text: '#92400E', border: '#F59E0B40', dot: '#F59E0B' },
-  Failed:    { bg: '#FDF2F0', text: '#993C1D', border: '#993C1D30', dot: '#993C1D' },
+const DOT_CLASSES: Record<QuestStatus, string> = {
+  Draft:     'bg-gray-400 dark:bg-gray-500',
+  Active:    'bg-blue-500 dark:bg-blue-400',
+  Submitted: 'bg-amber-500 dark:bg-amber-400',
+  Approved:  'bg-emerald-500 dark:bg-emerald-400',
+  Revise:    'bg-orange-500 dark:bg-orange-400',
+  Failed:    'bg-red-500 dark:bg-red-400',
 }
 
 const STATUS_ID: Record<QuestStatus, string> = {
@@ -33,30 +35,20 @@ interface StatusPillProps {
 }
 
 export default function StatusPill({ status, dot = true, size = 'md' }: StatusPillProps) {
-  const cfg = STATUS_CONFIG[status]
-  const fs  = size === 'sm' ? '9px' : '10px'
-  const px  = size === 'sm' ? '6px' : '8px'
-  const py  = size === 'sm' ? '2px' : '3px'
+  const classes = STATUS_CLASSES[status] || STATUS_CLASSES.Draft
+  const dotClass = DOT_CLASSES[status] || DOT_CLASSES.Draft
+
+  const sizeClasses = size === 'sm' 
+    ? 'text-[9px] px-2 py-0.5' 
+    : 'text-[10px] px-2.5 py-1'
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider border select-none"
-      style={{
-        background: cfg.bg,
-        color: cfg.text,
-        borderColor: cfg.border,
-        fontSize: fs,
-        paddingLeft: px,
-        paddingRight: px,
-        paddingTop: py,
-        paddingBottom: py,
-        letterSpacing: '0.12em',
-      }}
+      className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-widest border rounded-full select-none transition-colors ${classes} ${sizeClasses}`}
     >
       {dot && (
         <span
-          className="rounded-full shrink-0"
-          style={{ width: 5, height: 5, background: cfg.dot }}
+          className={`shrink-0 rounded-full w-1.5 h-1.5 ${dotClass}`}
         />
       )}
       {STATUS_ID[status]}

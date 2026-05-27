@@ -20,7 +20,7 @@ export function usePoints(userId: string | undefined): UsePointsReturn {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [tick, setTick] = useState(0)
-    const supabase = useMemo(() => createClient(), [])
+    const [supabase] = useState(() => createClient())
 
     const refetch = useCallback(() => setTick((t) => t + 1), [])
 

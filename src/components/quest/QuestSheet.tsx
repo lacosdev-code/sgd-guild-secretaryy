@@ -476,8 +476,8 @@ export default function QuestSheet({
               </>
             )}
 
-            {/* GM: edit incomplete / active quest */}
-            {isGM && (quest.status === 'Draft' || quest.status === 'Active') && (
+            {/* GM: edit quest (Draft, Active, or Submitted) */}
+            {isGM && (quest.status === 'Draft' || quest.status === 'Active' || quest.status === 'Submitted') && (
               <Link
                 href={`/quests/${quest.id}/edit`}
                 className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.12em] uppercase hover:opacity-80 transition-opacity"
@@ -487,9 +487,17 @@ export default function QuestSheet({
               </Link>
             )}
 
-            {/* Adventurer: Claim Unassigned Quest */}
+            {/* Adventurer: Claim Unassigned Quest (with confirm) */}
             {!isGM && !quest.assigned_to && quest.status !== 'Draft' && (
-              <ActionButton variant="primary" loading={loading} onClick={handleClaimQuest}>
+              <ActionButton
+                variant="primary"
+                loading={loading}
+                onClick={() => {
+                  if (confirm(`Yakin ingin mengambil quest "${quest.title}"?`)) {
+                    handleClaimQuest()
+                  }
+                }}
+              >
                 ✋ Claim Quest
               </ActionButton>
             )}
@@ -497,20 +505,7 @@ export default function QuestSheet({
         )}
       </div>
 
-      {/* ── Back link ──────────────────────────────────────────────────── */}
-      <div className="mt-5">
-        <Link
-          href="/quests"
-          className="text-xs font-semibold uppercase tracking-widest flex items-center gap-1.5 hover:opacity-70 transition-opacity"
-          style={{ color: '#1B2E5280' }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Kembali ke Quest List
-        </Link>
-      </div>
+      {/* Back link removed — handled in _client.tsx to avoid duplicate */}
     </div>
   )
 }

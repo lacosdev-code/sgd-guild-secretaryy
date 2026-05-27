@@ -41,26 +41,19 @@ function LogOutIcon() {
   )
 }
 
-export default function Navbar({ onMenuClick }: NavbarProps) {
+export default function Navbar() {
   const { user, role, loading, signOut } = useUser()
 
   const roleLabel = role === 'guild_master' ? 'Guild Master' : 'Adventurer'
 
   return (
     <header className="h-14 bg-white dark:bg-[#151515] border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-20">
-      {/* Left — hamburger (mobile) + page title */}
+      {/* Left — brand logo + page title */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={onMenuClick}
-          className="lg:hidden p-1.5 rounded-md text-charcoal/60 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          aria-label="Open menu"
-        >
-          <MenuIcon />
-        </button>
         <img 
           src="https://ik.imagekit.io/Sgd/Logo%20Landscape.png?updatedAt=1771273586511" 
           alt="SGD Care" 
-          className="hidden sm:block h-6 object-contain" 
+          className="h-6 object-contain" 
         />
         <span
           className="hidden sm:block text-xs font-bold tracking-[0.18em] uppercase border-l border-gray-300 dark:border-gray-700 pl-3 ml-1"

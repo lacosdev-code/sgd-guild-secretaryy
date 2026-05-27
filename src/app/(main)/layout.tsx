@@ -1,31 +1,28 @@
 'use client'
 
-import { useState } from 'react'
 import Navbar from '@/components/layout/Navbar'
 import Sidebar from '@/components/layout/Sidebar'
+import BottomNav from '@/components/layout/BottomNav'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
-      <Sidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+    <div className="flex h-screen overflow-hidden bg-background dark:bg-[#121212]">
+      {/* Sidebar (hidden on mobile) */}
+      <Sidebar />
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        <Navbar />
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-6 lg:p-6">
           {children}
         </main>
+        
+        <BottomNav />
       </div>
     </div>
   )

@@ -29,34 +29,38 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole]       = useState<UserRole | null>(null)
   const [loading, setLoading] = useState(true)
   const router                = useRouter()
-  const supabase              = useMemo(() => createClient(), [])
-  const mountedRef            = useRef(true)
+  // Use useState instead of useMemo for Supabase client to prevent recreation during concurrent rendering
+  const [supabase]            = useState(() => createClient())
 
   // Fetch the extended user row from public.users
   const fetchUserProfile = useCallback(
     async (authId: string) => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authId)
-        .single()
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authId)
+          .single()
 
-      if (!mountedRef.current) return
-
-      if (error || !data) {
-        console.error('[useUser] Could not load user profile:', error?.message)
+        if (error || !data) {
+          console.error('[useUser] Could not load user profile:', error?.message)
+          setUser(null)
+          setRole(null)
+        } else {
+          setUser(data as User)
+          setRole(data.role as UserRole)
+        }
+      } catch (err: any) {
+        console.error('[useUser] Unexpected error fetching profile:', err)
         setUser(null)
         setRole(null)
-      } else {
-        setUser(data as User)
-        setRole(data.role as UserRole)
       }
     },
     [supabase]
   )
 
   useEffect(() => {
-    mountedRef.current = true
+    let isMounted = true
 
     // ── Initial session check ──────────────────────────────────────────────
     ;(async () => {
@@ -74,7 +78,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       } catch (err: any) {
         console.error('[useUser] getSession error:', err.message)
       } finally {
-        if (mountedRef.current) setLoading(false)
+        setLoading(false)
       }
     })()
 
@@ -82,7 +86,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mountedRef.current) return
+      if (!isMounted) return
 
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session?.user) {
@@ -98,10 +102,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => {
-      mountedRef.current = false
+      isMounted = false
       subscription.unsubscribe()
     }
-  }, [supabase, router, fetchUserProfile])
+  }, [supabase, fetchUserProfile])
 
   const signOut = useCallback(async () => {
     setLoading(true)

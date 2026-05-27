@@ -31,13 +31,14 @@ export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
   const [tick, setTick]       = useState(0)
-  const supabase              = useMemo(() => createClient(), [])
+  const [supabase]            = useState(() => createClient())
 
   const refetch = useCallback(() => setTick((t) => t + 1), [])
 
   useEffect(() => {
     let cancelled = false
 
+    // Fetch initially
     ;(async () => {
       setLoading(true)
       setError(null)
@@ -79,11 +80,26 @@ export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
       } catch (err: any) {
         if (!cancelled) setError(err.message)
       } finally {
-        if (!cancelled) setLoading(false)
+        setLoading(false)
       }
     })()
 
-    return () => { cancelled = true }
+    // Realtime subscription for automatic syncing
+    const channel = supabase
+      .channel('quests_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'quests' },
+        () => {
+          if (!cancelled) setTick(t => t + 1)
+        }
+      )
+      .subscribe()
+
+    return () => { 
+      cancelled = true 
+      supabase.removeChannel(channel)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick, options.assignedTo, JSON.stringify(options.status), options.limit])
 

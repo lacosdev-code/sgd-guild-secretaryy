@@ -13,23 +13,30 @@ export default function ProfilePage() {
   const [logsLoading, setLogsLoading] = useState(true)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const supabase = useMemo(() => createClient(), [])
+  const [supabase] = useState(() => createClient())
 
   useEffect(() => {
+    let isMounted = true
     async function fetchLogs() {
       if (!user) return
-      const { data } = await supabase
-        .from('point_logs')
-        .select('delta, reason, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      if (data) setPointLogs(data)
-      setLogsLoading(false)
+      try {
+        const { data } = await supabase
+          .from('point_logs')
+          .select('delta, reason, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+        if (data && isMounted) setPointLogs(data)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        if (isMounted) setLogsLoading(false)
+      }
     }
 
     if (!loading && user) {
       fetchLogs()
     }
+    return () => { isMounted = false }
   }, [user, loading, supabase])
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -84,17 +91,17 @@ export default function ProfilePage() {
 
   if (loading || !user) {
     return (
-      <div className="flex h-64 items-center justify-center text-charcoal/50">
-        <div className="w-6 h-6 border-2 border-t-charcoal rounded-full animate-spin" />
+      <div className="flex h-64 items-center justify-center text-charcoal/50 dark:text-gray-500">
+        <div className="w-6 h-6 border-2 border-t-charcoal dark:border-t-gray-400 rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-navy tracking-tight">User Profile</h1>
+      <h1 className="text-2xl font-bold text-navy dark:text-white tracking-tight">User Profile</h1>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+      <div className="bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-100 dark:border-white/5 p-6 md:p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           <div className="relative group shrink-0">
             <Avatar
@@ -126,48 +133,48 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex-1">
-            <h2 className="text-3xl font-bold text-charcoal">{user.nama}</h2>
-            <div className="flex items-center gap-3 mt-2">
+            <h2 className="text-3xl font-bold text-charcoal dark:text-white">{user.nama}</h2>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
               <span className="px-3 py-1 bg-gold/10 text-gold font-bold text-xs uppercase tracking-widest rounded-full">
                 {role === 'guild_master' ? 'Guild Master' : 'Adventurer'}
               </span>
-              <span className="px-3 py-1 bg-navy text-gold text-xs font-bold tracking-widest rounded border border-gold/20 shadow-sm">
+              <span className="px-3 py-1 bg-navy dark:bg-white/10 text-gold text-xs font-bold tracking-widest rounded border border-gold/20 shadow-sm">
                 RANK {getRankInfo(user.total_points).currentRank}
               </span>
-              <span className="text-sm text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded">
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono bg-gray-50 dark:bg-white/5 px-2 py-1 rounded">
                 ID: {user.id.split('-')[0]}...
               </span>
             </div>
           </div>
-          <div className="bg-navy rounded-2xl p-5 text-center min-w-[140px] shadow-lg">
-            <p className="text-gold/80 text-[10px] uppercase tracking-widest font-bold mb-1">
+          <div className="bg-navy dark:bg-gold/10 rounded-2xl p-5 text-center min-w-[140px] shadow-lg">
+            <p className="text-gold/80 dark:text-gold text-[10px] uppercase tracking-widest font-bold mb-1">
               Total Points
             </p>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-white dark:text-gold">
               {user.total_points.toLocaleString('id-ID')}
             </p>
-            <p className="text-xs text-white/50 mt-1">SGD</p>
+            <p className="text-xs text-white/50 dark:text-gold/50 mt-1">SGD</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-        <h2 className="text-lg font-bold text-navy mb-6 tracking-tight">Point History</h2>
+      <div className="bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-100 dark:border-white/5 p-6 md:p-8">
+        <h2 className="text-lg font-bold text-navy dark:text-white mb-6 tracking-tight">Point History</h2>
 
         {logsLoading ? (
-          <p className="text-charcoal/50 text-sm">Loading logs...</p>
+          <p className="text-charcoal/50 dark:text-gray-500 text-sm">Loading logs...</p>
         ) : pointLogs.length === 0 ? (
-          <p className="text-charcoal/50 text-sm italic">Belum ada history point.</p>
+          <p className="text-charcoal/50 dark:text-gray-500 text-sm italic">Belum ada history point.</p>
         ) : (
           <div className="space-y-3">
             {pointLogs.map((log, idx) => (
               <div
                 key={idx}
-                className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors"
+                className="flex justify-between items-center p-4 bg-gray-50 dark:bg-white/[0.03] rounded-lg border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors"
               >
                 <div>
-                  <p className="text-sm font-semibold text-charcoal">{log.reason}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">
+                  <p className="text-sm font-semibold text-charcoal dark:text-gray-200">{log.reason}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                     {new Date(log.created_at).toLocaleString('id-ID')}
                   </p>
                 </div>
@@ -182,3 +189,4 @@ export default function ProfilePage() {
     </div>
   )
 }
+
