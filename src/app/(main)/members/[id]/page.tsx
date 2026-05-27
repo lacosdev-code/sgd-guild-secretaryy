@@ -25,13 +25,13 @@ export default function MemberProfilePage() {
     let isMounted = true
     async function fetchUser() {
       try {
-        const { data, error } = await supabase
+        const { data: userData } = await supabase
           .from('users')
           .select('*')
           .eq('id', id)
           .single()
         
-        if (data && isMounted) setUser(data)
+        if (userData && isMounted) setUser(userData)
       } catch (err) {
         console.error(err)
       } finally {
@@ -109,7 +109,7 @@ export default function MemberProfilePage() {
               {user.total_points.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-gold font-bold mt-2">
-              Next: {rank.nextRank ? `${rank.pointsToNext} pts to ${rank.nextRank}` : 'MAX LEVEL'}
+              Next: {rank.pointsForNextRank !== null ? `${rank.pointsForNextRank - rank.currentPoints} pts to go` : 'MAX LEVEL'}
             </p>
           </div>
         )}
