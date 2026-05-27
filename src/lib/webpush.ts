@@ -1,13 +1,25 @@
 import webpush from 'web-push'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || ''
-)
+let isVapidInitialized = false
 
 export async function sendPushNotification(userId: string, payload: { title: string, body: string, url?: string }) {
+  if (!isVapidInitialized) {
+    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    const privateKey = process.env.VAPID_PRIVATE_KEY
+    if (publicKey && privateKey) {
+      webpush.setVapidDetails(
+        process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
+        publicKey,
+        privateKey
+      )
+      isVapidInitialized = true
+    } else {
+      console.warn('VAPID keys not set. Push notifications will not be sent.')
+      return
+    }
+  }
+
   const supabase = createAdminClient()
 
   // Get all subscriptions for this user
