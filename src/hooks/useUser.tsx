@@ -62,35 +62,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true
 
-    // ── Initial session check ──────────────────────────────────────────────
-    ;(async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-
-        if (session?.user) {
-          await fetchUserProfile(session.user.id)
-        } else {
-          setUser(null)
-          setRole(null)
-        }
-      } catch (err: any) {
-        console.error('[useUser] getSession error:', err.message)
-      } finally {
-        setLoading(false)
-      }
-    })()
-
     // ── Auth state listener ────────────────────────────────────────────────
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return
 
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session?.user) {
           await fetchUserProfile(session.user.id)
+        } else {
+          setUser(null)
+          setRole(null)
         }
         setLoading(false)
       } else if (event === 'SIGNED_OUT') {
@@ -105,7 +88,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [supabase, fetchUserProfile])
+  }, [supabase, fetchUserProfile, router])
 
   const signOut = useCallback(async () => {
     setLoading(true)
