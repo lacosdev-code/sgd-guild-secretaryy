@@ -131,7 +131,7 @@ function AlertBanner({ count, label }: { count: number; label: string }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function GMDashboard() {
   const { user } = useUser()
-  const { quests, loading } = useQuests({ limit: 50 })
+  const { quests, loading, error } = useQuests({ limit: 50 })
 
   const stats = deriveGMStats(quests)
   const recentQuests = quests.slice(0, 10)
@@ -303,7 +303,11 @@ export default function GMDashboard() {
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {loading ? (
+          {error ? (
+            <div className="py-12 text-center text-sm text-red-500 bg-red-50">
+              {error}
+            </div>
+          ) : loading ? (
             <div className="py-12 flex justify-center">
               <span
                 className="inline-block w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
