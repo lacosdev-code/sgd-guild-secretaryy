@@ -167,7 +167,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
                   <div key={n.id} className={`p-3 transition-colors ${n.is_read ? 'opacity-60' : 'bg-blue-50/50 dark:bg-blue-900/10'}`}>
                     <Link 
                       href={n.link || '#'} 
-                      onClick={() => { !n.is_read && markAsRead(n.id); setOpen(false) }}
+                      onClick={() => { if (!n.is_read) markAsRead(n.id); setOpen(false) }}
                       className="block"
                     >
                       <div className="flex items-start gap-2">
