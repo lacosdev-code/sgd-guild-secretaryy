@@ -11,7 +11,7 @@ import type { QuestStatus } from '@/types'
 function PointsCard({ points }: { points: number }) {
   return (
     <div
-      className="rounded-xl p-6 flex flex-col items-center justify-center text-center border"
+      className="rounded-sm p-6 flex flex-col items-center justify-center text-center border"
       style={{ background: '#1B2E52', borderColor: 'transparent' }}
     >
       <span
@@ -20,7 +20,7 @@ function PointsCard({ points }: { points: number }) {
       >
         {points.toLocaleString('id-ID')}
       </span>
-      <span className="text-xs font-bold tracking-[0.2em] uppercase text-blue-200/60 mt-1">
+      <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-blue-200/60 mt-1">
         SGD Points
       </span>
     </div>
@@ -31,7 +31,7 @@ function PointsCard({ points }: { points: number }) {
 function StatusPill({ status }: { status: QuestStatus }) {
   const cls = getStatusColor(status)
   return (
-    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${cls}`}>
+    <span className={`inline-block px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-widest ${cls}`}>
       {status}
     </span>
   )
@@ -42,7 +42,7 @@ function RankBadge({ rank }: { rank: string | null }) {
   if (!rank) return <span className="text-gray-300 text-xs w-7 h-7 flex items-center justify-center">—</span>
   const cls = getRankColor(rank as any)
   return (
-    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${cls}`}>
+    <span className={`w-7 h-7 rounded-sm flex items-center justify-center text-xs font-bold shrink-0 ${cls}`}>
       {rank}
     </span>
   )
@@ -51,18 +51,20 @@ function RankBadge({ rank }: { rank: string | null }) {
 // ── Quest card ────────────────────────────────────────────────────────────────
 function QuestCard({ quest }: { quest: QuestWithAssignee }) {
   const overdue = isOverdue(quest)
+  const isEmergency = quest.urgency === 'Emergency'
+  const isPriority = quest.urgency === 'Priority'
 
   return (
     <Link
       href={`/quests/${quest.id}`}
-      className={`block bg-white rounded-xl border transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden ${
-        overdue ? 'border-danger/40' : 'border-gray-200'
+      className={`block bg-white rounded-sm border transition-all hover:shadow-sm hover:-translate-y-0.5 overflow-hidden ${
+        overdue || isEmergency ? 'border-red-300' : isPriority ? 'border-amber-300' : 'border-gray-200'
       }`}
     >
-      {/* Overdue banner */}
-      {overdue && (
+      {/* Overdue/Emergency banner */}
+      {(overdue || isEmergency) && (
         <div
-          className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"
+          className="px-4 py-1.5 text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5"
           style={{ background: '#993C1D', color: 'white' }}
         >
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -71,7 +73,7 @@ function QuestCard({ quest }: { quest: QuestWithAssignee }) {
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          Overdue
+          {overdue ? 'Overdue' : 'Emergency Action Required'}
         </div>
       )}
 
@@ -79,21 +81,31 @@ function QuestCard({ quest }: { quest: QuestWithAssignee }) {
         <RankBadge rank={quest.difficulty} />
 
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-semibold leading-snug truncate ${overdue ? 'text-danger' : 'text-charcoal'}`}>
-            {quest.title}
-          </p>
+          <div className="flex items-center gap-2 mb-0.5">
+            {quest.urgency && quest.urgency !== 'Routine' && (
+              <span className={`text-[9px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded-sm ${
+                isEmergency ? 'bg-red-100 text-red-700' : 
+                isPriority ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+              }`}>
+                {quest.urgency}
+              </span>
+            )}
+            <p className={`text-sm font-bold leading-snug truncate ${overdue || isEmergency ? 'text-danger' : 'text-charcoal'}`}>
+              {quest.title}
+            </p>
+          </div>
 
           {quest.deadline && (
-            <p className={`text-xs mt-1 ${overdue ? 'text-danger/70' : 'text-gray-400'}`}>
-              Deadline: {formatDeadline(quest.deadline)}
+            <p className={`text-xs mt-1 font-mono ${overdue ? 'text-danger/70' : 'text-gray-400'}`}>
+              {formatDeadline(quest.deadline)}
             </p>
           )}
 
           <div className="flex items-center justify-between mt-3">
             <StatusPill status={quest.status} />
             {quest.reward_points != null && (
-              <span className="text-xs font-semibold" style={{ color: '#C9A227' }}>
-                +{quest.reward_points} SGD
+              <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1" style={{ color: '#C9A227' }}>
+                +{quest.reward_points} pts
               </span>
             )}
           </div>
@@ -106,9 +118,12 @@ function QuestCard({ quest }: { quest: QuestWithAssignee }) {
 // ── Section label ─────────────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-charcoal/50 mb-3">
-      {children}
-    </h2>
+    <div className="flex items-center gap-3 mb-3">
+      <h2 className="text-[11px] font-bold uppercase tracking-widest text-charcoal/60 whitespace-nowrap">
+        {children}
+      </h2>
+      <div className="flex-1 border-t border-dashed border-gray-300"></div>
+    </div>
   )
 }
 
@@ -122,7 +137,7 @@ export default function AdventurerDashboard() {
   const completedQuests = quests.filter((q) => q.status === 'Approved' || q.status === 'Failed')
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-8">
 
       {/* ── Greeting + points ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
@@ -131,12 +146,12 @@ export default function AdventurerDashboard() {
             Halo, <span style={{ color: '#1B2E52' }}>{user?.nama}</span>
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {activeQuests.length} quest aktif menunggu penyelesaianmu.
+            Berikut adalah daftar tugas operasional Anda hari ini.
           </p>
 
           {overdueQuests.length > 0 && (
             <div
-              className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm border"
+              className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm border"
               style={{ background: '#FDF2F0', borderColor: '#993C1D22', color: '#993C1D' }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -144,7 +159,7 @@ export default function AdventurerDashboard() {
                 <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
                 <path d="M12 9v4M12 17h.01" />
               </svg>
-              <strong>{overdueQuests.length}</strong>&nbsp;quest melewati deadline!
+              <strong>{overdueQuests.length}</strong>&nbsp;quest melewati deadline operasional!
             </div>
           )}
         </div>
@@ -154,9 +169,9 @@ export default function AdventurerDashboard() {
 
       {/* ── Active quests ─────────────────────────────────────────────── */}
       <div>
-        <SectionLabel>Quest Aktif</SectionLabel>
+        <SectionLabel>Active Operations</SectionLabel>
         {error ? (
-          <div className="bg-red-50 text-red-600 rounded-xl border border-red-200 py-12 text-center text-sm">
+          <div className="bg-red-50 text-red-600 rounded-sm border border-red-200 py-12 text-center text-sm">
             {error}
           </div>
         ) : loading ? (
@@ -167,12 +182,19 @@ export default function AdventurerDashboard() {
             />
           </div>
         ) : activeQuests.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 py-12 text-center text-sm text-gray-400">
-            Tidak ada quest aktif. Hubungi Guild Master untuk assignment baru.
+          <div className="bg-white rounded-sm border border-gray-200 py-12 text-center text-sm text-gray-400 italic">
+            Semua tugas operasional telah diselesaikan.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {activeQuests.map((q) => (
+            {activeQuests
+              // Sort to put Emergency and Overdue first
+              .sort((a, b) => {
+                const aUrgent = isOverdue(a) || a.urgency === 'Emergency' ? 1 : 0
+                const bUrgent = isOverdue(b) || b.urgency === 'Emergency' ? 1 : 0
+                return bUrgent - aUrgent
+              })
+              .map((q) => (
               <QuestCard key={q.id} quest={q} />
             ))}
           </div>
@@ -182,22 +204,22 @@ export default function AdventurerDashboard() {
       {/* ── Completed quests ──────────────────────────────────────────── */}
       {completedQuests.length > 0 && (
         <div>
-          <SectionLabel>Riwayat Quest ({completedQuests.length})</SectionLabel>
-          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
-            {completedQuests.map((q) => (
+          <SectionLabel>Operational Log ({completedQuests.length})</SectionLabel>
+          <div className="bg-white rounded-sm border border-gray-200 divide-y divide-gray-100 overflow-hidden shadow-sm">
+            {completedQuests.slice(0, 10).map((q) => (
               <Link
                 key={q.id}
                 href={`/quests/${q.id}`}
-                className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors"
               >
                 <RankBadge rank={q.difficulty} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-charcoal truncate">{q.title}</p>
+                  <p className="text-[13px] font-bold text-charcoal truncate">{q.title}</p>
                 </div>
                 <StatusPill status={q.status} />
                 {q.status === 'Approved' && q.reward_points != null && (
-                  <span className="text-xs font-semibold whitespace-nowrap" style={{ color: '#0F6E56' }}>
-                    +{q.reward_points} SGD
+                  <span className="text-[11px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color: '#0F6E56' }}>
+                    +{q.reward_points}
                   </span>
                 )}
               </Link>

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import QuestCard from '@/components/quest/QuestCard'
-import StatusPill from '@/components/ui/StatusPill'
+
 import { useQuests } from '@/hooks/useQuests'
 import { useUser } from '@/hooks/useUser'
 import type { QuestStatus } from '@/types'

@@ -1,20 +1,27 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { Quest, DifficultyRank, User } from '@/types'
+import type { Quest, DifficultyRank, QuestUrgency, User } from '@/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
+const URGENCY_OPTIONS: { value: QuestUrgency; label: string; desc: string; color: string; border: string }[] = [
+  { value: 'Routine', label: 'Routine', desc: 'Tugas operasional biasa', color: '#6B7280', border: '#D1D5DB' },
+  { value: 'Priority', label: 'Priority', desc: 'Penting & mendesak', color: '#D97706', border: '#F59E0B' },
+  { value: 'Strategic', label: 'Strategic', desc: 'Dampak jangka panjang', color: '#0F6E56', border: '#10B981' },
+  { value: 'Emergency', label: 'Emergency', desc: 'Kritis / Fire Fighting', color: '#DC2626', border: '#EF4444' },
+]
+
 const DIFFICULTY_OPTIONS: { value: DifficultyRank; label: string; desc: string }[] = [
-  { value: 'F', label: 'F',  desc: 'Rutin' },
-  { value: 'E', label: 'E',  desc: 'Basic Operasional' },
-  { value: 'D', label: 'D',  desc: 'Operasional Standar' },
+  { value: 'F', label: 'F',  desc: 'Routine' },
+  { value: 'E', label: 'E',  desc: 'Operational' },
+  { value: 'D', label: 'D',  desc: 'Standard' },
   { value: 'C', label: 'C',  desc: 'Skill-Based' },
-  { value: 'B', label: 'B',  desc: 'Koordinasi Penting' },
-  { value: 'A', label: 'A',  desc: 'High Responsibility' },
-  { value: 'S', label: 'S',  desc: 'Strategic / Critical' },
+  { value: 'B', label: 'B',  desc: 'Important' },
+  { value: 'A', label: 'A',  desc: 'High Resp.' },
+  { value: 'S', label: 'S',  desc: 'Critical' },
 ]
 
 // PRD rank colors for the option chip
@@ -33,6 +40,7 @@ const RANK_STYLE: Record<DifficultyRank, { bg: string; color: string; border: st
 interface FormState {
   title: string
   assigned_to: string
+  urgency: QuestUrgency
   description: string
   deadline: string        // ISO datetime-local string
   difficulty: DifficultyRank | ''
@@ -50,14 +58,15 @@ function isDetailComplete(f: FormState): boolean {
   )
 }
 
-function countFilledOptional(f: FormState): number {
-  let n = 0
-  if (f.description.trim() !== '') n++
-  if (f.deadline !== '') n++
-  if (f.difficulty !== '') n++
-  if (f.success_parameter.trim() !== '') n++
-  if (f.reward_points !== '' && !isNaN(Number(f.reward_points))) n++
-  return n
+function calculateProgress(f: FormState): number {
+  let score = 0
+  // Weights: Deadline (30%), Success Criteria (40%), Objective (15%), Difficulty (5%), Reward (10%)
+  if (f.deadline !== '') score += 30
+  if (f.success_parameter.trim() !== '') score += 40
+  if (f.description.trim() !== '') score += 15
+  if (f.difficulty !== '') score += 5
+  if (f.reward_points !== '' && !isNaN(Number(f.reward_points))) score += 10
+  return score
 }
 
 // ── UI sub-components ─────────────────────────────────────────────────────────
@@ -104,8 +113,7 @@ const inputStyle = {
 
 // ── Progress bar ──────────────────────────────────────────────────────────────
 
-function QuestCompletionBar({ filled, total }: { filled: number; total: number }) {
-  const pct = total === 0 ? 0 : Math.round((filled / total) * 100)
+function QuestCompletionBar({ pct }: { pct: number }) {
   const color =
     pct === 100 ? '#0F6E56'
     : pct >= 60  ? '#C9A227'
@@ -117,9 +125,9 @@ function QuestCompletionBar({ filled, total }: { filled: number; total: number }
       style={{ background: '#F9F8F6', borderColor: '#E8E5E0' }}
     >
       <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
-        <span style={{ color: '#1B2E5280' }}>Kelengkapan Detail Quest</span>
+        <span style={{ color: '#1B2E5280' }}>Kelengkapan Kualitas Delegasi</span>
         <span style={{ color }}>
-          {filled}/{total} field terisi
+          {pct}%
         </span>
       </div>
       <div className="h-1.5 w-full rounded-none" style={{ background: '#E8E5E0' }}>
@@ -130,11 +138,11 @@ function QuestCompletionBar({ filled, total }: { filled: number; total: number }
       </div>
       {pct === 100 ? (
         <p className="text-[11px]" style={{ color: '#0F6E56' }}>
-          ✓ Semua detail lengkap — quest akan otomatis diset ke status <strong>Active</strong>.
+          ✓ Kualitas instruksi sempurna. Quest akan diset ke status <strong>Active</strong>.
         </p>
       ) : (
         <p className="text-[11px] text-gray-400">
-          Isi semua field untuk mengaktifkan quest. Quest tersimpan sebagai <strong>Draft</strong> jika masih ada field kosong.
+          Sistem menyarankan Anda untuk mencapai 100% agar delegasi lebih jelas. Quest dengan detail kurang akan berstatus <strong>Draft</strong>.
         </p>
       )}
     </div>
@@ -182,6 +190,114 @@ function DifficultySelector({
   )
 }
 
+function UrgencySelector({
+  value,
+  onChange,
+}: {
+  value: QuestUrgency
+  onChange: (v: QuestUrgency) => void
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {URGENCY_OPTIONS.map((opt) => {
+        const sel = value === opt.value
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className="flex flex-col items-start px-3 py-2 border transition-all hover:opacity-80 text-left"
+            style={
+              sel
+                ? { background: `${opt.color}10`, borderColor: opt.color, boxShadow: `0 0 0 1px ${opt.color}` }
+                : { background: 'white', borderColor: '#DDD9D3' }
+            }
+          >
+            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: sel ? opt.color : '#4B5563' }}>
+              {opt.label}
+            </span>
+            <span className="text-[10px] text-gray-500 mt-0.5">{opt.desc}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function PICSelector({
+  value,
+  onChange,
+  adventurers,
+}: {
+  value: string
+  onChange: (v: string) => void
+  adventurers: User[]
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const selectedUser = adventurers.find(u => u.id === value)
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-3 py-2.5 text-sm bg-[#FAFAF8] border focus:outline-none transition-colors"
+        style={{ borderColor: isOpen ? '#1B2E52' : '#DDD9D3' }}
+      >
+        <span className={selectedUser ? 'text-charcoal' : 'text-gray-400'}>
+          {selectedUser ? (
+            <span className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-navy/10 flex items-center justify-center text-[10px] font-bold text-navy">
+                {selectedUser.nama.charAt(0).toUpperCase()}
+              </span>
+              {selectedUser.nama} {selectedUser.role === 'guild_master' ? ' (GM)' : ''}
+            </span>
+          ) : (
+            '— Pilih PIC —'
+          )}
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#1B2E5250' }}>
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute z-20 w-full mt-1 bg-white border border-[#DDD9D3] shadow-lg max-h-60 overflow-auto animate-in fade-in slide-in-from-top-1">
+            <div className="p-1">
+              {adventurers.map((u) => {
+                const isSelected = value === u.id
+                return (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => {
+                      onChange(u.id)
+                      setIsOpen(false)
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50 rounded-sm ${isSelected ? 'bg-navy/5 font-medium' : ''}`}
+                  >
+                    <span className="w-6 h-6 rounded-full bg-navy/10 flex items-center justify-center text-xs font-bold text-navy shrink-0">
+                      {u.nama.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="flex-1 text-charcoal">{u.nama} {u.role === 'guild_master' ? <span className="text-[10px] text-gray-400 ml-1">(GM)</span> : ''}</span>
+                    {isSelected && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A227" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ── Main form component ───────────────────────────────────────────────────────
 
 interface QuestFormProps {
@@ -203,10 +319,14 @@ export default function QuestForm({
   const [adventurers, setAdventurers] = useState<User[]>([])
   const [saving, setSaving]           = useState(false)
   const [error, setError]             = useState<string | null>(null)
+  
+  // Section expand state (Progressive Reveal)
+  const [expandedSection, setExpandedSection] = useState<1 | 2 | 3>(1)
 
   const [form, setForm] = useState<FormState>({
     title:             existingQuest?.title ?? '',
     assigned_to:       existingQuest?.assigned_to ?? '',
+    urgency:           existingQuest?.urgency ?? 'Routine',
     description:       existingQuest?.description ?? '',
     deadline:          existingQuest?.deadline
                          ? new Date(existingQuest.deadline).toISOString().slice(0, 16)
@@ -233,7 +353,7 @@ export default function QuestForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => setForm((prev) => ({ ...prev, [key]: e.target.value }))
 
-  const filledOptional = useMemo(() => countFilledOptional(form), [form])
+  const pctComplete    = calculateProgress(form)
   const allComplete    = isDetailComplete(form)
 
   // Determine status to save
@@ -258,6 +378,7 @@ export default function QuestForm({
     const payload = {
       title:             form.title.trim(),
       assigned_to:       form.assigned_to,
+      urgency:           form.urgency,
       description:       form.description.trim() || null,
       deadline:          form.deadline ? new Date(form.deadline).toISOString() : null,
       difficulty:        form.difficulty || null,
@@ -309,8 +430,9 @@ export default function QuestForm({
     }
   }
 
-  const isRequired = (f: keyof FormState) =>
-    ['title', 'assigned_to'].includes(f)
+  const handleNext = (section: 1|2) => {
+    setExpandedSection((section + 1) as 1|2|3)
+  }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="max-w-2xl mx-auto space-y-0">
@@ -326,7 +448,7 @@ export default function QuestForm({
           </h1>
           <p className="text-[11px] mt-0.5 tracking-wider" style={{ color: '#FFFFFF80' }}>
             {mode === 'create'
-              ? 'Buat quest baru untuk tim guild'
+              ? 'Mulai delegasi dengan jelas'
               : `Mengedit: ${existingQuest?.title}`}
           </p>
         </div>
@@ -357,11 +479,9 @@ export default function QuestForm({
         </div>
       </div>
 
-      {/* ── Fields ──────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-t-0 px-6 py-6 space-y-6" style={{ borderColor: '#DDD9D3' }}>
-
-        {/* Error banner */}
-        {error && (
+      {/* ── Error Banner ────────────────────────────────────────────────── */}
+      {error && (
+        <div className="bg-white border-l border-r px-6 py-4" style={{ borderColor: '#DDD9D3' }}>
           <div
             className="px-4 py-3 border text-sm flex items-start gap-2"
             style={{ background: '#FDF2F0', borderColor: '#993C1D22', color: '#993C1D' }}
@@ -373,194 +493,247 @@ export default function QuestForm({
             </svg>
             {error}
           </div>
-        )}
-
-        {/* REQUIRED FIELDS */}
-        <div
-          className="pb-5 border-b space-y-5"
-          style={{ borderColor: '#E8E5E0' }}
-        >
-          <p
-            className="text-[10px] font-bold tracking-[0.2em] uppercase -mb-2"
-            style={{ color: '#1B2E5250' }}
-          >
-            Field Wajib
-          </p>
-
-          {/* Title */}
-          <div>
-            <FieldLabel htmlFor="quest-title" required>Judul Quest</FieldLabel>
-            <input
-              id="quest-title"
-              type="text"
-              value={form.title}
-              onChange={set('title')}
-              className={inputClass}
-              style={inputStyle}
-              placeholder="cth: Perbaikan AC ICU Bella"
-              maxLength={200}
-              required
-            />
-          </div>
-
-          {/* Assigned to */}
-          <div>
-            <FieldLabel htmlFor="quest-assigned" required>
-              PIC (Assigned Adventurer)
-            </FieldLabel>
-            <select
-              id="quest-assigned"
-              value={form.assigned_to}
-              onChange={set('assigned_to')}
-              className={`${inputClass} appearance-none bg-no-repeat`}
-              style={{
-                ...inputStyle,
-                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                backgroundPosition: 'right 0.5rem center',
-                backgroundSize: '1.5em 1.5em',
-                paddingRight: '2.5rem'
-              }}
-              required
-            >
-              <option value="">— Pilih adventurer —</option>
-              {adventurers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nama}
-                  {u.role === 'guild_master' ? ' (Guild Master)' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
+      )}
 
-        {/* OPTIONAL FIELDS */}
-        <div className="space-y-6">
-          <p
-            className="text-[10px] font-bold tracking-[0.2em] uppercase -mb-3"
-            style={{ color: '#1B2E5250' }}
-          >
-            Detail Quest (Wajib Lengkap Sebelum 00:00)
+      {/* ── Tahap 1: Inti Operasional ────────────────────────────────────── */}
+      <div className="bg-white border px-6 py-5" style={{ borderColor: '#DDD9D3', borderBottomColor: expandedSection === 1 ? 'transparent' : '#DDD9D3' }}>
+        <button 
+          type="button" 
+          onClick={() => setExpandedSection(1)}
+          className="w-full flex items-center justify-between focus:outline-none"
+        >
+          <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: expandedSection === 1 ? '#1B2E52' : '#1B2E5250' }}>
+            Tahap 1: Inti Operasional (Wajib)
           </p>
-
-          {/* Description */}
-          <div>
-            <FieldLabel htmlFor="quest-desc">Deskripsi / Objective</FieldLabel>
-            <textarea
-              id="quest-desc"
-              value={form.description}
-              onChange={set('description')}
-              rows={4}
-              className={`${inputClass} resize-y`}
-              style={inputStyle}
-              placeholder="Jelaskan tujuan quest ini secara spesifik. Siapa yang dihubungi, lokasi, konteks masalah, dll."
-            />
-          </div>
-
-          {/* Deadline */}
-          <div>
-            <FieldLabel htmlFor="quest-deadline">Deadline</FieldLabel>
-            <input
-              id="quest-deadline"
-              type="datetime-local"
-              value={form.deadline}
-              onChange={set('deadline')}
-              className={inputClass}
-              style={inputStyle}
-              min={new Date().toISOString().slice(0, 16)}
-            />
-          </div>
-
-          {/* Difficulty */}
-          <div>
-            <FieldLabel htmlFor="quest-difficulty">
-              Difficulty Rank
-            </FieldLabel>
-            <DifficultySelector
-              value={form.difficulty}
-              onChange={(v) => setForm((p) => ({ ...p, difficulty: v }))}
-            />
-          </div>
-
-          {/* Success parameter */}
-          <div>
-            <FieldLabel
-              htmlFor="quest-success"
-              hint="Pisahkan per baris. Setiap baris akan dijadikan item checklist di Quest Sheet."
-            >
-              Success Criteria
-            </FieldLabel>
-            <textarea
-              id="quest-success"
-              value={form.success_parameter}
-              onChange={set('success_parameter')}
-              rows={5}
-              className={`${inputClass} resize-y font-mono text-xs`}
-              style={inputStyle}
-              placeholder={`Airflow AC stabil
-Konfirmasi dari perawat
-Foto AC dan panel terlampir
-Tidak ada complaint dalam 24 jam`}
-            />
-          </div>
-
-          {/* Reward points */}
-          <div>
-            <FieldLabel htmlFor="quest-reward">SGD Points Reward</FieldLabel>
-            <div className="relative">
-              <span
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold select-none"
-                style={{ color: '#C9A227' }}
-              >
-                +
-              </span>
+          <span style={{ color: '#1B2E5250' }}>{expandedSection === 1 ? '▼' : '▶'}</span>
+        </button>
+        
+        {expandedSection === 1 && (
+          <div className="mt-5 space-y-5 animate-in slide-in-from-top-2 duration-200">
+            {/* Title */}
+            <div>
+              <FieldLabel htmlFor="quest-title" required>Judul Quest</FieldLabel>
               <input
-                id="quest-reward"
-                type="number"
-                value={form.reward_points}
-                onChange={set('reward_points')}
-                className={`${inputClass} pl-7`}
+                id="quest-title"
+                type="text"
+                value={form.title}
+                onChange={set('title')}
+                className={inputClass}
                 style={inputStyle}
-                placeholder="cth: 80"
-                min={0}
-                max={9999}
+                placeholder="cth: Perbaikan AC ICU Bella"
+                maxLength={200}
+                required
               />
-              <span
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold select-none"
-                style={{ color: '#1B2E5250' }}
+            </div>
+
+            {/* Assigned to */}
+            <div>
+              <FieldLabel htmlFor="quest-assigned" required>PIC (Assigned Adventurer)</FieldLabel>
+              <PICSelector
+                value={form.assigned_to}
+                onChange={(val) => setForm(p => ({ ...p, assigned_to: val }))}
+                adventurers={adventurers}
+              />
+            </div>
+
+            {/* Urgency */}
+            <div>
+              <FieldLabel htmlFor="quest-urgency" required>Tingkat Urgensi</FieldLabel>
+              <UrgencySelector
+                value={form.urgency}
+                onChange={(v) => setForm((p) => ({ ...p, urgency: v }))}
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleNext(1)}
+                className="px-4 py-2 text-xs font-bold tracking-widest uppercase transition-all bg-navy text-gold hover:opacity-80"
               >
-                SGD Points
-              </span>
+                Lanjut ke Tahap 2 →
+              </button>
             </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* ── Tahap 2: Arahan Naratif ──────────────────────────────────────── */}
+      <div className="bg-white border border-t-0 px-6 py-5" style={{ borderColor: '#DDD9D3', borderBottomColor: expandedSection === 2 ? 'transparent' : '#DDD9D3' }}>
+        <button 
+          type="button" 
+          onClick={() => setExpandedSection(2)}
+          className="w-full flex items-center justify-between focus:outline-none"
+        >
+          <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: expandedSection === 2 ? '#1B2E52' : '#1B2E5250' }}>
+            Tahap 2: Arahan Strategis (Wajib sebelum 00:00)
+          </p>
+          <span style={{ color: '#1B2E5250' }}>{expandedSection === 2 ? '▼' : '▶'}</span>
+        </button>
+        
+        {expandedSection === 2 && (
+          <div className="mt-5 space-y-6 animate-in slide-in-from-top-2 duration-200">
+            {/* Description */}
+            <div>
+              <FieldLabel htmlFor="quest-desc" hint="Gunakan tone naratif (cerita). Apa hasil akhir yang diinginkan perusahaan?">
+                Objective (Tujuan Besar)
+              </FieldLabel>
+              <textarea
+                id="quest-desc"
+                value={form.description}
+                onChange={set('description')}
+                rows={3}
+                className={`${inputClass} resize-y italic`}
+                style={inputStyle}
+                placeholder="cth: Pastikan tersedia pembanding vendor untuk pengambilan keputusan genset cadangan agar operasional RS tidak terancam mati lampu."
+              />
+            </div>
+
+            {/* Deadline */}
+            <div>
+              <FieldLabel htmlFor="quest-deadline" hint="Kapan batas akhir misi ini?">Deadline</FieldLabel>
+              <input
+                id="quest-deadline"
+                type="datetime-local"
+                value={form.deadline}
+                onChange={set('deadline')}
+                className={inputClass}
+                style={inputStyle}
+                min={new Date().toISOString().slice(0, 16)}
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleNext(2)}
+                className="px-4 py-2 text-xs font-bold tracking-widest uppercase transition-all bg-navy text-gold hover:opacity-80"
+              >
+                Lanjut ke Tahap 3 →
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Tahap 3: Resolusi & Kriteria ─────────────────────────────────── */}
+      <div className="bg-white border border-t-0 px-6 py-5" style={{ borderColor: '#DDD9D3' }}>
+        <button 
+          type="button" 
+          onClick={() => setExpandedSection(3)}
+          className="w-full flex items-center justify-between focus:outline-none"
+        >
+          <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: expandedSection === 3 ? '#1B2E52' : '#1B2E5250' }}>
+            Tahap 3: Kriteria Selesai & Reward
+          </p>
+          <span style={{ color: '#1B2E5250' }}>{expandedSection === 3 ? '▼' : '▶'}</span>
+        </button>
+
+        {expandedSection === 3 && (
+          <div className="mt-5 space-y-6 animate-in slide-in-from-top-2 duration-200">
+            {/* Success parameter */}
+            <div>
+              <FieldLabel
+                htmlFor="quest-success"
+                hint="Ubah instruksi ambigu menjadi checklist spesifik. 1 baris = 1 syarat."
+              >
+                Success Criteria (Definition of Done)
+              </FieldLabel>
+              <textarea
+                id="quest-success"
+                value={form.success_parameter}
+                onChange={set('success_parameter')}
+                rows={4}
+                className={`${inputClass} resize-y font-mono text-xs`}
+                style={inputStyle}
+                placeholder={`Minimal 2 quotation (penawaran harga)
+Vendor berbeda
+PDF terlampir di sistem
+Rekomendasi vendor ditulis di kolom diskusi`}
+              />
+              <div className="mt-2 p-3 bg-gray-50 border border-gray-200 text-xs text-gray-600 rounded-sm">
+                <p className="font-bold mb-1 text-gray-700">Contoh kriteria yang baik vs buruk:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-red-600">❌ &quot;Kerjaan selesai&quot;</div>
+                  <div className="text-emerald-600">✅ &quot;Foto terlampir di sistem&quot;</div>
+                  <div className="text-red-600">❌ &quot;Hubungi vendor&quot;</div>
+                  <div className="text-emerald-600">✅ &quot;Client approval diterima &amp; ditulis&quot;</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Difficulty */}
+            <div>
+              <FieldLabel htmlFor="quest-difficulty" hint="Pembobotan tingkat kesulitan / komitmen.">
+                Difficulty Rank
+              </FieldLabel>
+              <DifficultySelector
+                value={form.difficulty}
+                onChange={(v) => setForm((p) => ({ ...p, difficulty: v }))}
+              />
+            </div>
+
+            {/* Reward points */}
+            <div>
+              <FieldLabel htmlFor="quest-reward">SGD Points Reward</FieldLabel>
+              <div className="relative">
+                <span
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold select-none"
+                  style={{ color: '#C9A227' }}
+                >
+                  +
+                </span>
+                <input
+                  id="quest-reward"
+                  type="number"
+                  value={form.reward_points}
+                  onChange={set('reward_points')}
+                  className={`${inputClass} pl-7`}
+                  style={inputStyle}
+                  placeholder="cth: 80"
+                  min={0}
+                  max={9999}
+                />
+                <span
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold select-none"
+                  style={{ color: '#1B2E5250' }}
+                >
+                  SGD Points
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Progress bar ────────────────────────────────────────────────── */}
-      <QuestCompletionBar filled={filledOptional} total={5} />
+      <QuestCompletionBar pct={pctComplete} />
 
       {/* ── Action footer ────────────────────────────────────────────────── */}
       <div
-        className="border border-t-0 px-6 py-4 flex items-center justify-between gap-4"
+        className="border border-t-0 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4"
         style={{ background: '#F9F8F6', borderColor: '#DDD9D3' }}
       >
         <button
           type="button"
           onClick={() => router.back()}
-          className="text-xs font-bold tracking-widest uppercase px-4 py-2.5 border transition-all hover:bg-white"
+          className="text-xs font-bold tracking-widest uppercase px-4 py-2.5 border transition-all hover:bg-white w-full sm:w-auto text-center"
           style={{ borderColor: '#1B2E5230', color: '#1B2E5280' }}
         >
           Batal
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           {/* Save as Draft shortcut — only on create */}
           {mode === 'create' && !allComplete && (
-            <span className="text-[11px] text-gray-400">
-              Akan disimpan sebagai <strong>Draft</strong>
+            <span className="text-[11px] text-gray-400 text-center sm:text-right">
+              Akan disimpan sebagai <strong className="text-gray-600">Draft</strong>
+              <br/><span className="text-[9px]">karena kelengkapan {pctComplete}%</span>
             </span>
           )}
           {mode === 'create' && allComplete && (
-            <span className="text-[11px]" style={{ color: '#0F6E56' }}>
+            <span className="text-[11px] text-center sm:text-right" style={{ color: '#0F6E56' }}>
               Akan disimpan sebagai <strong>Active</strong>
             </span>
           )}
@@ -568,7 +741,7 @@ Tidak ada complaint dalam 24 jam`}
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 text-xs font-bold tracking-widest uppercase transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-80"
+            className="w-full sm:w-auto flex justify-center items-center gap-2 px-6 py-2.5 text-xs font-bold tracking-widest uppercase transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-80"
             style={{ background: '#1B2E52', color: '#C9A227' }}
           >
             {saving ? (

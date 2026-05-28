@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AddMemberModal } from '@/components/members/AddMemberModal'
 import { Avatar } from '@/components/ui/Avatar'

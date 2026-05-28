@@ -30,11 +30,12 @@ export default function QuestSheetClient({
   currentUserRole,
 }: ClientProps) {
   // Adventurer can upload when their quest is Active or needs Revision
+  // Guild Master can also upload on behalf of the Adventurer
   const canUpload =
-    quest.assigned_to === currentUserId &&
+    (quest.assigned_to === currentUserId || currentUserRole === 'guild_master') &&
     (quest.status === 'Active' || quest.status === 'Revise')
 
-  // GM can also view attachments (but cannot upload)
+  // GM can also view attachments
   const showAttachments =
     canUpload ||
     attachments.length > 0 ||

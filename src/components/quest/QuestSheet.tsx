@@ -33,7 +33,7 @@ function DocDivider({ label }: { label: string }) {
       >
         {label}
       </span>
-      <div className="flex-1 border-t" style={{ borderColor: '#1B2E5218' }} />
+      <div className="flex-1 border-t border-dashed" style={{ borderColor: '#1B2E5230' }} />
     </div>
   )
 }
@@ -60,7 +60,7 @@ function SectionBlock({
   children: React.ReactNode
 }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <DocDivider label={label} />
       <div className="pt-1 pl-1">{children}</div>
     </div>
@@ -88,7 +88,7 @@ function ActionButton({
     <button
       onClick={onClick}
       disabled={loading}
-      className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.12em] uppercase transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-80"
+      className="flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.12em] uppercase transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-80"
       style={styles}
     >
       {loading ? (
@@ -195,7 +195,6 @@ export default function QuestSheet({
     setError(null)
     try {
       if (action === 'Approved') {
-        // Use API route — needs service role to award points
         const res = await fetch(`/api/quest/${quest.id}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -206,7 +205,6 @@ export default function QuestSheet({
           throw new Error(msg ?? 'Gagal approve quest')
         }
       } else {
-        // Revise / Failed — simple status update via client
         const { error: e } = await supabase
           .from('quests')
           .update({ status: action, updated_at: new Date().toISOString() })
@@ -234,13 +232,11 @@ export default function QuestSheet({
       })
       if (err) throw err
 
-      // Optional: notify assigned/gm using same API or webhook
-      
       setNewComment('')
       router.refresh()
     } catch (err: any) {
       console.error(err)
-      setError('Gagal mengirim komentar.')
+      setError('Gagal mengirim update.')
     } finally {
       setAddingComment(false)
     }
@@ -248,27 +244,30 @@ export default function QuestSheet({
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* ── Document shell ────────────────────────────────────────────── */}
+      {/* ── Document shell (Parchment Feel) ───────────────────────────── */}
       <div
-        className="bg-white border"
-        style={{ borderColor: '#DDD9D3' }}
+        className="bg-[#FAFAF8] border shadow-sm relative overflow-hidden"
+        style={{ borderColor: '#E8E5E0' }}
       >
+        {/* Decorative corner accent */}
+        <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#1B2E5210] to-transparent pointer-events-none" />
+
         {/* ── Header band ─────────────────────────────────────────────── */}
         <div
           className="px-6 py-5 border-b flex items-start justify-between gap-4"
           style={{ background: '#1B2E52', borderColor: '#1B2E5200' }}
         >
           <div className="flex items-start gap-3 min-w-0">
-            {/* Sword icon */}
+            {/* Scroll icon instead of sword */}
             <svg
               width="22" height="22" viewBox="0 0 24 24" fill="none"
               stroke="#C9A227" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
               className="shrink-0 mt-0.5"
             >
-              <path d="m14.5 17.5 3 3a2.12 2.12 0 0 0 3-3l-9-9" />
-              <path d="m3 3 4 4" /><path d="m14.5 6.5-1 1" />
-              <path d="m6.5 14.5 1-1" /><path d="M2 20l7-7" />
-              <path d="m3 12 9-9 6 6-9 9" />
+              <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4" />
+              <polyline points="14 2 14 8 20 8" />
+              <path d="M2 15h10" />
+              <path d="m9 18 3-3-3-3" />
             </svg>
             <h1
               className="text-lg font-bold leading-snug"
@@ -278,11 +277,34 @@ export default function QuestSheet({
             </h1>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Badge rank={quest.difficulty} size="lg" />
-            <StatusPill status={quest.status} dot />
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
+            {quest.urgency && (
+              <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 border" style={{ borderColor: '#C9A22750', color: '#C9A227' }}>
+                {quest.urgency}
+              </span>
+            )}
+            <div className="flex items-center gap-2">
+              <Badge rank={quest.difficulty} size="lg" />
+              <StatusPill status={quest.status} dot />
+            </div>
           </div>
         </div>
+
+        {/* ── Approval Pending Pressure Banner ─────────────────────────── */}
+        {quest.status === 'Submitted' && (
+          <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between animate-pulse">
+            <div className="flex items-center gap-3 text-amber-700">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <path d="M5 22h14" />
+                <path d="M5 2h14" />
+                <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+                <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+              </svg>
+              <span className="text-sm font-bold tracking-wide uppercase">Review Pending</span>
+            </div>
+            <span className="text-xs text-amber-600 font-medium">Menunggu Validasi Guild Master</span>
+          </div>
+        )}
 
         {/* ── Incomplete warning ───────────────────────────────────────── */}
         {isIncomplete && isGM && (
@@ -327,7 +349,7 @@ export default function QuestSheet({
             label="Deadline"
             value={
               quest.deadline ? (
-                <span style={{ color: new Date(quest.deadline) < new Date() && quest.status !== 'Approved' ? '#993C1D' : undefined }}>
+                <span className="font-mono text-[13px]" style={{ color: new Date(quest.deadline) < new Date() && quest.status !== 'Approved' ? '#993C1D' : undefined }}>
                   {formatDeadline(quest.deadline)}
                 </span>
               ) : (
@@ -337,37 +359,37 @@ export default function QuestSheet({
           />
         </div>
 
-        {/* ── Objective ────────────────────────────────────────────────── */}
-        <div className="px-6 py-5 space-y-4">
-          <SectionBlock label="Objective">
+        {/* ── Objective (Narrative) ────────────────────────────────────── */}
+        <div className="px-6 py-5 space-y-6">
+          <SectionBlock label="Tactical Objective">
             {quest.description ? (
-              <p className="text-sm text-charcoal leading-relaxed whitespace-pre-line">
-                {quest.description}
-              </p>
+              <div className="p-4 bg-white border border-gray-200 rounded-sm shadow-sm relative">
+                {/* Subtle quote mark decoration */}
+                <span className="absolute top-2 left-2 text-4xl text-gray-200 font-serif leading-none select-none">&quot;</span>
+                <p className="text-sm text-charcoal leading-relaxed whitespace-pre-line relative z-10 pl-6 italic font-serif" style={{ color: '#2B3B4E' }}>
+                  {quest.description}
+                </p>
+              </div>
             ) : (
               <p className="text-sm italic text-gray-400">Deskripsi belum diisi.</p>
             )}
           </SectionBlock>
 
-          {/* ── Success Criteria ─────────────────────────────────────── */}
-          <SectionBlock label="Success Criteria">
+          {/* ── Success Criteria (Checklist) ───────────────────────────── */}
+          <SectionBlock label="Definition of Done">
             {criteria.length > 0 ? (
-              <ul className="space-y-2">
-                {criteria.map((c, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm text-charcoal">
-                    <span
-                      className="w-4 h-4 border flex items-center justify-center shrink-0 mt-0.5"
-                      style={{ borderColor: '#1B2E5240' }}
-                    >
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#0F6E56"
-                        strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </span>
-                    {c}
-                  </li>
-                ))}
-              </ul>
+              <div className="bg-white border border-gray-200 rounded-sm shadow-sm p-4">
+                <ul className="space-y-3">
+                  {criteria.map((c, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-charcoal group">
+                      <div className="w-5 h-5 rounded-sm border flex items-center justify-center shrink-0 mt-0.5 bg-gray-50 border-gray-300">
+                        {/* Fake checkbox appearance */}
+                      </div>
+                      <span className="leading-snug">{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : (
               <p className="text-sm italic text-gray-400">Kriteria belum diisi.</p>
             )}
@@ -376,9 +398,13 @@ export default function QuestSheet({
           {/* ── Reward ───────────────────────────────────────────────── */}
           <SectionBlock label="Reward">
             {quest.reward_points != null ? (
-              <p className="text-2xl font-bold" style={{ color: '#C9A227' }}>
+              <p className="text-2xl font-bold flex items-center gap-2" style={{ color: '#C9A227' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v2M12 16v2M9.5 9A2.5 2.5 0 0 1 12 7.5h.5a2 2 0 0 1 0 4H12a2 2 0 0 0 0 4h.5A2.5 2.5 0 0 0 14.5 14" />
+                </svg>
                 +{quest.reward_points}{' '}
-                <span className="text-base font-semibold" style={{ color: '#1B2E5260' }}>
+                <span className="text-[10px] font-bold tracking-widest uppercase mt-1" style={{ color: '#1B2E5260' }}>
                   SGD Points
                 </span>
               </p>
@@ -387,44 +413,45 @@ export default function QuestSheet({
             )}
           </SectionBlock>
 
-          {/* Attachments section is now rendered separately via AttachmentUpload component in _client.tsx */}
-          
-          {/* ── Comments ───────────────────────────────────────────────── */}
-          <SectionBlock label="Diskusi">
+          {/* ── Operational Updates ────────────────────────────────────── */}
+          <SectionBlock label="Operational Updates">
             <div className="space-y-4">
               {comments.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-3 border-l-2 pl-4" style={{ borderColor: '#E8E5E0' }}>
                   {comments.map((comment) => (
-                    <div key={comment.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="font-bold text-charcoal">{comment.users?.nama || 'User'}</span>
-                        <span className="text-[10px] text-gray-400">
+                    <div key={comment.id} className="text-sm relative">
+                      <div className="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-gray-300 border-2 border-white" />
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-[11px] uppercase tracking-wider text-charcoal">{comment.users?.nama || 'System'}</span>
+                        <span className="text-[10px] text-gray-400 font-mono">
                           {new Date(comment.created_at).toLocaleString('id-ID', { hour: '2-digit', minute:'2-digit', day: 'numeric', month: 'short' })}
                         </span>
                       </div>
-                      <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                      <div className="p-3 bg-white border border-gray-200 rounded-sm shadow-sm text-gray-700 whitespace-pre-wrap">
+                        {comment.content}
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm italic text-gray-400">Belum ada diskusi.</p>
+                <p className="text-sm italic text-gray-400 border-l-2 pl-4" style={{ borderColor: '#E8E5E0' }}>Belum ada log operasional.</p>
               )}
               
-              <form onSubmit={handleAddComment} className="flex gap-2 pt-2">
+              <form onSubmit={handleAddComment} className="flex gap-2 pt-4">
                 <input
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Tambahkan komentar..."
-                  className="flex-1 px-3 py-2 text-sm border rounded bg-gray-50 focus:outline-none focus:ring-1 focus:ring-navy"
+                  placeholder="Laporkan progres operasional..."
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-sm bg-white focus:outline-none focus:ring-1 focus:ring-navy font-mono"
                   disabled={addingComment}
                 />
                 <button
                   type="submit"
                   disabled={addingComment || !newComment.trim()}
-                  className="px-4 py-2 bg-navy text-gold text-xs font-bold uppercase rounded disabled:opacity-50"
+                  className="px-4 py-2 bg-navy text-gold text-xs font-bold uppercase tracking-wider rounded-sm disabled:opacity-50 hover:opacity-90"
                 >
-                  Kirim
+                  Log
                 </button>
               </form>
             </div>
@@ -447,7 +474,8 @@ export default function QuestSheet({
             {/* Adventurer: submit */}
             {canSubmit && (
               <ActionButton variant="primary" loading={loading} onClick={handleSubmit}>
-                ⚔ Submit Quest
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                Submit for Review
               </ActionButton>
             )}
             {canSubmitWarn && (
@@ -457,55 +485,56 @@ export default function QuestSheet({
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                Upload minimal 1 bukti sebelum bisa submit.
+                Upload minimal 1 bukti pelaksanaan operasional.
               </p>
             )}
 
             {/* GM: approve / revise / tolak */}
             {canApprove && (
-              <>
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <ActionButton variant="primary" loading={loading} onClick={() => handleGMAction('Approved')}>
-                  ✓ Approve
+                  ✓ Validasi & Approve
                 </ActionButton>
                 <ActionButton variant="ghost" loading={loading} onClick={() => handleGMAction('Revise')}>
                   Minta Revisi
                 </ActionButton>
                 <ActionButton variant="danger" loading={loading} onClick={() => handleGMAction('Failed')}>
-                  Tolak Quest
+                  Tolak
                 </ActionButton>
-              </>
+              </div>
             )}
 
-            {/* GM: edit quest (Draft, Active, or Submitted) */}
+            <div className="flex-1" />
+
+            {/* GM: edit quest */}
             {isGM && (quest.status === 'Draft' || quest.status === 'Active' || quest.status === 'Submitted') && (
               <Link
                 href={`/quests/${quest.id}/edit`}
                 className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.12em] uppercase hover:opacity-80 transition-opacity"
                 style={{ background: 'transparent', color: '#1B2E52', border: '1px solid #1B2E5230' }}
               >
-                Edit Quest
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                Edit
               </Link>
             )}
 
-            {/* Adventurer: Claim Unassigned Quest (with confirm) */}
+            {/* Adventurer: Claim Unassigned Quest */}
             {!isGM && !quest.assigned_to && quest.status !== 'Draft' && (
               <ActionButton
                 variant="primary"
                 loading={loading}
                 onClick={() => {
-                  if (confirm(`Yakin ingin mengambil quest "${quest.title}"?`)) {
+                  if (confirm(`Yakin ingin mengambil tanggung jawab operasional quest "${quest.title}"?`)) {
                     handleClaimQuest()
                   }
                 }}
               >
-                ✋ Claim Quest
+                ✋ Claim
               </ActionButton>
             )}
           </div>
         )}
       </div>
-
-      {/* Back link removed — handled in _client.tsx to avoid duplicate */}
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { useUser } from '@/hooks/useUser'
 
 const NAV_ITEMS = [
   { label: 'Dash', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
-  { label: 'Leader', href: '/leaderboard', icon: <Trophy size={20} /> },
+  { label: 'Guild', href: '/leaderboard', icon: <Trophy size={20} /> },
   { label: 'Tavern', href: '/tavern', icon: <MessagesSquare size={20} /> },
   { label: 'Quests', href: '/quests', icon: <ScrollText size={20} /> },
   { label: 'Members', href: '/members', icon: <Users size={20} /> },

@@ -1,22 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { useUser } from '@/hooks/useUser'
 import { useQuests, deriveGMStats, isOverdue } from '@/hooks/useQuests'
 import { formatDeadline, getRankColor, getStatusColor } from '@/lib/utils'
 import type { QuestWithAssignee } from '@/hooks/useQuests'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts'
 
 // ── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({
@@ -78,6 +67,16 @@ function RankBadge({ rank }: { rank: string | null }) {
 // ── Quest row ─────────────────────────────────────────────────────────────────
 function QuestRow({ quest }: { quest: QuestWithAssignee }) {
   const overdue = isOverdue(quest)
+  
+  // Specific warnings
+  const warnings = []
+  if (quest.status === 'Draft' || (!quest.detail_completed && quest.status !== 'Approved' && quest.status !== 'Failed')) {
+    warnings.push('Detail Kurang')
+  }
+  if (overdue) {
+    warnings.push('Overdue')
+  }
+
   return (
     <Link
       href={`/quests/${quest.id}`}
@@ -86,9 +85,19 @@ function QuestRow({ quest }: { quest: QuestWithAssignee }) {
       <RankBadge rank={quest.difficulty} />
 
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold truncate ${overdue ? 'text-danger' : 'text-charcoal'}`}>
-          {quest.title}
-        </p>
+        <div className="flex items-center gap-2">
+          {quest.urgency && quest.urgency !== 'Routine' && (
+            <span className={`text-[9px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded-sm ${
+              quest.urgency === 'Emergency' ? 'bg-red-100 text-red-700' : 
+              quest.urgency === 'Priority' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+            }`}>
+              {quest.urgency}
+            </span>
+          )}
+          <p className={`text-sm font-semibold truncate ${overdue ? 'text-danger' : 'text-charcoal'}`}>
+            {quest.title}
+          </p>
+        </div>
         <p className="text-xs text-gray-400 mt-0.5">
           {(quest as any).assignee?.nama ?? 'Unassigned'}
           {quest.deadline && (
@@ -101,40 +110,58 @@ function QuestRow({ quest }: { quest: QuestWithAssignee }) {
 
       <StatusPill status={quest.status} />
 
-      {!quest.detail_completed && quest.status !== 'Approved' && quest.status !== 'Failed' && (
-        <span className="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-          Detail kurang
-        </span>
+      {warnings.length > 0 && (
+        <div className="flex flex-col gap-1 items-end">
+          {warnings.map(w => (
+            <span key={w} className={`text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
+              w === 'Overdue' ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'
+            }`}>
+              {w}
+            </span>
+          ))}
+        </div>
       )}
     </Link>
   )
 }
 
 // ── Alert banner ─────────────────────────────────────────────────────────────
-function AlertBanner({ count, label }: { count: number; label: string }) {
+function AlertBanner({ count, label, type = 'warning' }: { count: number; label: string; type?: 'warning' | 'danger' | 'info' }) {
   if (count === 0) return null
+  
+  const colors = {
+    warning: { bg: '#FFFBEB', border: '#F59E0B22', text: '#92400E' },
+    danger: { bg: '#FDF2F0', border: '#993C1D22', text: '#993C1D' },
+    info: { bg: '#F0F9FF', border: '#BAE6FD', text: '#0369A1' }
+  }[type]
+
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm border"
-      style={{ background: '#FDF2F0', borderColor: '#993C1D22', color: '#993C1D' }}
+      className="flex items-center gap-3 px-4 py-3 rounded-sm border"
+      style={{ background: colors.bg, borderColor: colors.border, color: colors.text }}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
         <path d="M12 9v4M12 17h.01" />
       </svg>
-      <span><strong>{count}</strong> {label}</span>
+      <span className="text-sm"><strong>{count}</strong> {label}</span>
     </div>
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
 export default function GMDashboard() {
   const { user } = useUser()
-  const { quests, loading, error } = useQuests({ limit: 50 })
+  const { quests } = useQuests({ limit: 100 })
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
 
   const stats = deriveGMStats(quests)
-  const recentQuests = quests.slice(0, 10)
+  
+  // Actionable Lists
+  const submittedQuests = quests.filter(q => q.status === 'Submitted')
+  const priorityQuests = quests.filter(q => (q.urgency === 'Emergency' || q.urgency === 'Priority') && q.status !== 'Approved' && q.status !== 'Failed')
+  const incompleteQuests = quests.filter(q => !q.detail_completed && q.status !== 'Approved' && q.status !== 'Failed')
+  const overdueActiveQuests = quests.filter(q => isOverdue(q))
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -145,20 +172,15 @@ export default function GMDashboard() {
           Selamat datang, <span style={{ color: '#1B2E52' }}>{user?.nama}</span>
         </h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Berikut ringkasan operasional guild hari ini.
+          Fokuskan perhatian Anda pada daftar prioritas operasional hari ini.
         </p>
       </div>
 
       {/* ── Alert banners ─────────────────────────────────────────────── */}
       <div className="space-y-2">
-        <AlertBanner
-          count={stats.overdue}
-          label="quest melewati deadline tanpa penyelesaian"
-        />
-        <AlertBanner
-          count={stats.incomplete}
-          label="quest aktif belum memiliki detail lengkap (berisiko penalti 00:00)"
-        />
+        <AlertBanner count={stats.submitted} label="quest menunggu persetujuan (Awaiting Approval)" type="info" />
+        <AlertBanner count={stats.overdue} label="quest melewati deadline" type="danger" />
+        <AlertBanner count={stats.incomplete} label="quest belum memiliki detail operasional lengkap" type="warning" />
       </div>
 
       {/* ── Stat grid ─────────────────────────────────────────────────── */}
@@ -170,115 +192,64 @@ export default function GMDashboard() {
         <StatCard label="SGD Points" value={user?.total_points ?? 0} accent />
       </div>
 
-      {/* ── Analytics Charts ─────────────────────────────────────────── */}
-      {!loading && quests.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-white dark:bg-charcoal border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm">
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Quest Distribution</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Active', value: stats.active, color: '#1B2E52' },
-                      { name: 'Submitted', value: stats.submitted, color: '#F59E0B' },
-                      { name: 'Approved', value: quests.filter(q => q.status === 'Approved').length, color: '#0F6E56' },
-                      { name: 'Failed', value: quests.filter(q => q.status === 'Failed').length, color: '#993C1D' },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {[
-                      { name: 'Active', value: stats.active, color: '#1B2E52' },
-                      { name: 'Submitted', value: stats.submitted, color: '#F59E0B' },
-                      { name: 'Approved', value: quests.filter(q => q.status === 'Approved').length, color: '#0F6E56' },
-                      { name: 'Failed', value: quests.filter(q => q.status === 'Failed').length, color: '#993C1D' },
-                    ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          
-          <div className="p-4 bg-white dark:bg-charcoal border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm">
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Quest By Difficulty</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { name: 'F', count: quests.filter(q => q.difficulty === 'F').length },
-                    { name: 'E', count: quests.filter(q => q.difficulty === 'E').length },
-                    { name: 'D', count: quests.filter(q => q.difficulty === 'D').length },
-                    { name: 'C', count: quests.filter(q => q.difficulty === 'C').length },
-                    { name: 'B', count: quests.filter(q => q.difficulty === 'B').length },
-                    { name: 'A', count: quests.filter(q => q.difficulty === 'A').length },
-                    { name: 'S', count: quests.filter(q => q.difficulty === 'S').length },
-                  ].filter(d => d.count > 0)}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'transparent' }} />
-                  <Bar dataKey="count" fill="#C9A227" radius={[4, 4, 0, 0]} barSize={30} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Action buttons ────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3">
         <Link
           href="/quests/new"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold transition-all hover:opacity-90"
           style={{ background: '#1B2E52', color: '#C9A227' }}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 5v14M5 12h14" />
           </svg>
-          Buat Quest Baru
-        </Link>
-
-        <Link
-          href="/quests?status=Submitted"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold border transition-all hover:bg-gold/10"
-          style={{ borderColor: '#C9A22744', color: '#1B2E52' }}
-        >
-          Review Approval
-          {stats.submitted > 0 && (
-            <span
-              className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
-              style={{ background: '#C9A227', color: '#1B2E52' }}
-            >
-              {stats.submitted}
-            </span>
-          )}
+          Mulai Delegasi Baru
         </Link>
 
         <button
-          onClick={() => {
-            const csvContent = "data:text/csv;charset=utf-8," 
-              + "ID,Title,Status,Difficulty,Reward Points\n"
-              + quests.map(q => `${q.id},"${q.title}",${q.status},${q.difficulty},${q.reward_points}`).join("\n");
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "quests_export.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+          onClick={async () => {
+            const { default: jsPDF } = await import('jspdf');
+            const { default: autoTable } = await import('jspdf-autotable');
+            const doc = new jsPDF();
+            doc.setFontSize(18);
+            doc.text("Laporan Operasional Guild", 14, 22);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            const date = new Date().toLocaleString('id-ID');
+            doc.text(`Dicetak pada: ${date}`, 14, 30);
+            doc.text(`Oleh: ${user?.nama || 'Guild Master'}`, 14, 35);
+            
+            const active = quests.filter(q => q.status === 'Active').length;
+            const submitted = quests.filter(q => q.status === 'Submitted').length;
+            const approved = quests.filter(q => q.status === 'Approved').length;
+            const overdue = quests.filter(q => isOverdue(q)).length;
+            
+            doc.setFontSize(11);
+            doc.setTextColor(40);
+            doc.text(`Ringkasan: ${active} Active | ${submitted} Menunggu Review | ${approved} Selesai | ${overdue} Overdue`, 14, 45);
+
+            const tableData = quests.map(q => [
+              q.title,
+              (q as any).assignee?.nama || 'Unassigned',
+              q.urgency,
+              q.status,
+              q.deadline ? new Date(q.deadline).toLocaleDateString('id-ID') : '-',
+            ]);
+
+            autoTable(doc, {
+              startY: 50,
+              head: [['Judul Quest', 'PIC', 'Urgensi', 'Status', 'Deadline']],
+              body: tableData,
+              theme: 'grid',
+              styles: { fontSize: 9, cellPadding: 3 },
+              headStyles: { fillColor: [27, 46, 82] }, // Navy color
+            });
+            
+            const pdfBlob = doc.output('blob');
+            setPdfPreviewUrl(URL.createObjectURL(pdfBlob));
           }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold border transition-all hover:bg-gray-100 dark:hover:bg-gray-800 dark:border-gray-700"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold border transition-all hover:bg-gray-100 dark:hover:bg-gray-800 dark:border-gray-700"
           style={{ color: '#1B2E52' }}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -287,41 +258,113 @@ export default function GMDashboard() {
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          <span className="dark:text-gray-300">Export CSV</span>
+          <span className="dark:text-gray-300">Export Laporan</span>
         </button>
       </div>
 
-      {/* ── Recent quest list ─────────────────────────────────────────── */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-charcoal/60">
-            Quest Terbaru
-          </h2>
-          <Link href="/quests" className="text-xs font-medium" style={{ color: '#C9A227' }}>
-            Lihat semua →
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {error ? (
-            <div className="py-12 text-center text-sm text-red-500 bg-red-50">
-              {error}
+      {/* PDF Preview Modal */}
+      {pdfPreviewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-sm shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-navy">Preview Laporan PDF</h2>
+              <div className="flex items-center gap-3">
+                <a
+                  href={pdfPreviewUrl}
+                  download={`Laporan_Guild_${new Date().toISOString().split('T')[0]}.pdf`}
+                  className="px-4 py-2 text-sm font-bold text-white bg-navy hover:bg-navy/90 rounded-sm"
+                >
+                  Download PDF
+                </a>
+                <button
+                  onClick={() => setPdfPreviewUrl(null)}
+                  className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-sm"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          ) : loading ? (
-            <div className="py-12 flex justify-center">
-              <span
-                className="inline-block w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: '#1B2E52', borderTopColor: 'transparent' }}
+            <div className="flex-1 bg-gray-100 p-2">
+              <iframe
+                src={pdfPreviewUrl}
+                className="w-full h-full border-0 bg-white"
+                title="PDF Preview"
               />
             </div>
-          ) : recentQuests.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-400">
-              Belum ada quest yang dibuat.
-            </div>
-          ) : (
-            recentQuests.map((q) => <QuestRow key={q.id} quest={q} />)
-          )}
+          </div>
         </div>
+      )}
+
+      {/* ── Actionable Lists Grid ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+        
+        {/* Awaiting Approval */}
+        <div>
+          <div className="flex items-center justify-between mb-3 border-b pb-2" style={{ borderColor: '#E8E5E0' }}>
+            <h2 className="text-sm font-bold tracking-widest text-charcoal/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+              Awaiting Approval
+            </h2>
+            <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 rounded-sm">{submittedQuests.length}</span>
+          </div>
+          <div className="bg-white rounded-sm border border-gray-200 overflow-hidden shadow-sm">
+            {submittedQuests.length === 0 ? (
+              <div className="py-8 text-center text-xs text-gray-400 italic">Tidak ada quest yang menunggu persetujuan.</div>
+            ) : (
+              submittedQuests.slice(0, 5).map(q => <QuestRow key={q.id} quest={q} />)
+            )}
+            {submittedQuests.length > 5 && (
+              <Link href="/quests?status=Submitted" className="block text-center py-2 text-xs font-bold text-navy hover:bg-gray-50 border-t">
+                Lihat semua ({submittedQuests.length})
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Priority & Overdue */}
+        <div>
+          <div className="flex items-center justify-between mb-3 border-b pb-2" style={{ borderColor: '#E8E5E0' }}>
+            <h2 className="text-sm font-bold tracking-widest text-charcoal/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+              Priority & Kritis
+            </h2>
+          </div>
+          <div className="bg-white rounded-sm border border-gray-200 overflow-hidden shadow-sm">
+            {priorityQuests.length === 0 && overdueActiveQuests.length === 0 ? (
+              <div className="py-8 text-center text-xs text-gray-400 italic">Situasi aman. Tidak ada quest kritis.</div>
+            ) : (
+              // Combine and deduplicate
+              Array.from(new Set([...overdueActiveQuests, ...priorityQuests])).slice(0, 5).map(q => <QuestRow key={q.id} quest={q} />)
+            )}
+          </div>
+        </div>
+        
+        {/* Detail Kurang */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-3 border-b pb-2" style={{ borderColor: '#E8E5E0' }}>
+            <h2 className="text-sm font-bold tracking-widest text-charcoal/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+              Detail Operasional Kurang (Butuh Perhatian)
+            </h2>
+            <span className="text-xs font-bold bg-orange-100 text-orange-800 px-2 rounded-sm">{incompleteQuests.length}</span>
+          </div>
+          <div className="bg-white rounded-sm border border-gray-200 overflow-hidden shadow-sm">
+            {incompleteQuests.length === 0 ? (
+              <div className="py-8 text-center text-xs text-gray-400 italic">Semua quest memiliki instruksi yang baik.</div>
+            ) : (
+              incompleteQuests.slice(0, 5).map(q => <QuestRow key={q.id} quest={q} />)
+            )}
+             {incompleteQuests.length > 5 && (
+              <Link href="/quests" className="block text-center py-2 text-xs font-bold text-navy hover:bg-gray-50 border-t">
+                Lihat semua di Quest Log
+              </Link>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   )

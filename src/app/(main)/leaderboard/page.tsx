@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getRankInfo } from '@/lib/rankUtils'
 import { Trophy, Medal, Award } from 'lucide-react'
@@ -16,6 +16,7 @@ export default function LeaderboardPage() {
   useEffect(() => {
     let isMounted = true
     async function fetchLeaderboard() {
+      console.log('[Leaderboard] fetchLeaderboard started')
       try {
         const { data, error } = await supabase
           .from('users')
@@ -23,21 +24,27 @@ export default function LeaderboardPage() {
           .eq('role', 'adventurer')
           .order('total_points', { ascending: false })
 
+        console.log('[Leaderboard] fetch returned:', { data, error })
         if (error) throw error
 
         if (data && isMounted) {
+          console.log('[Leaderboard] setting users:', data)
           setUsers(data)
         }
       } catch (err: any) {
-        console.error(err)
+        console.error('[Leaderboard] error:', err)
         if (isMounted) setError(err.message || 'Gagal memuat leaderboard.')
       } finally {
-        setLoading(false)
+        console.log('[Leaderboard] finally block, isMounted:', isMounted)
+        if (isMounted) setLoading(false)
       }
     }
 
     fetchLeaderboard()
-    return () => { isMounted = false }
+    return () => { 
+      console.log('[Leaderboard] unmounting')
+      isMounted = false 
+    }
   }, [supabase])
 
   if (loading) {

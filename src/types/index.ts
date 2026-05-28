@@ -2,6 +2,8 @@ export type UserRole = 'guild_master' | 'adventurer';
 
 export type DifficultyRank = 'F' | 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
 
+export type QuestUrgency = 'Routine' | 'Priority' | 'Emergency' | 'Strategic';
+
 export type QuestStatus = 'Draft' | 'Active' | 'Submitted' | 'Approved' | 'Revise' | 'Failed';
 
 export interface User {
@@ -19,6 +21,7 @@ export interface Quest {
   description: string | null;
   assigned_to: string | null; // uuid of User
   created_by: string; // uuid of User
+  urgency: QuestUrgency;
   difficulty: DifficultyRank | null;
   deadline: string | null;
   success_parameter: string | null;
