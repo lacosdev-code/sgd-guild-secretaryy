@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AddMemberModal } from '@/components/members/AddMemberModal'
 import { Avatar } from '@/components/ui/Avatar'
@@ -11,9 +11,44 @@ import Link from 'next/link'
 export default function MembersPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
   const [supabase] = useState(() => createClient())
+
+  const checkRole = useCallback(async (isMounted: boolean) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
+        if (data && isMounted) setCurrentUserRole(data.role)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }, [supabase])
+
+  const fetchUsers = useCallback(async (isMounted: boolean) => {
+    if (!isMounted) return
+    setLoading(true)
+    setError(null)
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('role', { ascending: false }) // guild_master first usually
+        .order('nama', { ascending: true })
+      
+      if (error) throw error
+
+      if (data && isMounted) setUsers(data)
+    } catch (err: any) {
+      console.error(err)
+      if (isMounted) setError(err.message || 'Terjadi kesalahan saat memuat data')
+    } finally {
+      setLoading(false)
+    }
+  }, [supabase])
 
   useEffect(() => {
     let isMounted = true
@@ -36,37 +71,7 @@ export default function MembersPage() {
       isMounted = false
       supabase.removeChannel(channel)
     }
-  }, [supabase])
-
-  async function checkRole(isMounted: boolean) {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
-        if (data && isMounted) setCurrentUserRole(data.role)
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  async function fetchUsers(isMounted: boolean) {
-    if (!isMounted) return
-    setLoading(true)
-    try {
-      const { data } = await supabase
-        .from('users')
-        .select('*')
-        .order('role', { ascending: false }) // guild_master first usually
-        .order('nama', { ascending: true })
-      
-      if (data && isMounted) setUsers(data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      if (isMounted) setLoading(false)
-    }
-  }
+  }, [supabase, fetchUsers, checkRole])
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -102,6 +107,10 @@ export default function MembersPage() {
               {loading ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-gray-500">Loading data...</td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-red-500">{error}</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>

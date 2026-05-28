@@ -29,7 +29,7 @@ export default function ProfilePage() {
       } catch (err) {
         console.error(err)
       } finally {
-        if (isMounted) setLogsLoading(false)
+        setLogsLoading(false)
       }
     }
 

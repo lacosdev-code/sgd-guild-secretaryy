@@ -47,3 +47,31 @@ export interface PointLog {
   reason: string | null;
   created_at: string;
 }
+
+export interface QuestComment {
+  id: string;
+  quest_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  link: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface PushSubscription {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  created_at: string;
+}
+

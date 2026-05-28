@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
         console.error(err)
         if (isMounted) setError(err.message || 'Gagal memuat leaderboard.')
       } finally {
-        if (isMounted) setLoading(false)
+        setLoading(false)
       }
     }
 

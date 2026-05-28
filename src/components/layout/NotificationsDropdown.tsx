@@ -176,17 +176,17 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
           {permission !== 'granted' && (
             <div className="px-3 py-2.5 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-900/30">
               {permission === 'denied' ? (
-                <p className="text-[11px] text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
-                  <BellOff size={12} />
-                  Notifikasi diblokir browser. Aktifkan di pengaturan browser.
-                </p>
+                <div className="text-[11px] text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
+                  <BellOff size={12} className="shrink-0 mt-0.5" />
+                  <p>Notifikasi diblokir browser. Aktifkan di pengaturan browser.</p>
+                </div>
               ) : (
                 <button
                   onClick={handleRequestPermission}
-                  className="w-full text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 hover:underline"
+                  className="w-full text-left text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-start gap-1.5 hover:underline"
                 >
-                  <Bell size={12} />
-                  Aktifkan notifikasi pop-up (seperti WhatsApp) →
+                  <Bell size={12} className="shrink-0 mt-0.5" />
+                  <span>Aktifkan notifikasi pop-up (seperti WhatsApp) →</span>
                 </button>
               )}
             </div>
