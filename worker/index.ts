@@ -7,7 +7,7 @@ _self.addEventListener("push", (event) => {
     try {
       const data = event.data.json();
 
-      const options: NotificationOptions = {
+      const options: any = {
         body: data.body,
         icon: data.icon || "/icon.png",
         badge: data.badge || "/icon.png",
@@ -21,7 +21,7 @@ _self.addEventListener("push", (event) => {
       );
     } catch (e) {
       // Fallback for non-JSON payload
-      const options: NotificationOptions = {
+      const options: any = {
         body: event.data.text(),
         icon: "/icon.png",
         vibrate: [100, 50, 100],
