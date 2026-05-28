@@ -10,11 +10,12 @@ interface NavItem {
   icon: React.ReactNode
 }
 
-import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users } from 'lucide-react'
+import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users, MessagesSquare } from 'lucide-react'
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
   { label: 'Leaderboard', href: '/leaderboard', icon: <Trophy size={18} /> },
+  { label: 'Tavern',    href: '/tavern',    icon: <MessagesSquare size={18} /> },
   { label: 'Quests',    href: '/quests',    icon: <ScrollText size={18} /> },
   { label: 'Members',   href: '/members',   icon: <Users size={18} /> },
   { label: 'Profile',   href: '/profile',   icon: <UserCircle size={18} /> },
