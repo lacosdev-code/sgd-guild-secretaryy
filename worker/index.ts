@@ -1,9 +1,8 @@
 /// <reference lib="webworker" />
 
-// To avoid TypeScript errors
-declare let self: ServiceWorkerGlobalScope;
+const _self = self as unknown as ServiceWorkerGlobalScope;
 
-self.addEventListener("push", (event) => {
+_self.addEventListener("push", (event) => {
   if (event.data) {
     try {
       const data = event.data.json();
@@ -18,7 +17,7 @@ self.addEventListener("push", (event) => {
       };
 
       event.waitUntil(
-        self.registration.showNotification(data.title || "SGD Notification", options)
+        _self.registration.showNotification(data.title || "SGD Notification", options)
       );
     } catch (e) {
       // Fallback for non-JSON payload
@@ -28,27 +27,27 @@ self.addEventListener("push", (event) => {
         vibrate: [100, 50, 100],
       };
       event.waitUntil(
-        self.registration.showNotification("SGD Guild Center", options)
+        _self.registration.showNotification("SGD Guild Center", options)
       );
     }
   }
 });
 
-self.addEventListener("notificationclick", (event) => {
+_self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const urlToOpen = event.notification.data || "/";
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+    _self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
       for (let i = 0; i < windowClients.length; i++) {
         const client = windowClients[i];
         if (client.url === urlToOpen && "focus" in client) {
           return client.focus();
         }
       }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(urlToOpen);
+      if (_self.clients.openWindow) {
+        return _self.clients.openWindow(urlToOpen);
       }
     })
   );
