@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, Square } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, Square, X } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 
 const ChatFile = ({ url, name }: { url: string, name: string }) => {
@@ -28,7 +28,7 @@ const ChatAudio = ({ url }: { url: string }) => {
   )
 }
 
-const ChatImage = ({ url }: { url: string }) => {
+const ChatImage = ({ url, onPreview }: { url: string, onPreview: (url: string) => void }) => {
   const [error, setError] = useState(false)
   if (error) {
     return (
@@ -39,12 +39,10 @@ const ChatImage = ({ url }: { url: string }) => {
     )
   }
   return (
-    <a 
-      href={url} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      className="relative group block cursor-zoom-in"
-      title="Klik untuk membuka ukuran penuh"
+    <button 
+      onClick={(e) => { e.preventDefault(); onPreview(url) }}
+      className="relative group block cursor-zoom-in text-left"
+      title="Klik untuk melihat"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img 
@@ -55,10 +53,10 @@ const ChatImage = ({ url }: { url: string }) => {
       />
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-md">
         <span className="bg-black/60 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-sm shadow-xl">
-          <Download size={12} /> Buka & Unduh
+          <ImageIcon size={12} /> Buka Preview
         </span>
       </div>
-    </a>
+    </button>
   )
 }
 
@@ -70,6 +68,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [uploadingImg, setUploadingImg] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
   
   const [supabase] = useState(() => createClient())
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -298,7 +297,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     
     const imgMatch = text.trim().match(imgRegex)
     if (imgMatch && imgMatch[1]) {
-      return <ChatImage url={imgMatch[1]} />
+      return <ChatImage url={imgMatch[1]} onPreview={setPreviewImage} />
     }
     
     const audioMatch = text.trim().match(audioRegex)
@@ -444,6 +443,34 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
           )}
         </form>
       </div>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
+          <button 
+            onClick={() => setPreviewImage(null)} 
+            className="absolute top-4 right-4 p-3 text-white hover:bg-white/10 rounded-full transition-colors"
+          >
+            <X size={24} />
+          </button>
+          
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={previewImage} 
+            alt="Preview" 
+            className="max-w-full max-h-full object-contain rounded-md"
+          />
+          
+          <a 
+            href={previewImage}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute bottom-6 px-6 py-2.5 bg-white text-black font-bold text-sm rounded-full flex items-center gap-2 hover:bg-gray-200 transition-colors shadow-lg"
+          >
+            <Download size={16} /> Unduh Gambar
+          </a>
+        </div>
+      )}
     </div>
   )
 }
