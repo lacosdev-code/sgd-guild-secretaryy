@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Paperclip, Loader2, X } from 'lucide-react'
+import imageCompression from 'browser-image-compression'
 import type { Quest, DifficultyRank, QuestUrgency, User } from '@/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -384,17 +385,26 @@ export default function QuestForm({
 
     setUploadingBrief(true)
     try {
-      const ext = file.name.split('.').pop()
+      let finalFile = file
+      const isImage = file.type.startsWith('image/')
+      
+      if (isImage) {
+        try {
+          const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: false }
+          const compressedBlob = await imageCompression(file, options)
+          finalFile = new File([compressedBlob], file.name, { type: file.type })
+        } catch (err) {
+          console.error('Compression failed:', err)
+        }
+      }
+
+      const ext = finalFile.name.split('.').pop()
       const fileName = `brief_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
       const filePath = `briefs/${fileName}`
 
-      // Gunakan Blob untuk menghindari issue upload hanging di beberapa browser
-      const blob = new Blob([file], { type: file.type })
-
       const { error: uploadError } = await supabase.storage
         .from('attachments')
-        .upload(filePath, blob, {
-          contentType: file.type,
+        .upload(filePath, finalFile, {
           upsert: false
         })
 
