@@ -555,3 +555,20 @@ CREATE POLICY "Guild masters can upload attachments"
   );
 
 
+
+-- Allow users to delete their own messages
+CREATE POLICY "Users can delete their own messages"
+  ON public.guild_chat FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- Allow guild masters to delete any message
+CREATE POLICY "Guild masters can delete any message"
+  ON public.guild_chat FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.users
+      WHERE id = auth.uid() AND role = 'guild_master'
+    )
+  );

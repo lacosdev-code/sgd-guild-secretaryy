@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, Square, X } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, Square, X, Trash2 } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
+import { useUser } from '@/hooks/useUser'
 
 const ChatFile = ({ url, name }: { url: string, name: string }) => {
   return (
@@ -70,6 +71,9 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [recordingTime, setRecordingTime] = useState(0)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   
+  const { profile } = useUser()
+  const isGuildMaster = profile?.role === 'guild_master'
+
   const forceDownload = async (url: string) => {
     try {
       const response = await fetch(url)
@@ -127,7 +131,6 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     const channel = supabase
       .channel('public:guild_chat')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guild_chat' }, async (payload) => {
-        // Fetch user details for the new message
         const { data: userData } = await supabase
           .from('users')
           .select('nama, avatar_url')
@@ -142,6 +145,11 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         if (isMounted) {
           setMessages((prev) => [...prev, newMsg])
           setTimeout(scrollToBottom, 100)
+        }
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'guild_chat' }, (payload) => {
+        if (isMounted) {
+          setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
         }
       })
       .subscribe()
@@ -168,10 +176,20 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       if (error) throw error
     } catch (err) {
       console.error('Error sending message:', err)
-      // Optionally restore message if failed
       setNewMessage(msgText)
     } finally {
       setSending(false)
+    }
+  }
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm('Hapus pesan ini?')) return
+    
+    try {
+      const { error } = await supabase.from('guild_chat').delete().eq('id', messageId)
+      if (error) throw error
+    } catch (err: any) {
+      alert('Gagal menghapus pesan: ' + err.message)
     }
   }
 
@@ -215,7 +233,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
   const cancelRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.onstop = null // prevent upload callback
+      mediaRecorderRef.current.onstop = null 
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
       mediaRecorderRef.current.stop()
       setIsRecording(false)
@@ -349,42 +367,52 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
   return (
     <div className="flex flex-col h-[600px] max-h-[70vh] bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-200 dark:border-white/10 overflow-hidden">
-      {/* Header */}
       <div className="px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-black/20 flex items-center gap-3">
         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
         <h2 className="font-bold text-navy dark:text-gray-100">Live Chat</h2>
       </div>
 
-      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-texture">
         {messages.map((msg, i) => {
-          const isMe = msg.user_id === currentUserId
+          const isMine = msg.user_id === currentUserId
+          const canDelete = isMine || isGuildMaster
           const showAvatar = i === 0 || messages[i - 1]?.user_id !== msg.user_id
 
           return (
-            <div key={msg.id} className={`flex gap-3 ${isMe ? 'justify-end' : 'justify-start'}`}>
-              {!isMe && showAvatar ? (
+            <div key={msg.id} className={`flex gap-3 ${isMine ? 'flex-row-reverse' : 'flex-row'} group`}>
+              {!isMine && showAvatar ? (
                 <Avatar url={msg.users?.avatar_url} name={msg.users?.nama || '?'} size="sm" className="mt-1 shrink-0" />
               ) : (
-                !isMe && <div className="w-8 shrink-0" />
+                !isMine && <div className="w-8 shrink-0" />
               )}
 
-              <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                {!isMe && showAvatar && (
+              <div className={`flex flex-col max-w-[75%] ${isMine ? 'items-end' : 'items-start'}`}>
+                {!isMine && showAvatar && (
                   <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">{msg.users?.nama}</span>
                 )}
                 <div 
                   className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    isMe 
+                    isMine 
                       ? 'bg-navy text-white rounded-br-sm shadow-sm' 
                       : 'bg-gray-100 dark:bg-white/5 text-charcoal dark:text-gray-200 rounded-bl-sm border border-gray-200/50 dark:border-white/5'
                   }`}
                 >
                   {renderMessageContent(msg.message)}
                 </div>
-                <span className="text-[10px] text-gray-400 mt-1 mx-1">
-                  {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                <div className={`flex items-center gap-2 mt-1 mx-1 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <span className="text-[10px] text-gray-400">
+                    {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {canDelete && (
+                    <button 
+                      onClick={() => handleDeleteMessage(msg.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-400 hover:text-red-500 rounded"
+                      title="Hapus Pesan"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )
