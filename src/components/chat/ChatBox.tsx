@@ -70,6 +70,25 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const isFirstLoad = useRef(true)
+  
+  // Play notification sound
+  const playNotifSound = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.type = 'sine'
+      o.frequency.setValueAtTime(880, ctx.currentTime)
+      o.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.1)
+      g.gain.setValueAtTime(0.3, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+      o.start(ctx.currentTime)
+      o.stop(ctx.currentTime + 0.4)
+    } catch (e) { /* ignore */ }
+  }
   
   const { user, role } = useUser()
   const isGuildMaster = role === 'guild_master'
@@ -127,6 +146,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
 
     fetchMessages()
+    // Mark first load complete after fetch
+    isFirstLoad.current = false
 
     const channel = supabase
       .channel('public:guild_chat')
@@ -145,6 +166,10 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         if (isMounted) {
           setMessages((prev) => [...prev, newMsg])
           setTimeout(scrollToBottom, 100)
+          // Play ting sound only for messages from others
+          if (payload.new.user_id !== currentUserId && !isFirstLoad.current) {
+            playNotifSound()
+          }
         }
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'guild_chat' }, (payload) => {
@@ -359,8 +384,21 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center h-64">
-        <span className="inline-block w-8 h-8 rounded-full border-2 border-navy border-t-transparent animate-spin" />
+      <div className="flex flex-col h-[600px] max-h-[70vh] bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-200 dark:border-white/10 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-black/20 flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        <div className="flex-1 p-6 space-y-4 animate-pulse">
+          {[1,2,3,4].map(i => (
+            <div key={i} className={`flex gap-3 ${i % 2 === 0 ? 'flex-row-reverse' : ''}`}>
+              {i % 2 !== 0 && <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0" />}
+              <div className={`flex flex-col gap-1 ${i % 2 === 0 ? 'items-end' : ''}`}>
+                <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded-2xl" style={{ width: `${120 + i * 30}px` }} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
