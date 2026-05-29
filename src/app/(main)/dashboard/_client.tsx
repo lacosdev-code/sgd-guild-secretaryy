@@ -13,13 +13,32 @@ export default function DashboardClient() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <span
-            className="inline-block w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: '#1B2E52', borderTopColor: 'transparent' }}
-          />
-          <p className="text-sm text-gray-400 tracking-wider">Loading guild data…</p>
+      <div className="max-w-3xl mx-auto space-y-8 animate-pulse">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <div className="sm:col-span-2 space-y-3 mt-2">
+            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-100 rounded w-2/3"></div>
+          </div>
+          <div className="h-28 bg-gray-100 rounded-sm border border-gray-100"></div>
+        </div>
+        
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-3 bg-gray-200 rounded w-32"></div>
+            <div className="flex-1 border-t border-dashed border-gray-200"></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[1, 2].map(i => (
+              <div key={i} className="h-32 bg-white rounded-sm border border-gray-100 p-4 flex gap-3">
+                <div className="w-7 h-7 bg-gray-100 rounded-sm shrink-0"></div>
+                <div className="flex-1 space-y-2 mt-1">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-100 rounded w-1/4 mt-4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
