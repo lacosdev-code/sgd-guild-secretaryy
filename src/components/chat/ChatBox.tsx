@@ -61,6 +61,9 @@ const ChatImage = ({ url, onPreview }: { url: string, onPreview: (url: string) =
   )
 }
 
+// Unique channel ID counter to prevent conflicts
+let chatChannelCounter = 0
+
 export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -71,24 +74,6 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [recordingTime, setRecordingTime] = useState(0)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const isFirstLoad = useRef(true)
-  
-  // Play notification sound
-  const playNotifSound = () => {
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const o = ctx.createOscillator()
-      const g = ctx.createGain()
-      o.connect(g)
-      g.connect(ctx.destination)
-      o.type = 'sine'
-      o.frequency.setValueAtTime(880, ctx.currentTime)
-      o.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.1)
-      g.gain.setValueAtTime(0.3, ctx.currentTime)
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
-      o.start(ctx.currentTime)
-      o.stop(ctx.currentTime + 0.4)
-    } catch (e) { /* ignore */ }
-  }
   
   const { user, role } = useUser()
   const isGuildMaster = role === 'guild_master'
@@ -124,6 +109,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
   useEffect(() => {
     let isMounted = true
+    const channelId = ++chatChannelCounter
 
     async function fetchMessages() {
       try {
@@ -150,7 +136,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     isFirstLoad.current = false
 
     const channel = supabase
-      .channel('public:guild_chat')
+      .channel(`guild_chat_${channelId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guild_chat' }, async (payload) => {
         const { data: userData } = await supabase
           .from('users')
@@ -166,10 +152,6 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         if (isMounted) {
           setMessages((prev) => [...prev, newMsg])
           setTimeout(scrollToBottom, 100)
-          // Play ting sound only for messages from others
-          if (payload.new.user_id !== currentUserId && !isFirstLoad.current) {
-            playNotifSound()
-          }
         }
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'guild_chat' }, (payload) => {

@@ -34,6 +34,24 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
   const [supabase] = useState(() => createClient())
   const prevCountRef = useRef<number>(0)
 
+  // Play notification sound
+  const playNotifSound = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.type = 'sine'
+      o.frequency.setValueAtTime(880, ctx.currentTime)
+      o.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.1)
+      g.gain.setValueAtTime(0.3, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+      o.start(ctx.currentTime)
+      o.stop(ctx.currentTime + 0.4)
+    } catch (e) { /* ignore */ }
+  }
+
   // Check current permission status on mount
   useEffect(() => {
     setPermission(getNotificationPermission())
@@ -55,6 +73,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
         if (prevCountRef.current > 0 && unread.length > prevCountRef.current) {
           const newest = data.find(n => !n.is_read)
           if (newest) {
+            playNotifSound()
             showBrowserNotification(newest.title || '⚔ SGD Guild', {
               body: newest.message,
               link: newest.link || '/dashboard',
@@ -72,15 +91,16 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
 
     fetchNotifications()
 
-    // Realtime subscription — badge updates & triggers browser push
+    // Realtime subscription — badge updates, browser push, and global chat notifications
     const channel = supabase
-      .channel(`notifications_${userId}`)
+      .channel(`notifications_and_chat_${userId}_${Date.now()}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         (payload) => {
           // Show browser notification immediately from payload
           const newNotif = payload.new as any
+          playNotifSound()
           showBrowserNotification(newNotif.title || '⚔ SGD Guild', {
             body: newNotif.message,
             link: newNotif.link || '/dashboard',
@@ -92,6 +112,31 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         () => { fetchNotifications() }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'guild_chat' },
+        async (payload) => {
+          const newChat = payload.new as any
+          // Only notify if someone else sent it
+          if (newChat.user_id !== userId) {
+            playNotifSound()
+            
+            // Get sender name
+            const { data: u } = await supabase.from('users').select('nama').eq('id', newChat.user_id).single()
+            const senderName = u?.nama || 'Member'
+            
+            let previewMsg = newChat.message
+            if (previewMsg.startsWith('![image]')) previewMsg = '📷 Mengirim Gambar'
+            else if (previewMsg.startsWith('![audio]')) previewMsg = '🎵 Mengirim Pesan Suara'
+            else if (previewMsg.startsWith('[')) previewMsg = '📎 Mengirim Lampiran'
+            
+            showBrowserNotification(`Tavern: ${senderName}`, {
+              body: previewMsg,
+              link: '/tavern',
+            })
+          }
+        }
       )
       .subscribe()
 
