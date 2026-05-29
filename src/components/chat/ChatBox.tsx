@@ -3,8 +3,30 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Send, Image as ImageIcon, Loader2, Download } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, Square } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
+
+const ChatFile = ({ url, name }: { url: string, name: string }) => {
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-black/30 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors border border-gray-200 dark:border-white/5">
+      <div className="w-10 h-10 flex items-center justify-center bg-navy text-gold rounded-md shrink-0">
+        <Paperclip size={18} />
+      </div>
+      <div className="flex-col overflow-hidden">
+        <p className="text-sm font-bold text-navy dark:text-gray-200 truncate max-w-[200px]">{name}</p>
+        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Klik untuk unduh</p>
+      </div>
+    </a>
+  )
+}
+
+const ChatAudio = ({ url }: { url: string }) => {
+  return (
+    <div className="bg-gray-100 dark:bg-black/30 rounded-lg p-2 border border-gray-200 dark:border-white/5">
+      <audio controls src={url} className="h-10 max-w-[200px] sm:max-w-[250px] custom-audio" />
+    </div>
+  )
+}
 
 const ChatImage = ({ url }: { url: string }) => {
   const [error, setError] = useState(false)
@@ -46,9 +68,15 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [uploadingImg, setUploadingImg] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  
   const [supabase] = useState(() => createClient())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -130,35 +158,110 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data)
+      }
+
+      mediaRecorder.onstop = async () => {
+        const mimeType = mediaRecorder.mimeType || 'audio/webm'
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
+        stream.getTracks().forEach(track => track.stop())
+        await uploadAudio(audioBlob, mimeType)
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+      setRecordingTime(0)
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+    } catch (err) {
+      console.error(err)
+      alert('Gagal mengakses mikrofon. Pastikan izin telah diberikan pada browser Anda.')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.onstop = null // prevent upload callback
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }
+
+  const uploadAudio = async (blob: Blob, mimeType: string) => {
+    setUploadingImg(true)
+    try {
+      const ext = mimeType.includes('mp4') ? 'm4a' : 'webm'
+      const fileName = `voice_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
+      const filePath = `tavern/${fileName}`
+      
+      const file = new File([blob], fileName, { type: mimeType })
+      const { error: uploadError } = await supabase.storage.from('attachments').upload(filePath, file)
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(filePath)
+      
+      await supabase.from('guild_chat').insert({
+        user_id: currentUserId,
+        message: `![audio](${publicUrl})`
+      })
+    } catch (err: any) {
+      alert('Gagal mengirim voice note: ' + err.message)
+    } finally {
+      setUploadingImg(false)
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !currentUserId) return
 
-    if (!file.type.startsWith('image/')) {
-      alert('Hanya file gambar yang diperbolehkan.')
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Maksimal ukuran file adalah 10MB!')
+      if (fileInputRef.current) fileInputRef.current.value = ''
       return
     }
 
     setUploadingImg(true)
     try {
-      // Compress
-      let compressedFile = file
-      try {
-        // useWebWorker: false to prevent Safari / mobile hang issues
-        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: false }
-        const compressedBlob = await imageCompression(file, options)
-        compressedFile = new File([compressedBlob], file.name, { type: file.type })
-      } catch (err) {
-        console.error('Compression failed:', err)
+      let finalFile = file
+      const isImage = file.type.startsWith('image/')
+      
+      if (isImage) {
+        try {
+          const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: false }
+          const compressedBlob = await imageCompression(file, options)
+          finalFile = new File([compressedBlob], file.name, { type: file.type })
+        } catch (err) {
+          console.error('Compression failed:', err)
+        }
       }
 
-      const ext = compressedFile.name.split('.').pop()
+      const ext = finalFile.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
       const filePath = `tavern/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('attachments')
-        .upload(filePath, compressedFile, { upsert: false })
+        .upload(filePath, finalFile, { upsert: false })
 
       if (uploadError) throw uploadError
 
@@ -166,27 +269,48 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         .from('attachments')
         .getPublicUrl(filePath)
 
-      // Send as markdown image
+      let markdownMsg = ''
+      if (isImage) {
+        markdownMsg = `![image](${publicUrl})`
+      } else if (file.type.startsWith('audio/')) {
+        markdownMsg = `![audio](${publicUrl})`
+      } else {
+        markdownMsg = `[${file.name}](${publicUrl})`
+      }
+
       await supabase.from('guild_chat').insert({
         user_id: currentUserId,
-        message: `![image](${publicUrl})`
+        message: markdownMsg
       })
     } catch (err: any) {
       console.error(err)
-      alert('Gagal mengupload gambar: ' + err.message)
+      alert('Gagal mengupload file: ' + err.message)
     } finally {
       setUploadingImg(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
-  // Parse markdown image ![image](url)
   const renderMessageContent = (text: string) => {
     const imgRegex = /^!\[image\]\((.*?)\)$/
-    const match = text.trim().match(imgRegex)
-    if (match && match[1]) {
-      return <ChatImage url={match[1]} />
+    const audioRegex = /^!\[audio\]\((.*?)\)$/
+    const fileRegex = /^\[(.*?)\]\((.*?)\)$/
+    
+    const imgMatch = text.trim().match(imgRegex)
+    if (imgMatch && imgMatch[1]) {
+      return <ChatImage url={imgMatch[1]} />
     }
+    
+    const audioMatch = text.trim().match(audioRegex)
+    if (audioMatch && audioMatch[1]) {
+      return <ChatAudio url={audioMatch[1]} />
+    }
+    
+    const fileMatch = text.trim().match(fileRegex)
+    if (fileMatch && fileMatch[1] && fileMatch[2]) {
+      return <ChatFile name={fileMatch[1]} url={fileMatch[2]} />
+    }
+    
     return <span className="whitespace-pre-wrap break-words">{text}</span>
   }
 
@@ -249,37 +373,75 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
           
           <input
             type="file"
-            accept="image/*"
+            accept="image/*, audio/*, application/pdf, .doc, .docx, .xls, .xlsx, .zip, .rar, .txt"
             className="hidden"
             ref={fileInputRef}
-            onChange={handleImageUpload}
-            disabled={uploadingImg || sending}
+            onChange={handleFileUpload}
+            disabled={uploadingImg || sending || isRecording}
           />
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingImg || sending}
+            disabled={uploadingImg || sending || isRecording}
             className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-navy hover:bg-gray-100 dark:hover:bg-white/5 dark:hover:text-gray-200 disabled:opacity-50 transition-colors shrink-0"
-            title="Attach image"
+            title="Attach file"
           >
-            {uploadingImg ? <Loader2 size={20} className="animate-spin text-navy dark:text-gold" /> : <ImageIcon size={20} />}
+            {uploadingImg ? <Loader2 size={20} className="animate-spin text-navy dark:text-gold" /> : <Paperclip size={20} />}
           </button>
 
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={uploadingImg ? "Mengompresi & mengupload gambar..." : "Type a message..."}
-            className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold/50 dark:text-white transition-all"
-            disabled={sending || uploadingImg}
-          />
-          <button
-            type="submit"
-            disabled={!newMessage.trim() || sending || uploadingImg}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-navy text-gold hover:bg-navy/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
-          >
-            <Send size={16} className={newMessage.trim() ? "translate-x-0.5" : ""} />
-          </button>
+          {isRecording ? (
+            <div className="flex-1 flex items-center gap-3 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-full animate-pulse overflow-hidden">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
+              <span className="text-sm font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
+                Merekam... {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+              </span>
+              <div className="flex-1" />
+              <button type="button" onClick={cancelRecording} className="text-xs font-bold text-red-500 hover:underline mr-2 shrink-0">BATAL</button>
+            </div>
+          ) : (
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder={uploadingImg ? "Mengupload file..." : "Tulis pesan..."}
+              className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold/50 dark:text-white transition-all"
+              disabled={sending || uploadingImg}
+            />
+          )}
+
+          {isRecording ? (
+            <button
+              type="button"
+              onClick={stopRecording}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shrink-0 shadow-sm"
+              title="Kirim Voice Note"
+            >
+              <Send size={16} className="translate-x-0.5" />
+            </button>
+          ) : (
+            <>
+              {newMessage.trim() ? (
+                <button
+                  type="submit"
+                  disabled={sending || uploadingImg}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-navy text-gold hover:bg-navy/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
+                  title="Kirim Pesan"
+                >
+                  <Send size={16} className="translate-x-0.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={startRecording}
+                  disabled={sending || uploadingImg}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 text-charcoal hover:bg-gray-200 dark:text-gray-200 disabled:opacity-50 transition-colors shrink-0"
+                  title="Tahan untuk Voice Note"
+                >
+                  <Mic size={18} />
+                </button>
+              )}
+            </>
+          )}
         </form>
       </div>
     </div>
