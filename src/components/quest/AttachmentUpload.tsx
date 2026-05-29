@@ -223,6 +223,8 @@ interface AttachmentUploadProps {
   attachments: Attachment[]
 }
 
+import imageCompression from 'browser-image-compression'
+
 export default function AttachmentUpload({
   questId,
   currentUserId,
@@ -239,7 +241,9 @@ export default function AttachmentUpload({
     setQueue((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)))
   }
 
-  async function uploadFile(file: File) {
+  async function uploadFile(originalFile: File) {
+    let file = originalFile
+
     // Validate type
     if (!ACCEPTED_MIME[file.type]) {
       return { error: `Format tidak didukung (${file.type || 'unknown'})` }
@@ -247,6 +251,21 @@ export default function AttachmentUpload({
     // Validate size
     if (file.size > MAX_SIZE_BYTES) {
       return { error: `Ukuran file melebihi batas ${MAX_SIZE_MB}MB` }
+    }
+
+    // Compress image if applicable
+    if (file.type.startsWith('image/')) {
+      try {
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 1280,
+          useWebWorker: true,
+        }
+        const compressedBlob = await imageCompression(file, options)
+        file = new File([compressedBlob], file.name, { type: file.type })
+      } catch (err) {
+        console.error('Compression failed, using original:', err)
+      }
     }
 
     const ext      = file.name.split('.').pop() || ''

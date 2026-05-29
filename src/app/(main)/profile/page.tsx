@@ -7,6 +7,8 @@ import { getRankInfo } from '@/lib/rankUtils'
 import { Avatar } from '@/components/ui/Avatar'
 import { Camera, Loader2 } from 'lucide-react'
 
+import imageCompression from 'browser-image-compression'
+
 export default function ProfilePage() {
   const { user, role, loading } = useUser()
   const [pointLogs, setPointLogs] = useState<any[]>([])
@@ -40,7 +42,7 @@ export default function ProfilePage() {
   }, [user, loading, supabase])
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+    let file = e.target.files?.[0]
     if (!file || !user) return
 
     if (!file.type.startsWith('image/')) {
@@ -54,6 +56,19 @@ export default function ProfilePage() {
 
     setUploadingAvatar(true)
     try {
+      // Compress the avatar image before uploading
+      try {
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800, // avatars don't need to be huge
+          useWebWorker: true,
+        }
+        const compressedBlob = await imageCompression(file, options)
+        file = new File([compressedBlob], file.name, { type: file.type })
+      } catch (err) {
+        console.error('Compression failed, using original:', err)
+      }
+
       const ext = file.name.split('.').pop()
       const fileName = `${user.id}-${Date.now()}.${ext}`
       const filePath = `${user.id}/${fileName}`
