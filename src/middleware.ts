@@ -11,7 +11,8 @@ export default auth((req) => {
   const isApiFiles = req.nextUrl.pathname.startsWith('/api/files')
 
   // Allow public routes
-  if (isApiAuth || isPublicFile || isApiFiles) {
+  const isMigrateNow = req.nextUrl.pathname.startsWith('/api/migrate-now')
+  if (isApiAuth || isPublicFile || isApiFiles || isMigrateNow) {
     return NextResponse.next()
   }
 
