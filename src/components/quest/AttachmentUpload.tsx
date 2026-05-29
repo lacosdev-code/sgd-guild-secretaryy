@@ -60,9 +60,9 @@ function AttachmentThumb({ attachment }: { attachment: Attachment }) {
   let name   = attachment.file_url.split('/').pop() ?? 'file'
   const ext    = ACCEPTED_MIME[attachment.file_type ?? ''] ?? attachment.file_type?.split('/').pop()?.toUpperCase() ?? '?'
 
-  // Clean up ugly generated filenames (e.g., 1779857117107_1phjtb833pd.jpg)
+  // Clean up timestamp from generated filenames (e.g., 1779857117107_nama-asli.jpg -> nama-asli.jpg)
   if (/^\d{13}_/.test(name)) {
-    name = isImg ? `Foto Lampiran` : `Dokumen Lampiran`
+    name = name.replace(/^\d{13}_/, '')
   } else {
     name = decodeURIComponent(name)
   }
@@ -249,8 +249,12 @@ export default function AttachmentUpload({
       return { error: `Ukuran file melebihi batas ${MAX_SIZE_MB}MB` }
     }
 
-    const ext      = file.name.split('.').pop()
-    const safeName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+    const ext      = file.name.split('.').pop() || ''
+    const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name
+    // Sanitize original name to only letters, numbers, and dashes
+    const safeBaseName = baseName.replace(/[^a-zA-Z0-9-]/g, '-') || 'file'
+    // Format: 1780030184328_nama-asli-file.jpg
+    const safeName = `${Date.now()}_${safeBaseName}.${ext}`
     const path     = `${questId}/${safeName}`
 
     const { error: storageError } = await supabase.storage

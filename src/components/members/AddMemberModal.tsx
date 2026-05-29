@@ -20,14 +20,18 @@ export function AddMemberModal({ onClose, onSuccess }: AddMemberModalProps) {
     setError(null)
 
     const formData = new FormData(e.currentTarget)
-    const result = await createUser(formData)
-
-    if (result.success) {
-      onSuccess()
-    } else {
-      setError(result.error || 'Terjadi kesalahan')
+    try {
+      const result = await createUser(formData)
+      if (result.success) {
+        onSuccess()
+      } else {
+        setError(result.error || 'Terjadi kesalahan')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan server')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
