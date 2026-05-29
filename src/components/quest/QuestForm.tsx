@@ -388,9 +388,15 @@ export default function QuestForm({
       const fileName = `brief_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
       const filePath = `briefs/${fileName}`
 
+      // Gunakan Blob untuk menghindari issue upload hanging di beberapa browser
+      const blob = new Blob([file], { type: file.type })
+
       const { error: uploadError } = await supabase.storage
         .from('attachments')
-        .upload(filePath, file)
+        .upload(filePath, blob, {
+          contentType: file.type,
+          upsert: false
+        })
 
       if (uploadError) throw uploadError
 
