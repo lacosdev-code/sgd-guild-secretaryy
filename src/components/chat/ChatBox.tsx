@@ -6,6 +6,27 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Send, Image as ImageIcon, Loader2 } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 
+const ChatImage = ({ url }: { url: string }) => {
+  const [error, setError] = useState(false)
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 p-3 bg-red-50/50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-md text-xs border border-red-100 dark:border-red-900/30">
+        <ImageIcon size={14} className="opacity-50" />
+        <span>Gambar gagal dimuat (file tidak ditemukan atau bermasalah)</span>
+      </div>
+    )
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img 
+      src={url} 
+      alt="Shared image" 
+      className="max-w-full rounded-md shadow-sm border border-gray-200/20 max-h-64 object-contain" 
+      onError={() => setError(true)}
+    />
+  )
+}
+
 export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -110,7 +131,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       // Compress
       let compressedFile = file
       try {
-        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: true }
+        // useWebWorker: false to prevent Safari / mobile hang issues
+        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: false }
         const compressedBlob = await imageCompression(file, options)
         compressedFile = new File([compressedBlob], file.name, { type: file.type })
       } catch (err) {
@@ -150,14 +172,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     const imgRegex = /^!\[image\]\((.*?)\)$/
     const match = text.trim().match(imgRegex)
     if (match && match[1]) {
-      return (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img 
-          src={match[1]} 
-          alt="Shared image" 
-          className="max-w-full rounded-md shadow-sm border border-gray-200/20 max-h-64 object-contain" 
-        />
-      )
+      return <ChatImage url={match[1]} />
     }
     return <span className="whitespace-pre-wrap break-words">{text}</span>
   }
@@ -241,7 +256,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={uploadingImg ? "Mengompresi & mengupload gambar..." : "Type a message..."}
             className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold/50 dark:text-white transition-all"
             disabled={sending || uploadingImg}
           />
