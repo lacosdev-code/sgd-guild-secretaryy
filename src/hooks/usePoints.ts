@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import type { PointLog } from '@/types'
 
 interface UsePointsReturn {
@@ -20,7 +19,6 @@ export function usePoints(userId: string | undefined): UsePointsReturn {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [tick, setTick] = useState(0)
-    const [supabase] = useState(() => createClient())
 
     const refetch = useCallback(() => setTick((t) => t + 1), [])
 
@@ -32,33 +30,28 @@ export function usePoints(userId: string | undefined): UsePointsReturn {
 
         let cancelled = false
 
-            ; (async () => {
-                setLoading(true)
-                setError(null)
+        ; (async () => {
+            setLoading(true)
+            setError(null)
 
-                try {
-                    const { data, error: fetchError } = await supabase
-                        .from('point_logs')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .order('created_at', { ascending: false })
-
-                    if (!cancelled) {
-                        if (fetchError) {
-                            setError(fetchError.message)
-                        } else {
-                            setLogs((data ?? []) as PointLog[])
-                        }
-                    }
-                } catch (err: any) {
-                    if (!cancelled) setError(err.message)
-                } finally {
-                    if (!cancelled) setLoading(false)
+            try {
+                const res = await fetch(`/api/users/${userId}/point-logs`)
+                if (!res.ok) throw new Error(await res.text())
+                
+                const data = await res.json()
+                
+                if (!cancelled) {
+                    setLogs(data)
                 }
-            })()
+            } catch (err: any) {
+                if (!cancelled) setError(err.message)
+            } finally {
+                if (!cancelled) setLoading(false)
+            }
+        })()
 
         return () => { cancelled = true }
-    }, [userId, tick, supabase])
+    }, [userId, tick])
 
     return { logs, loading, error, refetch }
 }

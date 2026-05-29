@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSession } from 'next-auth/react'
 import { AddMemberModal } from '@/components/members/AddMemberModal'
 import { Avatar } from '@/components/ui/Avatar'
 import { UserPlus, Shield, Users } from 'lucide-react'
@@ -13,65 +13,46 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
-  const [supabase] = useState(() => createClient())
-
-  const checkRole = useCallback(async (isMounted: boolean) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
-        if (data && isMounted) setCurrentUserRole(data.role)
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }, [supabase])
+  const { data: session } = useSession()
+  const currentUserRole = (session?.user as any)?.role || null
 
   const fetchUsers = useCallback(async (isMounted: boolean) => {
     if (!isMounted) return
     setLoading(true)
     setError(null)
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('role', { ascending: false }) // guild_master first usually
-        .order('nama', { ascending: true })
+      const res = await fetch('/api/users')
+      if (!res.ok) throw new Error(await res.text())
       
-      if (error) throw error
-
-      if (data && isMounted) setUsers(data)
+      const data = await res.json()
+      
+      // map to snake_case for UI compatibility
+      const mapped = data.map((u: any) => ({
+        id: u.id,
+        nama: u.nama,
+        role: u.role,
+        total_points: u.totalPoints,
+        avatar_url: u.avatarUrl,
+        created_at: u.createdAt,
+      }))
+      
+      if (isMounted) setUsers(mapped)
     } catch (err: any) {
       console.error(err)
       if (isMounted) setError(err.message || 'Terjadi kesalahan saat memuat data')
     } finally {
-      setLoading(false)
+      if (isMounted) setLoading(false)
     }
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     let isMounted = true
     fetchUsers(isMounted)
-    checkRole(isMounted)
-
-    // Realtime subscription for automatic syncing
-    const channel = supabase
-      .channel('users_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'users' },
-        () => {
-          fetchUsers(isMounted)
-        }
-      )
-      .subscribe()
 
     return () => {
       isMounted = false
-      supabase.removeChannel(channel)
     }
-  }, [supabase, fetchUsers, checkRole])
+  }, [fetchUsers])
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">

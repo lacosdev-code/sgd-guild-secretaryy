@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+
 import { getRankInfo } from '@/lib/rankUtils'
 import { Trophy, Medal, Award } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
@@ -10,42 +10,32 @@ import Link from 'next/link'
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [supabase] = useState(() => createClient())
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
     async function fetchLeaderboard() {
-      console.log('[Leaderboard] fetchLeaderboard started')
       try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('id, nama, total_points, avatar_url')
-          .eq('role', 'adventurer')
-          .order('total_points', { ascending: false })
+        const res = await fetch('/api/users')
+        if (!res.ok) throw new Error('Gagal memuat leaderboard.')
+        const data = await res.json()
 
-        console.log('[Leaderboard] fetch returned:', { data, error })
-        if (error) throw error
-
-        if (data && isMounted) {
-          console.log('[Leaderboard] setting users:', data)
-          setUsers(data)
+        if (isMounted) {
+          const adventurers = data.filter((u: any) => u.role === 'adventurer')
+          setUsers(adventurers)
         }
       } catch (err: any) {
-        console.error('[Leaderboard] error:', err)
         if (isMounted) setError(err.message || 'Gagal memuat leaderboard.')
       } finally {
-        console.log('[Leaderboard] finally block, isMounted:', isMounted)
         if (isMounted) setLoading(false)
       }
     }
 
     fetchLeaderboard()
     return () => { 
-      console.log('[Leaderboard] unmounting')
       isMounted = false 
     }
-  }, [supabase])
+  }, [])
 
   if (loading) {
     return (

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Bell, BellOff } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import {
   requestNotificationPermission,
@@ -31,7 +30,6 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [permission, setPermission] = useState<NotificationPermission | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const [supabase] = useState(() => createClient())
   const prevCountRef = useRef<number>(0)
 
   // Play notification sound
@@ -58,90 +56,71 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
   }, [])
 
   useEffect(() => {
-    async function fetchNotifications() {
-      const { data } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(10)
-      
-      if (data) {
-        const unread = data.filter(n => !n.is_read)
-        
-        // Show browser push notification if new unread arrived
-        if (prevCountRef.current > 0 && unread.length > prevCountRef.current) {
-          const newest = data.find(n => !n.is_read)
-          if (newest) {
-            playNotifSound()
-            showBrowserNotification(newest.title || '⚔ SGD Guild', {
-              body: newest.message,
-              link: newest.link || '/dashboard',
-            })
-          }
-        }
+    if (!userId) return
 
-        prevCountRef.current = unread.length
-        setNotifications(data)
-        setUnreadCount(unread.length)
+    async function fetchNotifications() {
+      try {
+        const res = await fetch('/api/notifications')
+        if (res.ok) {
+          const data = await res.json()
+          // map camelCase to snake_case for UI compatibility
+          const mapped = data.map((n: any) => ({
+            id: n.id,
+            user_id: n.userId,
+            title: n.title,
+            message: n.message,
+            link: n.link,
+            is_read: n.isRead,
+            created_at: n.createdAt,
+          }))
+
+          const unread = mapped.filter((n: any) => !n.is_read)
+          
+          if (prevCountRef.current > 0 && unread.length > prevCountRef.current) {
+            const newest = mapped.find((n: any) => !n.is_read)
+            if (newest) {
+              playNotifSound()
+              showBrowserNotification(newest.title || '⚔ SGD Guild', {
+                body: newest.message,
+                link: newest.link || '/dashboard',
+              })
+            }
+          }
+
+          prevCountRef.current = unread.length
+          setNotifications(mapped)
+          setUnreadCount(unread.length)
+        }
+      } catch (err) {
+        console.error('Failed to fetch notifications', err)
       }
     }
     
-    if (!userId) return
-
     fetchNotifications()
 
-    // Realtime subscription — badge updates, browser push, and global chat notifications
-    const channel = supabase
-      .channel(`notifications_and_chat_${userId}_${Date.now()}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
-        (payload) => {
-          // Show browser notification immediately from payload
-          const newNotif = payload.new as any
+    // Realtime SSE subscription
+    const eventSource = new EventSource('/api/sse/notifications')
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data.type === 'connected') return
+
+        // New notification event
+        if (data.title || data.message) {
           playNotifSound()
-          showBrowserNotification(newNotif.title || '⚔ SGD Guild', {
-            body: newNotif.message,
-            link: newNotif.link || '/dashboard',
+          showBrowserNotification(data.title || '⚔ SGD Guild', {
+            body: data.message,
+            link: data.link || '/dashboard',
           })
           fetchNotifications()
         }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
-        () => { fetchNotifications() }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'guild_chat' },
-        async (payload) => {
-          const newChat = payload.new as any
-          // Only notify if someone else sent it
-          if (newChat.user_id !== userId) {
-            playNotifSound()
-            
-            // Get sender name
-            const { data: u } = await supabase.from('users').select('nama').eq('id', newChat.user_id).single()
-            const senderName = u?.nama || 'Member'
-            
-            let previewMsg = newChat.message
-            if (previewMsg.startsWith('![image]')) previewMsg = '📷 Mengirim Gambar'
-            else if (previewMsg.startsWith('![audio]')) previewMsg = '🎵 Mengirim Pesan Suara'
-            else if (previewMsg.startsWith('[')) previewMsg = '📎 Mengirim Lampiran'
-            
-            showBrowserNotification(`Tavern: ${senderName}`, {
-              body: previewMsg,
-              link: '/tavern',
-            })
-          }
-        }
-      )
-      .subscribe()
+      } catch (err) {
+        // Ignored, might be heartbeat or malformed
+      }
+    }
 
-    return () => { supabase.removeChannel(channel) }
-  }, [userId, supabase])
+    return () => { eventSource.close() }
+  }, [userId])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -177,15 +156,27 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
   }
 
   async function markAsRead(id: string) {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id)
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
-    setUnreadCount(prev => Math.max(0, prev - 1))
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      })
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   async function markAllAsRead() {
-    await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-    setUnreadCount(0)
+    try {
+      await fetch('/api/notifications', { method: 'PATCH' })
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+      setUnreadCount(0)
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   return (
@@ -217,7 +208,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
             </div>
           </div>
 
-          {/* Permission Banner — hanya muncul jika belum allow */}
+          {/* Permission Banner */}
           {permission !== 'granted' && (
             <div className="px-3 py-2.5 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-900/30">
               {permission === 'denied' ? (
@@ -276,5 +267,3 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
     </div>
   )
 }
-
-

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { getRankInfo } from '@/lib/rankUtils'
 import { Avatar } from '@/components/ui/Avatar'
 import { ArrowLeft, Shield, Users } from 'lucide-react'
@@ -16,7 +15,6 @@ export default function MemberProfilePage() {
   
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [supabase] = useState(() => createClient())
 
   // Ambil quest yang dikerjakan oleh member ini
   const { quests, loading: questsLoading } = useQuests({ assignedTo: id })
@@ -25,11 +23,9 @@ export default function MemberProfilePage() {
     let isMounted = true
     async function fetchUser() {
       try {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', id)
-          .single()
+        const res = await fetch(`/api/users/${id}`)
+        if (!res.ok) throw new Error('User not found')
+        const userData = await res.json()
         
         if (userData && isMounted) setUser(userData)
       } catch (err) {
@@ -40,7 +36,7 @@ export default function MemberProfilePage() {
     }
     if (id) fetchUser()
     return () => { isMounted = false }
-  }, [id, supabase])
+  }, [id])
 
   if (loading) {
     return (

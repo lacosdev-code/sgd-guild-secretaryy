@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, Square, X, Trash2 } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, X, Trash2 } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import { useUser } from '@/hooks/useUser'
 
@@ -45,7 +44,6 @@ const ChatImage = ({ url, onPreview }: { url: string, onPreview: (url: string) =
       className="relative group block cursor-zoom-in text-left"
       title="Klik untuk melihat"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img 
         src={url} 
         alt="Shared image" 
@@ -61,9 +59,6 @@ const ChatImage = ({ url, onPreview }: { url: string, onPreview: (url: string) =
   )
 }
 
-// Unique channel ID counter to prevent conflicts
-let chatChannelCounter = 0
-
 export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -75,7 +70,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const isFirstLoad = useRef(true)
   
-  const { user, role } = useUser()
+  const { role } = useUser()
   const isGuildMaster = role === 'guild_master'
 
   const forceDownload = async (url: string) => {
@@ -96,7 +91,6 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
   }
   
-  const [supabase] = useState(() => createClient())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -109,19 +103,25 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
   useEffect(() => {
     let isMounted = true
-    const channelId = ++chatChannelCounter
 
     async function fetchMessages() {
       try {
-        const { data, error } = await supabase
-          .from('guild_chat')
-          .select('id, message, created_at, user_id, users(nama, avatar_url)')
-          .order('created_at', { ascending: false })
-          .limit(50)
-
-        if (error) throw error
-        if (data && isMounted) {
-          setMessages(data.reverse())
+        const res = await fetch('/api/chat?limit=50')
+        if (!res.ok) throw new Error('Failed to fetch messages')
+        const data = await res.json()
+        if (isMounted) {
+          // Normalize the format from Prisma to match the UI component's expectations
+          const normalized = data.map((msg: any) => ({
+            id: msg.id,
+            message: msg.message,
+            created_at: msg.createdAt,
+            user_id: msg.userId,
+            users: msg.user ? {
+              nama: msg.user.nama,
+              avatar_url: msg.user.avatarUrl
+            } : { nama: 'Unknown', avatar_url: null }
+          }))
+          setMessages(normalized)
           setTimeout(scrollToBottom, 100)
         }
       } catch (err) {
@@ -132,40 +132,45 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
 
     fetchMessages()
-    // Mark first load complete after fetch
     isFirstLoad.current = false
 
-    const channel = supabase
-      .channel(`guild_chat_${channelId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guild_chat' }, async (payload) => {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('nama, avatar_url')
-          .eq('id', payload.new.user_id)
-          .single()
-
-        const newMsg = {
-          ...payload.new,
-          users: userData || { nama: 'Unknown', avatar_url: null }
+    // Subscribe to SSE for realtime chat
+    const eventSource = new EventSource('/api/sse/chat')
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        
+        if (data.type === 'delete') {
+          if (isMounted) {
+            setMessages((prev) => prev.filter((m) => m.id !== data.id))
+          }
+        } else if (data.id) { // New message
+          const newMsg = {
+            id: data.id,
+            message: data.message,
+            created_at: data.createdAt,
+            user_id: data.userId,
+            users: data.user ? {
+              nama: data.user.nama,
+              avatar_url: data.user.avatarUrl
+            } : { nama: 'Unknown', avatar_url: null }
+          }
+          if (isMounted) {
+            setMessages((prev) => [...prev, newMsg])
+            setTimeout(scrollToBottom, 100)
+          }
         }
-
-        if (isMounted) {
-          setMessages((prev) => [...prev, newMsg])
-          setTimeout(scrollToBottom, 100)
-        }
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'guild_chat' }, (payload) => {
-        if (isMounted) {
-          setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
-        }
-      })
-      .subscribe()
+      } catch (err) {
+        // Ignored, might be heartbeat or malformed
+      }
+    }
 
     return () => {
       isMounted = false
-      supabase.removeChannel(channel)
+      eventSource.close()
     }
-  }, [supabase])
+  }, [])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -176,11 +181,12 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     setSending(true)
 
     try {
-      const { error } = await supabase.from('guild_chat').insert({
-        user_id: currentUserId,
-        message: msgText
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msgText })
       })
-      if (error) throw error
+      if (!res.ok) throw new Error(await res.text())
     } catch (err) {
       console.error('Error sending message:', err)
       setNewMessage(msgText)
@@ -193,8 +199,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     if (!confirm('Hapus pesan ini?')) return
     
     try {
-      const { error } = await supabase.from('guild_chat').delete().eq('id', messageId)
-      if (error) throw error
+      const res = await fetch(`/api/chat?id=${messageId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(await res.text())
     } catch (err: any) {
       alert('Gagal menghapus pesan: ' + err.message)
     }
@@ -258,20 +264,20 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     try {
       const ext = mimeType.includes('mp4') ? 'm4a' : 'webm'
       const fileName = `voice_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
-      const filePath = `tavern/${fileName}`
       
-      const { error: uploadError } = await supabase.storage.from('attachments').upload(filePath, blob, {
-        contentType: mimeType,
-        upsert: false
-      })
-      
-      if (uploadError) throw uploadError
+      const formData = new FormData()
+      formData.append('file', blob, fileName)
+      formData.append('dir', 'tavern')
 
-      const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(filePath)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) throw new Error(await res.text())
       
-      await supabase.from('guild_chat').insert({
-        user_id: currentUserId,
-        message: `![audio](${publicUrl})`
+      const data = await res.json()
+      
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `![audio](${data.url})` })
       })
     } catch (err: any) {
       alert('Gagal mengirim voice note: ' + err.message)
@@ -305,19 +311,15 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         }
       }
 
-      const ext = finalFile.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
-      const filePath = `tavern/${fileName}`
+      const formData = new FormData()
+      formData.append('file', finalFile)
+      formData.append('dir', 'tavern')
 
-      const { error: uploadError } = await supabase.storage
-        .from('attachments')
-        .upload(filePath, finalFile, { upsert: false })
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('attachments')
-        .getPublicUrl(filePath)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) throw new Error(await res.text())
+      
+      const data = await res.json()
+      const publicUrl = data.url
 
       let markdownMsg = ''
       if (isImage) {
@@ -328,9 +330,10 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         markdownMsg = `[${file.name}](${publicUrl})`
       }
 
-      await supabase.from('guild_chat').insert({
-        user_id: currentUserId,
-        message: markdownMsg
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: markdownMsg })
       })
     } catch (err: any) {
       console.error(err)
@@ -528,7 +531,6 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             <X size={24} />
           </button>
           
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={previewImage} 
             alt="Preview" 

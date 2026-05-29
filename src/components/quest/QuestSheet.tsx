@@ -6,7 +6,6 @@ import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import StatusPill from '@/components/ui/StatusPill'
 import { formatDeadline } from '@/lib/utils'
-import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
 import type { Quest, Attachment, User } from '@/types'
 import type { UserRole } from '@/types'
@@ -128,7 +127,6 @@ export default function QuestSheet({
   const [newComment, setNewComment] = useState('')
   const [addingComment, setAddingComment] = useState(false)
   const router                = useRouter()
-  const supabase              = createClient()
   const criteria              = parseSuccessCriteria(quest.success_parameter)
 
   const isGM          = currentUserRole === 'guild_master'
@@ -143,11 +141,12 @@ export default function QuestSheet({
     setLoading(true)
     setError(null)
     try {
-      const { error: e } = await supabase
-        .from('quests')
-        .update({ status: 'Submitted', updated_at: new Date().toISOString() })
-        .eq('id', quest.id)
-      if (e) throw e
+      const res = await fetch(`/api/quests/${quest.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Submitted' })
+      })
+      if (!res.ok) throw new Error('Gagal submit quest')
 
       // Fire-and-forget N8N webhook
       const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_SUBMISSION
@@ -176,7 +175,7 @@ export default function QuestSheet({
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/quest/${quest.id}/claim`, { method: 'POST' })
+      const res = await fetch(`/api/quests/${quest.id}/claim`, { method: 'POST' })
       if (!res.ok) {
         const { error: msg } = await res.json()
         throw new Error(msg || 'Gagal mengambil quest ini.')
@@ -195,7 +194,7 @@ export default function QuestSheet({
     setError(null)
     try {
       if (action === 'Approved') {
-        const res = await fetch(`/api/quest/${quest.id}/approve`, {
+        const res = await fetch(`/api/quests/${quest.id}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action }),
@@ -216,11 +215,12 @@ export default function QuestSheet({
           })
         } catch(e) {}
       } else {
-        const { error: e } = await supabase
-          .from('quests')
-          .update({ status: action, updated_at: new Date().toISOString() })
-          .eq('id', quest.id)
-        if (e) throw e
+        const res = await fetch(`/api/quests/${quest.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: action })
+        })
+        if (!res.ok) throw new Error('Gagal update status quest')
       }
       router.refresh()
     } catch (err: any) {
@@ -236,12 +236,12 @@ export default function QuestSheet({
     if (!newComment.trim()) return
     setAddingComment(true)
     try {
-      const { error: err } = await supabase.from('quest_comments').insert({
-        quest_id: quest.id,
-        user_id: currentUserId,
-        content: newComment.trim()
+      const res = await fetch(`/api/quests/${quest.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newComment.trim() })
       })
-      if (err) throw err
+      if (!res.ok) throw new Error('Gagal menambah komentar')
 
       setNewComment('')
       router.refresh()

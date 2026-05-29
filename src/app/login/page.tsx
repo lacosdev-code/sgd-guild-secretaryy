@@ -2,21 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signIn } from 'next-auth/react'
 
-// Map generic Supabase error messages to user-friendly Indonesian text
+// Map error messages to user-friendly text
 function mapErrorMessage(message: string): string {
-  if (message.includes('Invalid login credentials')) {
-    return 'Invalid email or password. Please check and try again.'
+  if (message.includes('CredentialsSignin') || message.includes('credentials')) {
+    return 'Email atau password salah. Periksa kembali dan coba lagi.'
   }
-  if (message.includes('Email not confirmed')) {
-    return 'Email not confirmed. Contact your Guild Master for activation.'
-  }
-  if (message.includes('Too many requests')) {
-    return 'Too many login attempts. Please try again in a few minutes.'
-  }
-  if (message.includes('User not found')) {
-    return 'Account not found. Please ensure the email is registered.'
+  if (message.includes('Too many')) {
+    return 'Terlalu banyak percobaan login. Coba lagi dalam beberapa menit.'
   }
   return message
 }
@@ -69,7 +63,6 @@ export default function LoginPage() {
   const [error, setError]         = useState<string | null>(null)
   const [loading, setLoading]     = useState(false)
   const router                    = useRouter()
-  const supabase                  = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,16 +70,21 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
 
-      if (error) {
-        setError(mapErrorMessage(error.message))
+      if (result?.error) {
+        setError(mapErrorMessage(result.error))
         return
       }
 
       router.push('/dashboard')
+      router.refresh()
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.')
+      setError(err.message || 'Terjadi kesalahan tidak terduga.')
     } finally {
       setLoading(false)
     }

@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import imageCompression from 'browser-image-compression'
 import type { Attachment } from '@/types'
 
@@ -232,7 +231,6 @@ export default function AttachmentUpload({
   attachments,
 }: AttachmentUploadProps) {
   const router       = useRouter()
-  const [supabase]   = useState(() => createClient())
   const inputRef     = useRef<HTMLInputElement>(null)
   const [queue, setQueue]     = useState<UploadItem[]>([])
   const [dragging, setDragging] = useState(false)
@@ -268,42 +266,31 @@ export default function AttachmentUpload({
       }
     }
 
-    const ext      = file.name.split('.').pop() || ''
-    const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name
-    // Sanitize original name to only letters, numbers, and dashes
-    const safeBaseName = baseName.replace(/[^a-zA-Z0-9-]/g, '-') || 'file'
-    // Format: 1780030184328_nama-asli-file.jpg
-    const safeName = `${Date.now()}_${safeBaseName}.${ext}`
-    const path     = `${questId}/${safeName}`
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('dir', questId)
 
-    const { error: storageError } = await supabase.storage
-      .from('attachments')
-      .upload(path, file, { contentType: file.type, upsert: false })
-
-    if (storageError) {
-      console.error('Storage Upload Error:', storageError)
-      return { error: `Storage Error: ${storageError.message}` }
+    const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+    if (!uploadRes.ok) {
+      return { error: `Upload Error: ${await uploadRes.text()}` }
     }
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('attachments')
-      .getPublicUrl(path)
+    const uploadData = await uploadRes.json()
 
     // Insert into attachments table
-    const { error: dbError } = await supabase.from('attachments').insert({
-      quest_id:    questId,
-      file_url:    publicUrl,
-      file_type:   file.type,
-      uploaded_by: currentUserId,
+    const dbRes = await fetch(`/api/quests/${questId}/attachments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_url: uploadData.url,
+        file_type: file.type,
+      })
     })
 
-    if (dbError) {
-      console.error('Database Insert Error:', dbError)
-      return { error: `Database Error: ${dbError.message}` }
+    if (!dbRes.ok) {
+      return { error: `Database Error: ${await dbRes.text()}` }
     }
 
-    return { url: publicUrl }
+    return { url: uploadData.url }
   }
 
   async function processFiles(files: FileList | File[]) {

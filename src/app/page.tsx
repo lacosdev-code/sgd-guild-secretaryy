@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@/lib/auth'
 
 /**
  * Root page — purely a routing gate.
@@ -7,12 +7,9 @@ import { createClient } from '@/lib/supabase/server'
  * Unauthenticated → /login
  */
 export default async function RootPage() {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const session = await auth()
 
-  if (user) {
+  if (session?.user) {
     redirect('/dashboard')
   } else {
     redirect('/login')

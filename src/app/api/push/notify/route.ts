@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { prisma } from '@/lib/prisma'
 import { sendPushNotification } from '@/lib/webpush'
 
 export async function POST(req: Request) {
@@ -11,8 +11,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing notification details' }, { status: 400 })
     }
 
-    const supabase = createAdminClient()
-
     let userIdsToNotify: string[] = []
 
     if (type === 'new_quest') {
@@ -21,10 +19,11 @@ export async function POST(req: Request) {
         userIdsToNotify.push(assignedTo)
       } else {
         // Notify all adventurers if it's unassigned
-        const { data: users } = await supabase.from('users').select('id').eq('role', 'adventurer')
-        if (users) {
-          userIdsToNotify = users.map(u => u.id)
-        }
+        const users = await prisma.user.findMany({
+          where: { role: 'adventurer' },
+          select: { id: true }
+        })
+        userIdsToNotify = users.map(u => u.id)
       }
     }
 

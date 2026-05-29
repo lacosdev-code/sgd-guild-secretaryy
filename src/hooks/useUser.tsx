@@ -8,118 +8,72 @@ import {
   useState,
 } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import type { User, UserRole } from '@/types'
+import { signOut as nextAuthSignOut, useSession } from 'next-auth/react'
+import type { UserRole } from '@/types'
 
-// ── Context shape ────────────────────────────────────────────────────────────
+// ── Extended user type from our DB ───────────────────────────────────────────
+interface UserProfile {
+  id: string
+  nama: string
+  email: string
+  role: UserRole
+  totalPoints: number
+  avatarUrl?: string | null
+  createdAt: string
+}
+
 interface UserContextType {
-  user: User | null
+  user: UserProfile | null
   role: UserRole | null
   loading: boolean
   signOut: () => Promise<void>
+  refetch: () => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 // ── Provider ─────────────────────────────────────────────────────────────────
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null)
-  const [role, setRole]       = useState<UserRole | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router                = useRouter()
-  // Use useState instead of useMemo for Supabase client to prevent recreation during concurrent rendering
-  const [supabase]            = useState(() => createClient())
+  const { data: session, status } = useSession()
+  const [user, setUser] = useState<UserProfile | null>(null)
+  const [role, setRole] = useState<UserRole | null>(null)
+  const [tick, setTick] = useState(0)
+  const router = useRouter()
 
-  // Fetch the extended user row from public.users
-  const fetchUserProfile = useCallback(
-    async (authId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', authId)
-          .single()
+  const loading = status === 'loading'
 
-        if (error || !data) {
-          console.error('[useUser] Could not load user profile:', error?.message)
-          setUser(null)
-          setRole(null)
-        } else {
-          setUser(data as User)
-          setRole(data.role as UserRole)
-        }
-      } catch (err: any) {
-        console.error('[useUser] Unexpected error fetching profile:', err)
-        setUser(null)
-        setRole(null)
-      }
-    },
-    [supabase]
-  )
+  const fetchUserProfile = useCallback(async (userId: string) => {
+    try {
+      const res = await fetch(`/api/users/${userId}`)
+      if (!res.ok) return
+      const data = await res.json()
+      setUser(data)
+      setRole(data.role as UserRole)
+    } catch (err) {
+      console.error('[useUser] fetchUserProfile error:', err)
+    }
+  }, [])
+
+  const refetch = useCallback(() => setTick((t) => t + 1), [])
 
   useEffect(() => {
-    let isMounted = true
-
-    // ── Initial session check ──────────────────────────────────────────────
-    async function getInitialSession() {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) throw error
-
-        if (session?.user) {
-          await fetchUserProfile(session.user.id)
-        } else {
-          if (isMounted) {
-            setUser(null)
-            setRole(null)
-          }
-        }
-      } catch (err: any) {
-        console.error('[useUser] getSession error:', err.message)
-      } finally {
-        if (isMounted) setLoading(false)
-      }
+    if (status === 'authenticated' && session?.user?.id) {
+      fetchUserProfile(session.user.id)
+    } else if (status === 'unauthenticated') {
+      setUser(null)
+      setRole(null)
     }
-
-    getInitialSession()
-
-    // ── Auth state listener ────────────────────────────────────────────────
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return
-
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        if (session?.user) {
-          await fetchUserProfile(session.user.id)
-        }
-        setLoading(false)
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null)
-        setRole(null)
-        setLoading(false)
-        router.push('/login')
-      }
-    })
-
-    return () => {
-      isMounted = false
-      subscription.unsubscribe()
-    }
-  }, [supabase, fetchUserProfile, router])
+  }, [status, session?.user?.id, tick, fetchUserProfile])
 
   const signOut = useCallback(async () => {
-    setLoading(true)
-    await supabase.auth.signOut()
+    await nextAuthSignOut({ redirect: false })
     setUser(null)
     setRole(null)
-    setLoading(false)
     router.push('/login')
-  }, [supabase, router])
+  }, [router])
 
   return (
-    <UserContext.Provider value={{ user, role, loading, signOut }}>
+    <UserContext.Provider value={{ user, role, loading, signOut, refetch }}>
       {children}
     </UserContext.Provider>
   )

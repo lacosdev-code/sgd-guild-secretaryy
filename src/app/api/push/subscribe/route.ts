@@ -1,34 +1,32 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
   try {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
+    const session = await auth()
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { subscription } = await req.json()
-    if (!subscription || !subscription.endpoint || !subscription.keys) {
+    if (!subscription?.endpoint || !subscription?.keys) {
       return NextResponse.json({ error: 'Invalid subscription object' }, { status: 400 })
     }
 
-    // Insert or update subscription
-    const { error } = await supabase.from('push_subscriptions').upsert(
-      {
-        user_id: user.id,
+    await prisma.pushSubscription.upsert({
+      where: { endpoint: subscription.endpoint },
+      update: {
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+      },
+      create: {
+        userId: session.user.id,
         endpoint: subscription.endpoint,
         p256dh: subscription.keys.p256dh,
         auth: subscription.keys.auth,
       },
-      { onConflict: 'endpoint' }
-    )
-
-    if (error) {
-      throw error
-    }
+    })
 
     return NextResponse.json({ success: true })
   } catch (err: any) {
@@ -39,20 +37,15 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const session = await auth()
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { endpoint } = await req.json()
     if (!endpoint) return NextResponse.json({ error: 'Missing endpoint' }, { status: 400 })
 
-    const { error } = await supabase
-      .from('push_subscriptions')
-      .delete()
-      .match({ endpoint, user_id: user.id })
-
-    if (error) throw error
+    await prisma.pushSubscription.deleteMany({
+      where: { endpoint, userId: session.user.id },
+    })
 
     return NextResponse.json({ success: true })
   } catch (err: any) {

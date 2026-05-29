@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Paperclip, Loader2, X } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import type { Quest, DifficultyRank, QuestUrgency, User } from '@/types'
@@ -270,7 +269,6 @@ export default function QuestForm({
   mode,
 }: QuestFormProps) {
   const router   = useRouter()
-  const [supabase] = useState(() => createClient())
 
   const [adventurers, setAdventurers] = useState<User[]>([])
   const [saving, setSaving]           = useState(false)
@@ -301,13 +299,17 @@ export default function QuestForm({
   // Fetch all adventurers (and GM — some may be assigned to themselves)
   useEffect(() => {
     ;(async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('id, nama, role')
-        .order('nama')
-      setAdventurers((data ?? []) as User[])
+      try {
+        const res = await fetch('/api/users')
+        if (res.ok) {
+          const data = await res.json()
+          setAdventurers(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch users:', err)
+      }
     })()
-  }, [supabase])
+  }, [])
 
   const set = (key: keyof FormState) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -351,21 +353,15 @@ export default function QuestForm({
         }
       }
 
-      const ext = finalFile.name.split('.').pop()
-      const fileName = `brief_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
-      const filePath = `briefs/${fileName}`
+      const formData = new FormData()
+      formData.append('file', finalFile)
+      formData.append('dir', 'briefs')
 
-      const { error: uploadError } = await supabase.storage
-        .from('attachments')
-        .upload(filePath, finalFile, {
-          upsert: false
-        })
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(filePath)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) throw new Error(await res.text())
       
-      setForm(p => ({ ...p, brief_attachment_url: publicUrl }))
+      const data = await res.json()
+      setForm(p => ({ ...p, brief_attachment_url: data.url }))
     } catch (err: any) {
       alert('Gagal mengupload lampiran: ' + err.message)
     } finally {
@@ -400,12 +396,13 @@ export default function QuestForm({
       let questId: string
 
       if (mode === 'create') {
-        const { data, error: e } = await supabase
-          .from('quests')
-          .insert({ ...payload, created_by: currentUserId })
-          .select('id')
-          .single()
-        if (e) throw e
+        const res = await fetch('/api/quests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        if (!res.ok) throw new Error(await res.text())
+        const data = await res.json()
         questId = data.id
 
         // Trigger PWA Push Notification
@@ -421,11 +418,13 @@ export default function QuestForm({
         }).catch(console.error)
 
       } else {
-        const { error: e } = await supabase
-          .from('quests')
-          .update(payload)
-          .eq('id', existingQuest!.id)
-        if (e) throw e
+        // Edit mode
+        const res = await fetch(`/api/quests/${existingQuest!.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        if (!res.ok) throw new Error(await res.text())
         questId = existingQuest!.id
       }
 

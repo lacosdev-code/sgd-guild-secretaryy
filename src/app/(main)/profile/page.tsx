@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { signOut } from 'next-auth/react'
 import { useUser } from '@/hooks/useUser'
 import { getRankInfo } from '@/lib/rankUtils'
 import { Avatar } from '@/components/ui/Avatar'
@@ -21,23 +21,19 @@ export default function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState('')
   
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [supabase] = useState(() => createClient())
-
   useEffect(() => {
     let isMounted = true
     async function fetchLogs() {
       if (!user) return
       try {
-        const { data } = await supabase
-          .from('point_logs')
-          .select('delta, reason, created_at')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
+        const res = await fetch(`/api/users/${user.id}/point-logs`)
+        if (!res.ok) throw new Error('Failed to fetch')
+        const data = await res.json()
         if (data && isMounted) setPointLogs(data)
       } catch (err) {
         console.error(err)
       } finally {
-        setLogsLoading(false)
+        if (isMounted) setLogsLoading(false)
       }
     }
 
@@ -45,7 +41,7 @@ export default function ProfilePage() {
       fetchLogs()
     }
     return () => { isMounted = false }
-  }, [user, loading, supabase])
+  }, [user, loading])
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     let file = e.target.files?.[0]
@@ -79,25 +75,27 @@ export default function ProfilePage() {
       const fileName = `${user.id}-${Date.now()}.${ext}`
       const filePath = `${user.id}/${fileName}`
 
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true })
-
-      if (uploadError) throw uploadError
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
+      // Upload to storage API
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('dir', 'avatars')
+      
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      if (!res.ok) throw new Error(await res.text())
+      
+      const { url } = await res.json()
 
       // Update user record
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ avatar_url: publicUrl })
-        .eq('id', user.id)
+      const updateRes = await fetch(`/api/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar_url: url })
+      })
 
-      if (updateError) throw updateError
+      if (!updateRes.ok) throw new Error(await updateRes.text())
 
       // Refresh window
       window.location.reload()
@@ -124,13 +122,19 @@ export default function ProfilePage() {
     setPasswordError('')
     setPasswordSuccess('')
 
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
-    if (error) {
-      setPasswordError(error.message)
-    } else {
+    try {
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword })
+      })
+      if (!res.ok) throw new Error(await res.text())
+      
       setPasswordSuccess('Password berhasil diubah! Gunakan password baru ini untuk login berikutnya.')
       setNewPassword('')
       setConfirmPassword('')
+    } catch (error: any) {
+      setPasswordError(error.message)
     }
     setPasswordLoading(false)
   }
@@ -149,8 +153,7 @@ export default function ProfilePage() {
         <p className="mb-4">Gagal memuat profil pengguna. Sesi Anda mungkin tidak valid.</p>
         <button 
           onClick={async () => {
-            await supabase.auth.signOut()
-            window.location.href = '/login'
+            await signOut({ callbackUrl: '/login' })
           }} 
           className="px-4 py-2 bg-navy text-white rounded hover:bg-navy/90 transition-colors"
         >

@@ -1,33 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSession } from 'next-auth/react'
 import { ChatBox } from '@/components/chat/ChatBox'
 import { MessagesSquare } from 'lucide-react'
 
 export default function TavernPage() {
-  const [userId, setUserId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [supabase] = useState(() => createClient())
-
-  useEffect(() => {
-    let isMounted = true
-    async function checkUser() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user && isMounted) {
-          setUserId(user.id)
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-    
-    checkUser()
-    return () => { isMounted = false }
-  }, [supabase])
+  const { data: session, status } = useSession()
+  const userId = session?.user?.id
+  const loading = status === 'loading'
 
   if (loading) {
     return (

@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  guild_master
+  adventurer
+}
+
+enum DifficultyRank {
+  F
+  E
+  D
+  C
+  B
+  A
+  S
+}
+
+enum QuestUrgency {
+  Routine
+  Priority
+  Emergency
+  Strategic
+}
+
+enum QuestStatus {
+  Draft
+  Active
+  Submitted
+  Approved
+  Revise
+  Failed
+}
+
+model User {
+  id           String   @id @default(uuid())
+  nama         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(adventurer)
+  totalPoints  Int      @default(0) @map("total_points")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  questsCreated    Quest[]          @relation("QuestCreator")
+  questsAssigned   Quest[]          @relation("QuestAssignee")
+  comments         QuestComment[]
+  pointLogs        PointLog[]
+  notifications    Notification[]
+  pushSubscriptions PushSubscription[]
+  chatMessages     GuildChat[]
+  attachments      Attachment[]
+
+  @@map("users")
+}
+
+model Quest {
+  id                   String          @id @default(uuid())
+  title                String
+  description          String?
+  assignedTo           String?         @map("assigned_to")
+  createdBy            String          @map("created_by")
+  urgency              QuestUrgency    @default(Routine)
+  difficulty           DifficultyRank?
+  deadline             DateTime?
+  successParameter     String?         @map("success_parameter")
+  rewardPoints         Int?            @map("reward_points")
+  status               QuestStatus     @default(Draft)
+  briefAttachmentUrl   String?         @map("brief_attachment_url")
+  detailCompleted      Boolean         @default(false) @map("detail_completed")
+  detailCompletedAt    DateTime?       @map("detail_completed_at")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  assignee    User?          @relation("QuestAssignee", fields: [assignedTo], references: [id])
+  creator     User           @relation("QuestCreator", fields: [createdBy], references: [id])
+  comments    QuestComment[]
+  pointLogs   PointLog[]
+  attachments Attachment[]
+
+  @@map("quests")
+}
+
+model QuestComment {
+  id        String   @id @default(uuid())
+  questId   String   @map("quest_id")
+  userId    String   @map("user_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("quest_comments")
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  questId    String   @map("quest_id")
+  fileUrl    String   @map("file_url")
+  fileType   String?  @map("file_type")
+  uploadedBy String   @map("uploaded_by")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [uploadedBy], references: [id])
+
+  @@map("attachments")
+}
+
+model PointLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  questId   String?  @map("quest_id")
+  delta     Int
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id])
+  quest Quest? @relation(fields: [questId], references: [id])
+
+  @@map("point_logs")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+model GuildChat {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("guild_chat")
+}

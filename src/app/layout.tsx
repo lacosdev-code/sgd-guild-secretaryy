@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { UserProvider } from '@/hooks/useUser'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { SessionProvider } from 'next-auth/react'
+import { InstallPWAPrompt } from '@/components/layout/InstallPWAPrompt'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -45,16 +47,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className="bg-background text-charcoal antialiased min-h-screen">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <UserProvider>
-            {children}
-          </UserProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <UserProvider>
+              {children}
+              <InstallPWAPrompt />
+            </UserProvider>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   )
