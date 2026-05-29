@@ -14,6 +14,12 @@ export default function ProfilePage() {
   const [pointLogs, setPointLogs] = useState<any[]>([])
   const [logsLoading, setLogsLoading] = useState(true)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState('')
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [supabase] = useState(() => createClient())
 
@@ -104,6 +110,31 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Konfirmasi password tidak cocok.')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('Password minimal 6 karakter.')
+      return
+    }
+    setPasswordLoading(true)
+    setPasswordError('')
+    setPasswordSuccess('')
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) {
+      setPasswordError(error.message)
+    } else {
+      setPasswordSuccess('Password berhasil diubah! Gunakan password baru ini untuk login berikutnya.')
+      setNewPassword('')
+      setConfirmPassword('')
+    }
+    setPasswordLoading(false)
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center text-charcoal/50 dark:text-gray-500">
@@ -177,6 +208,51 @@ export default function ProfilePage() {
                 ID: {user.id.split('-')[0]}...
               </span>
             </div>
+
+            {/* Gamification Progress Bar */}
+            <div className="mt-5 max-w-sm">
+              <div className="flex justify-between text-xs font-bold uppercase tracking-widest mb-1.5 text-charcoal/60 dark:text-gray-400">
+                <span>Rank Progress</span>
+                {getRankInfo(user.total_points).pointsForNextRank ? (
+                  <span>{user.total_points} / {getRankInfo(user.total_points).pointsForNextRank} PTS</span>
+                ) : (
+                  <span className="text-gold">MAX RANK</span>
+                )}
+              </div>
+              <div className="h-2.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200 dark:border-white/10">
+                <div 
+                  className="h-full bg-gradient-to-r from-navy to-gold transition-all duration-1000 ease-out relative"
+                  style={{ width: `${getRankInfo(user.total_points).progressPercentage}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                </div>
+              </div>
+              {getRankInfo(user.total_points).pointsForNextRank && (
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 italic">
+                  Butuh {(getRankInfo(user.total_points).pointsForNextRank as number) - user.total_points} poin lagi untuk naik ke Rank berikutnya!
+                </p>
+              )}
+            </div>
+            
+            {/* Badges UI */}
+            <div className="mt-6">
+              <p className="text-[10px] uppercase font-bold tracking-widest text-charcoal/50 dark:text-gray-500 mb-2">Pencapaian (Badges)</p>
+              <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded text-xs font-semibold text-charcoal dark:text-gray-300 shadow-sm" title="Anggota resmi Guild">
+                  🔰 Rookie
+                </div>
+                {user.total_points >= 100 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded text-xs font-semibold text-blue-700 dark:text-blue-400 shadow-sm" title="Mencapai Rank E">
+                    ⚔️ Adventurer
+                  </div>
+                )}
+                {user.total_points >= 500 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 rounded text-xs font-semibold text-purple-700 dark:text-purple-400 shadow-sm" title="Lebih dari 500 Poin">
+                    🔥 Veteran
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <div className="bg-navy dark:bg-gold/10 rounded-2xl p-5 text-center min-w-[140px] shadow-lg">
             <p className="text-gold/80 dark:text-gold text-[10px] uppercase tracking-widest font-bold mb-1">
@@ -217,6 +293,64 @@ export default function ProfilePage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Change Password Section */}
+      <div className="bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-100 dark:border-white/5 p-6 md:p-8">
+        <h2 className="text-lg font-bold text-navy dark:text-white mb-6 tracking-tight">Ganti Password</h2>
+        <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+          {passwordError && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">
+              {passwordError}
+            </div>
+          )}
+          {passwordSuccess && (
+            <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-100">
+              {passwordSuccess}
+            </div>
+          )}
+          
+          <div>
+            <label className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
+              Password Baru
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/20 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-all"
+              placeholder="Minimal 6 karakter"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
+              Konfirmasi Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/20 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-all"
+              placeholder="Ketik ulang password baru"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={passwordLoading}
+            className="w-full py-2.5 px-4 bg-navy hover:bg-navy/90 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+          >
+            {passwordLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              'Simpan Password Baru'
+            )}
+          </button>
+        </form>
       </div>
     </div>
   )

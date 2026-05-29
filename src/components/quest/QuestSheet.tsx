@@ -204,6 +204,17 @@ export default function QuestSheet({
           const { error: msg } = await res.json()
           throw new Error(msg ?? 'Gagal approve quest')
         }
+        
+        // Fire confetti!
+        try {
+          const confetti = (await import('canvas-confetti')).default
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#C9A227', '#1B2E52', '#ffffff']
+          })
+        } catch(e) {}
       } else {
         const { error: e } = await supabase
           .from('quests')
