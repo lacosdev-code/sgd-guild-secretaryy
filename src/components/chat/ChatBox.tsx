@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Send, Image as ImageIcon, Loader2 } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2, Download } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 
 const ChatImage = ({ url }: { url: string }) => {
@@ -17,13 +17,26 @@ const ChatImage = ({ url }: { url: string }) => {
     )
   }
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img 
-      src={url} 
-      alt="Shared image" 
-      className="max-w-full rounded-md shadow-sm border border-gray-200/20 max-h-64 object-contain" 
-      onError={() => setError(true)}
-    />
+    <a 
+      href={url} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className="relative group block cursor-zoom-in"
+      title="Klik untuk membuka ukuran penuh"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img 
+        src={url} 
+        alt="Shared image" 
+        className="max-w-full rounded-md shadow-sm border border-gray-200/20 max-h-64 object-contain group-hover:opacity-90 transition-opacity" 
+        onError={() => setError(true)}
+      />
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-md">
+        <span className="bg-black/60 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-sm shadow-xl">
+          <Download size={12} /> Buka & Unduh
+        </span>
+      </div>
+    </a>
   )
 }
 
