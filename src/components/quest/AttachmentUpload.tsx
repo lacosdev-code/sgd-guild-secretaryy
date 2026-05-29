@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import imageCompression from 'browser-image-compression'
 import type { Attachment } from '@/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -223,8 +224,7 @@ interface AttachmentUploadProps {
   attachments: Attachment[]
 }
 
-import imageCompression from 'browser-image-compression'
-
+ 
 export default function AttachmentUpload({
   questId,
   currentUserId,
