@@ -227,76 +227,29 @@ function UrgencySelector({
   )
 }
 
-function PICSelector({
-  value,
-  onChange,
-  adventurers,
-}: {
-  value: string
-  onChange: (v: string) => void
-  adventurers: User[]
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const selectedUser = adventurers.find(u => u.id === value)
-
+function PICSelector(props: { value: string; onChange: (v: string) => void; adventurers: User[] }) {
+  const { value, onChange, adventurers } = props;
   return (
     <div className="relative">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2.5 text-sm bg-[#FAFAF8] border focus:outline-none transition-colors"
-        style={{ borderColor: isOpen ? '#1B2E52' : '#DDD9D3' }}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2.5 text-sm bg-[#FAFAF8] border focus:outline-none transition-colors appearance-none cursor-pointer"
+        style={{ borderColor: '#DDD9D3', color: value ? '#2B3B4E' : '#9CA3AF' }}
+        required
       >
-        <span className={selectedUser ? 'text-charcoal' : 'text-gray-400'}>
-          {selectedUser ? (
-            <span className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-navy/10 flex items-center justify-center text-[10px] font-bold text-navy">
-                {selectedUser.nama.charAt(0).toUpperCase()}
-              </span>
-              {selectedUser.nama} {selectedUser.role === 'guild_master' ? ' (GM)' : ''}
-            </span>
-          ) : (
-            '— Pilih PIC —'
-          )}
-        </span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#1B2E5250' }}>
+        <option value="" disabled>--- Pilih PIC ---</option>
+        {adventurers.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.nama} {u.role === 'guild_master' ? '(GM)' : ''}
+          </option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ color: '#1B2E5250' }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m6 9 6 6 6-6"/>
         </svg>
-      </button>
-
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute z-20 w-full mt-1 bg-white border border-[#DDD9D3] shadow-lg max-h-60 overflow-auto animate-in fade-in slide-in-from-top-1">
-            <div className="p-1">
-              {adventurers.map((u) => {
-                const isSelected = value === u.id
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => {
-                      onChange(u.id)
-                      setIsOpen(false)
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50 rounded-sm ${isSelected ? 'bg-navy/5 font-medium' : ''}`}
-                  >
-                    <span className="w-6 h-6 rounded-full bg-navy/10 flex items-center justify-center text-xs font-bold text-navy shrink-0">
-                      {u.nama.charAt(0).toUpperCase()}
-                    </span>
-                    <span className="flex-1 text-charcoal">{u.nama} {u.role === 'guild_master' ? <span className="text-[10px] text-gray-400 ml-1">(GM)</span> : ''}</span>
-                    {isSelected && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A227" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6 9 17l-5-5"/>
-                      </svg>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </>
-      )}
+      </div>
     </div>
   )
 }
@@ -494,27 +447,31 @@ export default function QuestForm({
 
       {/* ── Document header ─────────────────────────────────────────────── */}
       <div
-        className="px-6 py-5 border flex items-start justify-between"
-        style={{ background: '#1B2E52', borderColor: '#1B2E52' }}
+        className="px-6 py-5 flex items-start justify-between relative overflow-hidden shadow-sm"
+        style={{ background: 'linear-gradient(135deg, #1B2E52 0%, #101c33 100%)' }}
       >
-        <div>
-          <h1 className="text-base font-bold tracking-widest uppercase" style={{ color: '#C9A227' }}>
-            {mode === 'create' ? '⚔ Quest Baru' : '⚔ Edit Quest'}
+        <div className="absolute top-0 right-0 opacity-10 pointer-events-none">
+          <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="#C9A227" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/><path d="M14.5 4L20 9.5"/></svg>
+        </div>
+        <div className="relative z-10">
+          <h1 className="text-lg font-black tracking-widest uppercase flex items-center gap-2" style={{ color: '#C9A227' }}>
+            <span className="opacity-80">⚔</span> {mode === 'create' ? 'Quest Baru' : 'Edit Quest'}
           </h1>
-          <p className="text-[11px] mt-0.5 tracking-wider" style={{ color: '#FFFFFF80' }}>
+          <p className="text-xs mt-1 tracking-wider opacity-80" style={{ color: '#E8E5E0' }}>
             {mode === 'create'
               ? 'Mulai delegasi dengan jelas'
-              : `Mengedit: ${existingQuest?.title}`}
+              : `Sedang menyunting: ${existingQuest?.title}`}
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 relative z-10">
           {mode === 'edit' && existingQuest && (
             <span
-              className="text-[10px] font-bold tracking-widest uppercase px-2 py-1 border"
+              className="text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-sm"
               style={{
-                background: '#FFFFFF10',
-                color: '#FFFFFF80',
-                borderColor: '#FFFFFF20',
+                background: '#FFFFFF20',
+                color: '#FFFFFF',
+                backdropFilter: 'blur(4px)',
+                border: '1px solid #FFFFFF30',
               }}
             >
               {existingQuest.status}
