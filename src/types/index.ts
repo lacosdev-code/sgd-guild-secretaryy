@@ -27,6 +27,7 @@ export interface Quest {
   success_parameter: string | null;
   reward_points: number | null;
   status: QuestStatus;
+  brief_attachment_url: string | null;
   detail_completed: boolean;
   detail_completed_at: string | null;
   created_at: string;

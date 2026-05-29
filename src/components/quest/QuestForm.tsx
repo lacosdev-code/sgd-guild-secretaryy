@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Paperclip, Loader2, X } from 'lucide-react'
 import type { Quest, DifficultyRank, QuestUrgency, User } from '@/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -46,6 +47,7 @@ interface FormState {
   difficulty: DifficultyRank | ''
   success_parameter: string
   reward_points: string
+  brief_attachment_url: string | null
 }
 
 function isDetailComplete(f: FormState): boolean {
@@ -320,6 +322,9 @@ export default function QuestForm({
   const [saving, setSaving]           = useState(false)
   const [error, setError]             = useState<string | null>(null)
   
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingBrief, setUploadingBrief] = useState(false)
+
   // Section expand state (Progressive Reveal)
   const [expandedSection, setExpandedSection] = useState<1 | 2 | 3>(1)
 
@@ -336,6 +341,7 @@ export default function QuestForm({
     reward_points:     existingQuest?.reward_points != null
                          ? String(existingQuest.reward_points)
                          : '',
+    brief_attachment_url: existingQuest?.brief_attachment_url ?? null,
   })
 
   // Fetch all adventurers (and GM — some may be assigned to themselves)
@@ -367,6 +373,38 @@ export default function QuestForm({
     return allComplete ? 'Active' : 'Draft'
   }
 
+  const handleBriefUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Ukuran file maksimal 10MB')
+      return
+    }
+
+    setUploadingBrief(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `brief_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
+      const filePath = `briefs/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('attachments')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(filePath)
+      
+      setForm(p => ({ ...p, brief_attachment_url: publicUrl }))
+    } catch (err: any) {
+      alert('Gagal mengupload lampiran: ' + err.message)
+    } finally {
+      setUploadingBrief(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title.trim())      return setError('Judul quest wajib diisi.')
@@ -384,6 +422,7 @@ export default function QuestForm({
       difficulty:        form.difficulty || null,
       success_parameter: form.success_parameter.trim() || null,
       reward_points:     form.reward_points !== '' ? Number(form.reward_points) : null,
+      brief_attachment_url: form.brief_attachment_url,
       status:            computeStatus(),
       updated_at:        new Date().toISOString(),
     }
@@ -546,6 +585,17 @@ export default function QuestForm({
               />
             </div>
 
+            {/* Difficulty / Mission Rank */}
+            <div>
+              <FieldLabel htmlFor="quest-difficulty" hint="Pembobotan tingkat kesulitan / komitmen.">
+                Mission Rank (Difficulty)
+              </FieldLabel>
+              <DifficultySelector
+                value={form.difficulty}
+                onChange={(v) => setForm((p) => ({ ...p, difficulty: v }))}
+              />
+            </div>
+
             <div className="pt-2 flex justify-end">
               <button
                 type="button"
@@ -602,6 +652,39 @@ export default function QuestForm({
                 style={inputStyle}
                 min={new Date().toISOString().slice(0, 16)}
               />
+            </div>
+
+            {/* Attachment */}
+            <div>
+              <FieldLabel htmlFor="quest-attachment" hint="Dokumen referensi (PDF, Gambar, dll) maksimal 10MB.">
+                Lampiran Referensi (Opsional)
+              </FieldLabel>
+              <div className="flex items-center gap-3 mt-1">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleBriefUpload}
+                  disabled={uploadingBrief}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingBrief}
+                  className="px-4 py-2 bg-gray-50 border border-gray-200 text-charcoal text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                >
+                  {uploadingBrief ? <Loader2 size={14} className="animate-spin" /> : <Paperclip size={14} />}
+                  {uploadingBrief ? 'Mengupload...' : 'Pilih File'}
+                </button>
+                {form.brief_attachment_url && (
+                  <div className="flex items-center gap-2 text-xs text-navy px-3 py-1.5 bg-navy/5 rounded border border-navy/10">
+                    <span className="truncate max-w-[200px] font-medium">{form.brief_attachment_url.split('/').pop()}</span>
+                    <button type="button" onClick={() => setForm(p => ({ ...p, brief_attachment_url: null }))} className="text-red-500 hover:text-red-700 bg-white rounded-full p-0.5">
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="pt-2 flex justify-end">
@@ -661,17 +744,6 @@ Rekomendasi vendor ditulis di kolom diskusi`}
                   <div className="text-emerald-600">✅ &quot;Client approval diterima &amp; ditulis&quot;</div>
                 </div>
               </div>
-            </div>
-
-            {/* Difficulty */}
-            <div>
-              <FieldLabel htmlFor="quest-difficulty" hint="Pembobotan tingkat kesulitan / komitmen.">
-                Difficulty Rank
-              </FieldLabel>
-              <DifficultySelector
-                value={form.difficulty}
-                onChange={(v) => setForm((p) => ({ ...p, difficulty: v }))}
-              />
             </div>
 
             {/* Reward points */}

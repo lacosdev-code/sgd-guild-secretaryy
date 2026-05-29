@@ -71,8 +71,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [recordingTime, setRecordingTime] = useState(0)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   
-  const { profile } = useUser()
-  const isGuildMaster = profile?.role === 'guild_master'
+  const { user, role } = useUser()
+  const isGuildMaster = role === 'guild_master'
 
   const forceDownload = async (url: string) => {
     try {

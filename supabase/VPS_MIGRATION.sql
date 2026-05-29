@@ -572,3 +572,9 @@ CREATE POLICY "Guild masters can delete any message"
       WHERE id = auth.uid() AND role = 'guild_master'
     )
   );
+
+-- ============================================================
+-- Migration: 009_quest_brief_attachment.sql
+-- ============================================================
+ALTER TABLE public.quests
+ADD COLUMN IF NOT EXISTS brief_attachment_url TEXT;

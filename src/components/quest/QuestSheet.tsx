@@ -380,9 +380,37 @@ export default function QuestSheet({
                 <p className="text-sm text-charcoal leading-relaxed whitespace-pre-line relative z-10 pl-6 italic font-serif" style={{ color: '#2B3B4E' }}>
                   {quest.description}
                 </p>
+                {quest.brief_attachment_url && (
+                  <div className="mt-4 pl-6 relative z-10">
+                    <a 
+                      href={quest.brief_attachment_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-navy bg-navy/5 px-3 py-2 border border-navy/10 hover:bg-navy/10 transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                      Lihat Lampiran Referensi
+                    </a>
+                  </div>
+                )}
               </div>
             ) : (
-              <p className="text-sm italic text-gray-400">Deskripsi belum diisi.</p>
+              <div className="space-y-4">
+                <p className="text-sm italic text-gray-400">Deskripsi belum diisi.</p>
+                {quest.brief_attachment_url && (
+                  <div>
+                    <a 
+                      href={quest.brief_attachment_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-navy bg-navy/5 px-3 py-2 border border-navy/10 hover:bg-navy/10 transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                      Lihat Lampiran Referensi
+                    </a>
+                  </div>
+                )}
+              </div>
             )}
           </SectionBlock>
 
