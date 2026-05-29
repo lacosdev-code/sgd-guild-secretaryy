@@ -68,8 +68,7 @@ export default function QuestSheetClient({
       <div className="pb-6">
         <a
           href="/quests"
-          className="text-xs font-semibold uppercase tracking-widest flex items-center gap-1.5 hover:opacity-70 transition-opacity"
-          style={{ color: '#1B2E5280' }}
+          className="inline-flex items-center gap-2 px-3 py-2 -ml-3 text-xs font-bold text-navy dark:text-gray-300 uppercase tracking-widest hover:bg-navy/5 dark:hover:bg-white/10 rounded-md transition-colors"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
