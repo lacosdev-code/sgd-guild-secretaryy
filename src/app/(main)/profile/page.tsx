@@ -82,7 +82,7 @@ export default function ProfilePage() {
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, compressedFile, { upsert: true })
+        .upload(filePath, file, { upsert: true })
 
       if (uploadError) throw uploadError
 
