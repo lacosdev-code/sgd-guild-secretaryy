@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Quest, QuestStatus } from '@/types'
 
@@ -24,6 +24,9 @@ interface UseQuestsReturn {
   refetch: () => void
 }
 
+// Unique channel ID counter to prevent conflicts when multiple components subscribe
+let channelCounter = 0
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
@@ -32,17 +35,27 @@ export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
   const [error, setError]     = useState<string | null>(null)
   const [tick, setTick]       = useState(0)
   const [supabase]            = useState(() => createClient())
+  
+  // Stable refs for options to avoid re-running effect on every render
+  const assignedToRef = useRef(options.assignedTo)
+  const statusRef     = useRef(options.status)
+  const limitRef      = useRef(options.limit)
+  assignedToRef.current = options.assignedTo
+  statusRef.current     = options.status
+  limitRef.current      = options.limit
 
   const refetch = useCallback(() => setTick((t) => t + 1), [])
 
   useEffect(() => {
     let cancelled = false
+    const channelId = ++channelCounter
+    const isInitialLoad = tick === 0
 
-    // Fetch initially
+    // Only show loading spinner on first load, not on realtime refresh
+    if (isInitialLoad) setLoading(true)
+    setError(null)
+
     ;(async () => {
-      setLoading(true)
-      setError(null)
-
       try {
         let query = supabase
           .from('quests')
@@ -53,19 +66,19 @@ export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
           `)
           .order('created_at', { ascending: false })
 
-        if (options.assignedTo) {
-          query = query.eq('assigned_to', options.assignedTo)
+        if (assignedToRef.current) {
+          query = query.eq('assigned_to', assignedToRef.current)
         }
 
-        if (options.status) {
-          const statuses = Array.isArray(options.status)
-            ? options.status
-            : [options.status]
+        if (statusRef.current) {
+          const statuses = Array.isArray(statusRef.current)
+            ? statusRef.current
+            : [statusRef.current]
           query = query.in('status', statuses)
         }
 
-        if (options.limit) {
-          query = query.limit(options.limit)
+        if (limitRef.current) {
+          query = query.limit(limitRef.current)
         }
 
         const { data, error: fetchError } = await query
@@ -80,13 +93,13 @@ export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
       } catch (err: any) {
         if (!cancelled) setError(err.message)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     })()
 
-    // Realtime subscription for automatic syncing
+    // Realtime subscription with unique channel name to prevent conflicts
     const channel = supabase
-      .channel('quests_changes')
+      .channel(`quests_changes_${channelId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'quests' },
@@ -100,8 +113,9 @@ export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
       cancelled = true 
       supabase.removeChannel(channel)
     }
+  // Only re-run when tick changes (triggered by realtime or manual refetch)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, options.assignedTo, JSON.stringify(options.status), options.limit])
+  }, [tick])
 
   return { quests, loading, error, refetch }
 }

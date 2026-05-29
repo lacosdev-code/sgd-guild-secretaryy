@@ -202,11 +202,17 @@ export default function QuestsPage() {
 
       {/* ── Quest list ─────────────────────────────────────────────────── */}
       {loading ? (
-        <div className="flex justify-center py-16">
-          <span
-            className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: '#1B2E52', borderTopColor: 'transparent' }}
-          />
+        <div className="space-y-2 animate-pulse">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="bg-white border border-gray-100 p-4 flex items-center gap-4">
+              <div className="w-7 h-7 rounded-sm bg-gray-200 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
+              </div>
+              <div className="h-5 w-16 bg-gray-100 rounded-full" />
+            </div>
+          ))}
         </div>
       ) : error ? (
         <div
