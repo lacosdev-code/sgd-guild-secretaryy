@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
     
     // Get unique user IDs
-    const userIds = [...new Set(subscriptions.map(s => s.user_id))]
+    const userIds = Array.from(new Set(subscriptions.map(s => s.user_id)))
 
     // Broadcast to all
     const promises = userIds.map(uid => 
