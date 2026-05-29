@@ -116,5 +116,26 @@ export async function POST(
     }
   }
 
+  // ── Web Push Notifications ───────────────────────────────────────────────
+  try {
+    const { sendPushNotification } = await import('@/lib/webpush')
+    
+    if (action === 'Approved' && quest.assigned_to) {
+      await sendPushNotification(quest.assigned_to, {
+        title: '🎉 Quest Approved!',
+        body: `Quest "${quest.title}" has been approved! You earned +${quest.reward_points} pts.`,
+        url: `/quests/${questId}`
+      })
+    } else if (action === 'Revise' && quest.assigned_to) {
+      await sendPushNotification(quest.assigned_to, {
+        title: '⚠️ Quest Needs Revision',
+        body: `The Guild Master has requested revisions for "${quest.title}".`,
+        url: `/quests/${questId}`
+      })
+    }
+  } catch (pushErr) {
+    console.error('Failed to send web push notification:', pushErr)
+  }
+
   return NextResponse.json({ ok: true, action })
 }

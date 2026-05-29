@@ -3,15 +3,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Send } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2 } from 'lucide-react'
+import imageCompression from 'browser-image-compression'
 
 export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [uploadingImg, setUploadingImg] = useState(false)
   const [supabase] = useState(() => createClient())
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -93,6 +96,72 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !currentUserId) return
+
+    if (!file.type.startsWith('image/')) {
+      alert('Hanya file gambar yang diperbolehkan.')
+      return
+    }
+
+    setUploadingImg(true)
+    try {
+      // Compress
+      let compressedFile = file
+      try {
+        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: true }
+        const compressedBlob = await imageCompression(file, options)
+        compressedFile = new File([compressedBlob], file.name, { type: file.type })
+      } catch (err) {
+        console.error('Compression failed:', err)
+      }
+
+      const ext = compressedFile.name.split('.').pop()
+      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
+      const filePath = `tavern/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('attachments')
+        .upload(filePath, compressedFile, { upsert: false })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('attachments')
+        .getPublicUrl(filePath)
+
+      // Send as markdown image
+      await supabase.from('guild_chat').insert({
+        user_id: currentUserId,
+        message: `![image](${publicUrl})`
+      })
+    } catch (err: any) {
+      console.error(err)
+      alert('Gagal mengupload gambar: ' + err.message)
+    } finally {
+      setUploadingImg(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  // Parse markdown image ![image](url)
+  const renderMessageContent = (text: string) => {
+    const imgRegex = /^!\[image\]\((.*?)\)$/
+    const match = text.trim().match(imgRegex)
+    if (match && match[1]) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img 
+          src={match[1]} 
+          alt="Shared image" 
+          className="max-w-full rounded-md shadow-sm border border-gray-200/20 max-h-64 object-contain" 
+        />
+      )
+    }
+    return <span className="whitespace-pre-wrap break-words">{text}</span>
+  }
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center h-64">
@@ -134,7 +203,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
                       : 'bg-gray-100 dark:bg-white/5 text-charcoal dark:text-gray-200 rounded-bl-sm border border-gray-200/50 dark:border-white/5'
                   }`}
                 >
-                  {msg.message}
+                  {renderMessageContent(msg.message)}
                 </div>
                 <span className="text-[10px] text-gray-400 mt-1 mx-1">
                   {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
@@ -148,18 +217,37 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-[#1C1C1E] border-t border-gray-100 dark:border-white/5">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
+        <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+          
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            disabled={uploadingImg || sending}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingImg || sending}
+            className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-navy hover:bg-gray-100 dark:hover:bg-white/5 dark:hover:text-gray-200 disabled:opacity-50 transition-colors shrink-0"
+            title="Attach image"
+          >
+            {uploadingImg ? <Loader2 size={20} className="animate-spin text-navy dark:text-gold" /> : <ImageIcon size={20} />}
+          </button>
+
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold/50 dark:text-white transition-all"
-            disabled={sending}
+            disabled={sending || uploadingImg}
           />
           <button
             type="submit"
-            disabled={!newMessage.trim() || sending}
+            disabled={!newMessage.trim() || sending || uploadingImg}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-navy text-gold hover:bg-navy/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
           >
             <Send size={16} className={newMessage.trim() ? "translate-x-0.5" : ""} />
