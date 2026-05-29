@@ -43,7 +43,8 @@ export default function ProfilePage() {
     return () => { isMounted = false }
   }, [user, loading])
 
-  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user) return
     let file = e.target.files?.[0]
     if (!file || !user) return
 
@@ -92,7 +93,7 @@ export default function ProfilePage() {
       const updateRes = await fetch(`/api/users/${user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatar_url: url })
+        body: JSON.stringify({ avatarUrl: url })
       })
 
       if (!updateRes.ok) throw new Error(await updateRes.text())
@@ -108,8 +109,10 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleChangePassword(e: React.FormEvent) {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user) return
+    
     if (newPassword !== confirmPassword) {
       setPasswordError('Konfirmasi password tidak cocok.')
       return
@@ -171,7 +174,7 @@ export default function ProfilePage() {
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           <div className="relative group shrink-0">
             <Avatar
-              url={user.avatar_url}
+              url={user.avatarUrl}
               name={user.nama}
               size="2xl"
             />
@@ -205,7 +208,7 @@ export default function ProfilePage() {
                 {role === 'guild_master' ? 'Guild Master' : 'Adventurer'}
               </span>
               <span className="px-3 py-1 bg-navy dark:bg-white/10 text-gold text-xs font-bold tracking-widest rounded border border-gold/20 shadow-sm">
-                RANK {getRankInfo(user.total_points).currentRank}
+                RANK {getRankInfo(user.totalPoints).currentRank}
               </span>
               <span className="text-sm text-gray-500 dark:text-gray-400 font-mono bg-gray-50 dark:bg-white/5 px-2 py-1 rounded">
                 ID: {user.id.split('-')[0]}...
@@ -216,8 +219,8 @@ export default function ProfilePage() {
             <div className="mt-5 max-w-sm">
               <div className="flex justify-between text-xs font-bold uppercase tracking-widest mb-1.5 text-charcoal/60 dark:text-gray-400">
                 <span>Rank Progress</span>
-                {getRankInfo(user.total_points).pointsForNextRank ? (
-                  <span>{user.total_points} / {getRankInfo(user.total_points).pointsForNextRank} PTS</span>
+                {getRankInfo(user.totalPoints).pointsForNextRank ? (
+                  <span>{user.totalPoints} / {getRankInfo(user.totalPoints).pointsForNextRank} PTS</span>
                 ) : (
                   <span className="text-gold">MAX RANK</span>
                 )}
@@ -225,14 +228,14 @@ export default function ProfilePage() {
               <div className="h-2.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200 dark:border-white/10">
                 <div 
                   className="h-full bg-gradient-to-r from-navy to-gold transition-all duration-1000 ease-out relative"
-                  style={{ width: `${getRankInfo(user.total_points).progressPercentage}%` }}
+                  style={{ width: `${getRankInfo(user.totalPoints).progressPercentage}%` }}
                 >
                   <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
                 </div>
               </div>
-              {getRankInfo(user.total_points).pointsForNextRank && (
+              {getRankInfo(user.totalPoints).pointsForNextRank && (
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 italic">
-                  Butuh {(getRankInfo(user.total_points).pointsForNextRank as number) - user.total_points} poin lagi untuk naik ke Rank berikutnya!
+                  Butuh {(getRankInfo(user.totalPoints).pointsForNextRank as number) - user.totalPoints} poin lagi untuk naik ke Rank berikutnya!
                 </p>
               )}
             </div>
@@ -244,12 +247,12 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded text-xs font-semibold text-charcoal dark:text-gray-300 shadow-sm" title="Anggota resmi Guild">
                   🔰 Rookie
                 </div>
-                {user.total_points >= 100 && (
+                {user.totalPoints >= 100 && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded text-xs font-semibold text-blue-700 dark:text-blue-400 shadow-sm" title="Mencapai Rank E">
                     ⚔️ Adventurer
                   </div>
                 )}
-                {user.total_points >= 500 && (
+                {user.totalPoints >= 500 && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 rounded text-xs font-semibold text-purple-700 dark:text-purple-400 shadow-sm" title="Lebih dari 500 Poin">
                     🔥 Veteran
                   </div>
@@ -262,7 +265,7 @@ export default function ProfilePage() {
               Total Points
             </p>
             <p className="text-3xl font-bold text-white dark:text-gold">
-              {user.total_points.toLocaleString('id-ID')}
+              {user.totalPoints.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-white/50 dark:text-gold/50 mt-1">SGD</p>
           </div>

@@ -70,7 +70,7 @@ function QuestRow({ quest }: { quest: QuestWithAssignee }) {
   
   // Specific warnings
   const warnings = []
-  if (quest.status === 'Draft' || (!quest.detail_completed && quest.status !== 'Approved' && quest.status !== 'Failed')) {
+  if (quest.status === 'Draft' || (!quest.detailCompleted && quest.status !== 'Approved' && quest.status !== 'Failed')) {
     warnings.push('Detail Kurang')
   }
   if (overdue) {
@@ -160,7 +160,7 @@ export default function GMDashboard() {
   // Actionable Lists
   const submittedQuests = quests.filter(q => q.status === 'Submitted')
   const priorityQuests = quests.filter(q => (q.urgency === 'Emergency' || q.urgency === 'Priority') && q.status !== 'Approved' && q.status !== 'Failed')
-  const incompleteQuests = quests.filter(q => !q.detail_completed && q.status !== 'Approved' && q.status !== 'Failed')
+  const incompleteQuests = quests.filter(q => !q.detailCompleted && q.status !== 'Approved' && q.status !== 'Failed')
   const overdueActiveQuests = quests.filter(q => isOverdue(q))
 
   return (
@@ -189,7 +189,7 @@ export default function GMDashboard() {
         <StatCard label="Submitted" value={stats.submitted} warning={stats.submitted > 0} />
         <StatCard label="Overdue" value={stats.overdue} danger={stats.overdue > 0} />
         <StatCard label="Detail Kurang" value={stats.incomplete} warning={stats.incomplete > 0} />
-        <StatCard label="SGD Points" value={user?.total_points ?? 0} accent />
+        <StatCard label="SGD Points" value={user?.totalPoints ?? 0} accent />
       </div>
 
       {/* ── Action buttons ────────────────────────────────────────────── */}

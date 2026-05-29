@@ -118,8 +118,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             user_id: msg.userId,
             users: msg.user ? {
               nama: msg.user.nama,
-              avatar_url: msg.user.avatarUrl
-            } : { nama: 'Unknown', avatar_url: null }
+              avatarUrl: msg.user.avatarUrl
+            } : { nama: 'Unknown', avatarUrl: null }
           }))
           setMessages(normalized)
           setTimeout(scrollToBottom, 100)
@@ -153,8 +153,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             user_id: data.userId,
             users: data.user ? {
               nama: data.user.nama,
-              avatar_url: data.user.avatarUrl
-            } : { nama: 'Unknown', avatar_url: null }
+              avatarUrl: data.user.avatarUrl
+            } : { nama: 'Unknown', avatarUrl: null }
           }
           if (isMounted) {
             setMessages((prev) => [...prev, newMsg])
@@ -404,7 +404,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
           return (
             <div key={msg.id} className={`flex gap-3 ${isMine ? 'flex-row-reverse' : 'flex-row'} group`}>
               {!isMine && showAvatar ? (
-                <Avatar url={msg.users?.avatar_url} name={msg.users?.nama || '?'} size="sm" className="mt-1 shrink-0" />
+                <Avatar url={msg.users?.avatarUrl} name={msg.users?.nama || '?'} size="sm" className="mt-1 shrink-0" />
               ) : (
                 !isMine && <div className="w-8 shrink-0" />
               )}

@@ -63,7 +63,7 @@ export default function Navbar() {
               style={{ background: '#1B2E5210', color: '#1B2E52' }}
             >
               <span style={{ color: '#C9A227' }}><CoinIcon /></span>
-              <span className="dark:text-gray-300">{user.total_points.toLocaleString('id-ID')}</span>
+              <span className="dark:text-gray-300">{user.totalPoints.toLocaleString('id-ID')}</span>
               <span className="text-charcoal/40 dark:text-gray-500">SGD</span>
             </div>
 
@@ -79,7 +79,7 @@ export default function Navbar() {
             </div>
 
             {/* Avatar */}
-            <Avatar url={user.avatar_url} name={user.nama} size="md" />
+            <Avatar url={user.avatarUrl} name={user.nama} size="md" />
 
             {/* Logout */}
             <button

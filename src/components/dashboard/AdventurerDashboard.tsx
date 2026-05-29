@@ -103,9 +103,9 @@ function QuestCard({ quest }: { quest: QuestWithAssignee }) {
 
           <div className="flex items-center justify-between mt-3">
             <StatusPill status={quest.status} />
-            {quest.reward_points != null && (
+            {quest.rewardPoints != null && (
               <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1" style={{ color: '#C9A227' }}>
-                +{quest.reward_points} pts
+                +{quest.rewardPoints} pts
               </span>
             )}
           </div>
@@ -164,7 +164,7 @@ export default function AdventurerDashboard() {
           )}
         </div>
 
-        <PointsCard points={user?.total_points ?? 0} />
+        <PointsCard points={user?.totalPoints ?? 0} />
       </div>
 
       {/* ── Active quests ─────────────────────────────────────────────── */}
@@ -217,9 +217,9 @@ export default function AdventurerDashboard() {
                   <p className="text-[13px] font-bold text-charcoal truncate">{q.title}</p>
                 </div>
                 <StatusPill status={q.status} />
-                {q.status === 'Approved' && q.reward_points != null && (
+                {q.status === 'Approved' && q.rewardPoints != null && (
                   <span className="text-[11px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color: '#0F6E56' }}>
-                    +{q.reward_points}
+                    +{q.rewardPoints}
                   </span>
                 )}
               </Link>

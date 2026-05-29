@@ -31,8 +31,8 @@ export default function MembersPage() {
         id: u.id,
         nama: u.nama,
         role: u.role,
-        total_points: u.totalPoints,
-        avatar_url: u.avatarUrl,
+        totalPoints: u.totalPoints,
+        avatarUrl: u.avatarUrl,
         created_at: u.createdAt,
       }))
       
@@ -99,14 +99,14 @@ export default function MembersPage() {
                 </tr>
               ) : (
                 users.map(user => {
-                  const rank = user.role === 'adventurer' ? getRankInfo(user.total_points) : null
+                  const rank = user.role === 'adventurer' ? getRankInfo(user.totalPoints) : null
 
                   return (
                     <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link href={`/members/${user.id}`} className="flex items-center gap-3 group">
                           <Avatar 
-                            url={user.avatar_url} 
+                            url={user.avatarUrl} 
                             name={user.nama} 
                             size="sm" 
                             className="group-hover:ring-2 ring-gold transition-all"
@@ -138,7 +138,7 @@ export default function MembersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="font-bold text-navy dark:text-white tabular-nums">
-                          {user.total_points.toLocaleString('id-ID')}
+                          {user.totalPoints.toLocaleString('id-ID')}
                         </div>
                       </td>
                     </tr>

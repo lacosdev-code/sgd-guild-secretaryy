@@ -33,8 +33,8 @@ export async function GET(
     nama: user.nama,
     email: user.email,
     role: user.role,
-    total_points: user.totalPoints,
-    avatar_url: user.avatarUrl,
+    totalPoints: user.totalPoints,
+    avatarUrl: user.avatarUrl,
     created_at: user.createdAt,
   }
 
@@ -56,8 +56,8 @@ export async function PATCH(
   const body = await req.json()
   const updateData: any = {}
 
-  if (body.avatar_url) {
-    updateData.avatarUrl = body.avatar_url
+  if (body.avatarUrl) {
+    updateData.avatarUrl = body.avatarUrl
   }
   
   if (body.password) {

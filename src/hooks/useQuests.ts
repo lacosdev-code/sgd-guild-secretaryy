@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { QuestStatus } from '@/types'
+import type { QuestStatus, DifficultyRank } from '@/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface QuestWithAssignee {
@@ -11,7 +11,7 @@ export interface QuestWithAssignee {
   assignedTo: string | null
   createdBy: string
   urgency: string
-  difficulty: string | null
+  difficulty: DifficultyRank | null
   deadline: string | null
   successParameter: string | null
   rewardPoints: number | null

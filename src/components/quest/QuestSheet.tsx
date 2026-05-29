@@ -130,11 +130,11 @@ export default function QuestSheet({
   const criteria              = parseSuccessCriteria(quest.success_parameter)
 
   const isGM          = currentUserRole === 'guild_master'
-  const isAssignee    = quest.assigned_to === currentUserId
+  const isAssignee    = quest.assignedTo === currentUserId
   const canSubmit     = isAssignee && quest.status === 'Active' && attachments.length > 0
   const canSubmitWarn = isAssignee && quest.status === 'Active' && attachments.length === 0
   const canApprove    = isGM && quest.status === 'Submitted'
-  const isIncomplete  = !quest.detail_completed && quest.status !== 'Approved' && quest.status !== 'Failed'
+  const isIncomplete  = !quest.detailCompleted && quest.status !== 'Approved' && quest.status !== 'Failed'
 
   // ── Submit: update status + notify GM via N8N ──────────────────────────
   async function handleSubmit() {
@@ -157,7 +157,7 @@ export default function QuestSheet({
           body: JSON.stringify({
             questId:   quest.id,
             questTitle: quest.title,
-            assignedTo: quest.assigned_to,
+            assignedTo: quest.assignedTo,
           }),
         }).catch(() => {})
       }
@@ -342,14 +342,14 @@ export default function QuestSheet({
         <div className="px-6 py-5 space-y-2.5 border-b" style={{ borderColor: '#E8E5E0' }}>
           <InfoRow label="Quest Giver" value={
             <div className="flex items-center gap-2">
-              <Avatar url={creator?.avatar_url} name={creator?.nama || '?'} size="sm" />
+              <Avatar url={creator?.avatarUrl} name={creator?.nama || '?'} size="sm" />
               <span>{creator?.nama ?? '—'}</span>
             </div>
           } />
           <InfoRow label="Assigned" value={
             assignee ? (
               <div className="flex items-center gap-2">
-                <Avatar url={assignee.avatar_url} name={assignee.nama} size="sm" />
+                <Avatar url={assignee.avatarUrl} name={assignee.nama} size="sm" />
                 <span>{assignee.nama}</span>
               </div>
             ) : (
@@ -436,13 +436,13 @@ export default function QuestSheet({
 
           {/* ── Reward ───────────────────────────────────────────────── */}
           <SectionBlock label="Reward">
-            {quest.reward_points != null ? (
+            {quest.rewardPoints != null ? (
               <p className="text-2xl font-bold flex items-center gap-2" style={{ color: '#C9A227' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <path d="M12 6v2M12 16v2M9.5 9A2.5 2.5 0 0 1 12 7.5h.5a2 2 0 0 1 0 4H12a2 2 0 0 0 0 4h.5A2.5 2.5 0 0 0 14.5 14" />
                 </svg>
-                +{quest.reward_points}{' '}
+                +{quest.rewardPoints}{' '}
                 <span className="text-[10px] font-bold tracking-widest uppercase mt-1" style={{ color: '#1B2E5260' }}>
                   SGD Points
                 </span>
@@ -498,7 +498,7 @@ export default function QuestSheet({
         </div>
 
         {/* ── Action footer ─────────────────────────────────────────────── */}
-        {(canSubmit || canSubmitWarn || canApprove || (!isGM && !quest.assigned_to && quest.status !== 'Draft') || (isGM && quest.status !== 'Approved' && quest.status !== 'Failed')) && (
+        {(canSubmit || canSubmitWarn || canApprove || (!isGM && !quest.assignedTo && quest.status !== 'Draft') || (isGM && quest.status !== 'Approved' && quest.status !== 'Failed')) && (
           <div
             className="px-6 py-4 border-t flex flex-wrap items-center gap-3"
             style={{ background: '#F9F8F6', borderColor: '#E8E5E0' }}
@@ -558,7 +558,7 @@ export default function QuestSheet({
             )}
 
             {/* Adventurer: Claim Unassigned Quest */}
-            {!isGM && !quest.assigned_to && quest.status !== 'Draft' && (
+            {!isGM && !quest.assignedTo && quest.status !== 'Draft' && (
               <ActionButton
                 variant="primary"
                 loading={loading}

@@ -58,7 +58,7 @@ export default function MemberProfilePage() {
     )
   }
 
-  const rank = user.role === 'adventurer' ? getRankInfo(user.total_points) : null
+  const rank = user.role === 'adventurer' ? getRankInfo(user.totalPoints) : null
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
@@ -72,7 +72,7 @@ export default function MemberProfilePage() {
 
       {/* Profile Header */}
       <div className="bg-white dark:bg-charcoal rounded-3xl border border-gray-100 dark:border-white/5 p-8 flex flex-col md:flex-row items-center md:items-start gap-8 shadow-sm">
-        <Avatar url={user.avatar_url} name={user.nama} size="lg" className="w-28 h-28 text-4xl shadow-md shrink-0" />
+        <Avatar url={user.avatarUrl} name={user.nama} size="lg" className="w-28 h-28 text-4xl shadow-md shrink-0" />
         
         <div className="flex-1 text-center md:text-left">
           <h1 className="text-3xl font-bold text-navy dark:text-white tracking-tight">{user.nama}</h1>
@@ -102,7 +102,7 @@ export default function MemberProfilePage() {
           <div className="text-center md:text-right mt-6 md:mt-0 bg-gray-50 dark:bg-white/[0.02] p-6 rounded-2xl border border-gray-100 dark:border-white/5 min-w-[200px]">
             <p className="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-2">Total Points</p>
             <p className="text-4xl font-bold text-navy dark:text-white tabular-nums tracking-tight">
-              {user.total_points.toLocaleString('id-ID')}
+              {user.totalPoints.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-gold font-bold mt-2">
               Next: {rank.pointsForNextRank !== null ? `${rank.pointsForNextRank - rank.currentPoints} pts to go` : 'MAX LEVEL'}

@@ -7,28 +7,28 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { file_url, file_type } = await req.json()
-    if (!file_url) return NextResponse.json({ error: 'Missing file_url' }, { status: 400 })
+    const { fileUrl, fileType } = await req.json()
+    if (!fileUrl) return NextResponse.json({ error: 'Missing fileUrl' }, { status: 400 })
 
     const questId = params.id
     
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
-      select: { assigneeId: true, status: true },
+      select: { assignedTo: true, status: true },
     })
 
     if (!quest) return NextResponse.json({ error: 'Quest not found' }, { status: 404 })
 
     // Check permission: must be assignee or guild_master
-    if (quest.assigneeId !== session.user.id && session.user.role !== 'guild_master') {
+    if (quest.assignedTo !== session.user.id && (session.user as any).role !== 'guild_master') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const attachment = await prisma.attachment.create({
       data: {
         questId,
-        fileUrl: file_url,
-        fileType: file_type || 'application/octet-stream',
+        fileUrl: fileUrl,
+        fileType: fileType || 'application/octet-stream',
         uploadedBy: session.user.id,
       },
     })

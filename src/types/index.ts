@@ -10,8 +10,8 @@ export interface User {
   id: string;
   nama: string;
   role: UserRole;
-  total_points: number;
-  avatar_url?: string;
+  totalPoints: number;
+  avatarUrl?: string;
   created_at: string;
 }
 
@@ -19,16 +19,16 @@ export interface Quest {
   id: string;
   title: string;
   description: string | null;
-  assigned_to: string | null; // uuid of User
-  created_by: string; // uuid of User
+  assignedTo: string | null; // uuid of User
+  createdBy: string; // uuid of User
   urgency: QuestUrgency;
   difficulty: DifficultyRank | null;
   deadline: string | null;
   success_parameter: string | null;
-  reward_points: number | null;
+  rewardPoints: number | null;
   status: QuestStatus;
   brief_attachment_url: string | null;
-  detail_completed: boolean;
+  detailCompleted: boolean;
   detail_completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -37,9 +37,9 @@ export interface Quest {
 export interface Attachment {
   id: string;
   quest_id: string;
-  file_url: string;
-  file_type: string | null;
-  uploaded_by: string; // uuid of User
+  fileUrl: string;
+  fileType: string | null;
+  uploadedBy: string; // uuid of User
   uploaded_at: string;
 }
 

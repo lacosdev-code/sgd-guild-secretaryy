@@ -79,11 +79,11 @@ export default function LeaderboardPage() {
                 <Medal className="w-6 h-6 text-slate-500 dark:text-slate-300" />
               </div>
               <Link href={`/members/${top3[1].id}`} className="flex flex-col items-center group">
-                <Avatar url={top3[1].avatar_url} name={top3[1].nama} size="lg" className="mb-3 ring-4 ring-slate-100 dark:ring-slate-800 shadow-sm group-hover:scale-105 transition-transform" />
+                <Avatar url={top3[1].avatarUrl} name={top3[1].nama} size="lg" className="mb-3 ring-4 ring-slate-100 dark:ring-slate-800 shadow-sm group-hover:scale-105 transition-transform" />
                 <span className="font-bold text-lg text-charcoal dark:text-gray-200 group-hover:text-slate-500 transition-colors">{top3[1].nama}</span>
               </Link>
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">{getRankInfo(top3[1].total_points).currentRank}</span>
-              <div className="mt-4 text-xl font-black text-navy dark:text-white">{top3[1].total_points.toLocaleString('id-ID')} <span className="text-xs text-gray-400 font-medium">SGD</span></div>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">{getRankInfo(top3[1].totalPoints).currentRank}</span>
+              <div className="mt-4 text-xl font-black text-navy dark:text-white">{top3[1].totalPoints.toLocaleString('id-ID')} <span className="text-xs text-gray-400 font-medium">SGD</span></div>
             </div>
           )}
 
@@ -94,11 +94,11 @@ export default function LeaderboardPage() {
                 <Trophy className="w-8 h-8 text-white" />
               </div>
               <Link href={`/members/${top3[0].id}`} className="flex flex-col items-center group">
-                <Avatar url={top3[0].avatar_url} name={top3[0].nama} size="xl" className="mb-3 ring-4 ring-amber-100 dark:ring-amber-900 shadow-md group-hover:scale-105 transition-transform" />
+                <Avatar url={top3[0].avatarUrl} name={top3[0].nama} size="xl" className="mb-3 ring-4 ring-amber-100 dark:ring-amber-900 shadow-md group-hover:scale-105 transition-transform" />
                 <span className="font-black text-xl text-charcoal dark:text-gray-100 group-hover:text-gold transition-colors">{top3[0].nama}</span>
               </Link>
-              <span className="text-xs font-bold text-gold mt-1 uppercase tracking-widest px-3 py-1 bg-navy/5 dark:bg-black/20 rounded-full">{getRankInfo(top3[0].total_points).currentRank}</span>
-              <div className="mt-5 text-3xl font-black text-navy dark:text-gold drop-shadow-sm">{top3[0].total_points.toLocaleString('id-ID')} <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">SGD</span></div>
+              <span className="text-xs font-bold text-gold mt-1 uppercase tracking-widest px-3 py-1 bg-navy/5 dark:bg-black/20 rounded-full">{getRankInfo(top3[0].totalPoints).currentRank}</span>
+              <div className="mt-5 text-3xl font-black text-navy dark:text-gold drop-shadow-sm">{top3[0].totalPoints.toLocaleString('id-ID')} <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">SGD</span></div>
             </div>
           )}
 
@@ -109,11 +109,11 @@ export default function LeaderboardPage() {
                 <Award className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <Link href={`/members/${top3[2].id}`} className="flex flex-col items-center group">
-                <Avatar url={top3[2].avatar_url} name={top3[2].nama} size="lg" className="mb-3 ring-4 ring-orange-50 dark:ring-orange-900/20 shadow-sm group-hover:scale-105 transition-transform" />
+                <Avatar url={top3[2].avatarUrl} name={top3[2].nama} size="lg" className="mb-3 ring-4 ring-orange-50 dark:ring-orange-900/20 shadow-sm group-hover:scale-105 transition-transform" />
                 <span className="font-bold text-lg text-charcoal dark:text-gray-200 group-hover:text-orange-600 transition-colors">{top3[2].nama}</span>
               </Link>
-              <span className="text-xs font-bold text-orange-600/70 dark:text-orange-500/70 mt-1 uppercase tracking-widest">{getRankInfo(top3[2].total_points).currentRank}</span>
-              <div className="mt-4 text-xl font-black text-navy dark:text-white">{top3[2].total_points.toLocaleString('id-ID')} <span className="text-xs text-gray-400 font-medium">SGD</span></div>
+              <span className="text-xs font-bold text-orange-600/70 dark:text-orange-500/70 mt-1 uppercase tracking-widest">{getRankInfo(top3[2].totalPoints).currentRank}</span>
+              <div className="mt-4 text-xl font-black text-navy dark:text-white">{top3[2].totalPoints.toLocaleString('id-ID')} <span className="text-xs text-gray-400 font-medium">SGD</span></div>
             </div>
           )}
         </div>
@@ -133,7 +133,7 @@ export default function LeaderboardPage() {
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-white/5">
               {others.map((user, index) => {
-                const rankInfo = getRankInfo(user.total_points)
+                const rankInfo = getRankInfo(user.totalPoints)
                 const actualRank = index + 4
                 
                 return (
@@ -145,7 +145,7 @@ export default function LeaderboardPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link href={`/members/${user.id}`} className="flex items-center gap-3">
-                        <Avatar url={user.avatar_url} name={user.nama} size="sm" className="opacity-90 group-hover:opacity-100 transition-opacity" />
+                        <Avatar url={user.avatarUrl} name={user.nama} size="sm" className="opacity-90 group-hover:opacity-100 transition-opacity" />
                         <span className="font-semibold text-charcoal dark:text-gray-300">{user.nama}</span>
                       </Link>
                     </td>
@@ -156,7 +156,7 @@ export default function LeaderboardPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <span className="font-bold text-charcoal dark:text-white text-base">
-                        {user.total_points.toLocaleString('id-ID')}
+                        {user.totalPoints.toLocaleString('id-ID')}
                       </span>
                       <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1 font-medium">SGD</span>
                     </td>

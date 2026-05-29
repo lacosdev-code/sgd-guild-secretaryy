@@ -40,13 +40,13 @@ const RANK_STYLE: Record<DifficultyRank, { bg: string; color: string; border: st
 
 interface FormState {
   title: string
-  assigned_to: string
+  assignedTo: string
   urgency: QuestUrgency
   description: string
   deadline: string        // ISO datetime-local string
   difficulty: DifficultyRank | ''
   success_parameter: string
-  reward_points: string
+  rewardPoints: string
   brief_attachment_url: string | null
 }
 
@@ -56,7 +56,7 @@ function isDetailComplete(f: FormState): boolean {
     f.deadline !== '' &&
     f.difficulty !== '' &&
     f.success_parameter.trim() !== '' &&
-    f.reward_points !== '' && !isNaN(Number(f.reward_points))
+    f.rewardPoints !== '' && !isNaN(Number(f.rewardPoints))
   )
 }
 
@@ -67,7 +67,7 @@ function calculateProgress(f: FormState): number {
   if (f.success_parameter.trim() !== '') score += 40
   if (f.description.trim() !== '') score += 15
   if (f.difficulty !== '') score += 5
-  if (f.reward_points !== '' && !isNaN(Number(f.reward_points))) score += 10
+  if (f.rewardPoints !== '' && !isNaN(Number(f.rewardPoints))) score += 10
   return score
 }
 
@@ -258,7 +258,7 @@ function PICSelector(props: { value: string; onChange: (v: string) => void; adve
 interface QuestFormProps {
   /** Pre-fill with existing data when editing */
   existingQuest?: Quest | null
-  /** Current user ID (will be set as created_by on insert) */
+  /** Current user ID (will be set as createdBy on insert) */
   currentUserId: string
   mode: 'create' | 'edit'
 }
@@ -282,7 +282,7 @@ export default function QuestForm({
 
   const [form, setForm] = useState<FormState>({
     title:             existingQuest?.title ?? '',
-    assigned_to:       existingQuest?.assigned_to ?? '',
+    assignedTo:       existingQuest?.assignedTo ?? '',
     urgency:           existingQuest?.urgency ?? 'Routine',
     description:       existingQuest?.description ?? '',
     deadline:          existingQuest?.deadline
@@ -290,8 +290,8 @@ export default function QuestForm({
                          : '',
     difficulty:        existingQuest?.difficulty ?? '',
     success_parameter: existingQuest?.success_parameter ?? '',
-    reward_points:     existingQuest?.reward_points != null
-                         ? String(existingQuest.reward_points)
+    rewardPoints:     existingQuest?.rewardPoints != null
+                         ? String(existingQuest.rewardPoints)
                          : '',
     brief_attachment_url: existingQuest?.brief_attachment_url ?? null,
   })
@@ -373,20 +373,20 @@ export default function QuestForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title.trim())      return setError('Judul quest wajib diisi.')
-    if (!form.assigned_to)       return setError('PIC (assigned adventurer) wajib dipilih.')
+    if (!form.assignedTo)       return setError('PIC (assigned adventurer) wajib dipilih.')
 
     setSaving(true)
     setError(null)
 
     const payload = {
       title:             form.title.trim(),
-      assigned_to:       form.assigned_to,
+      assignedTo:       form.assignedTo,
       urgency:           form.urgency,
       description:       form.description.trim() || null,
       deadline:          form.deadline ? new Date(form.deadline).toISOString() : null,
       difficulty:        form.difficulty || null,
       success_parameter: form.success_parameter.trim() || null,
-      reward_points:     form.reward_points !== '' ? Number(form.reward_points) : null,
+      rewardPoints:     form.rewardPoints !== '' ? Number(form.rewardPoints) : null,
       brief_attachment_url: form.brief_attachment_url,
       status:            computeStatus(),
       updated_at:        new Date().toISOString(),
@@ -413,7 +413,7 @@ export default function QuestForm({
             type: 'new_quest',
             questId: questId,
             title: payload.title,
-            assignedTo: payload.assigned_to
+            assignedTo: payload.assignedTo
           })
         }).catch(console.error)
 
@@ -542,8 +542,8 @@ export default function QuestForm({
             <div>
               <FieldLabel htmlFor="quest-assigned" required>PIC (Assigned Adventurer)</FieldLabel>
               <PICSelector
-                value={form.assigned_to}
-                onChange={(val) => setForm(p => ({ ...p, assigned_to: val }))}
+                value={form.assignedTo}
+                onChange={(val) => setForm(p => ({ ...p, assignedTo: val }))}
                 adventurers={adventurers}
               />
             </div>
@@ -731,8 +731,8 @@ Rekomendasi vendor ditulis di kolom diskusi`}
                 <input
                   id="quest-reward"
                   type="number"
-                  value={form.reward_points}
-                  onChange={set('reward_points')}
+                  value={form.rewardPoints}
+                  onChange={set('rewardPoints')}
                   className={`${inputClass} pl-7`}
                   style={inputStyle}
                   placeholder="cth: 80"

@@ -56,9 +56,9 @@ interface UploadItem {
 
 function AttachmentThumb({ attachment }: { attachment: Attachment }) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
-  const isImg  = attachment.file_type?.startsWith('image/') ?? false
-  let name   = attachment.file_url.split('/').pop() ?? 'file'
-  const ext    = ACCEPTED_MIME[attachment.file_type ?? ''] ?? attachment.file_type?.split('/').pop()?.toUpperCase() ?? '?'
+  const isImg  = attachment.fileType?.startsWith('image/') ?? false
+  let name   = attachment.fileUrl.split('/').pop() ?? 'file'
+  const ext    = ACCEPTED_MIME[attachment.fileType ?? ''] ?? attachment.fileType?.split('/').pop()?.toUpperCase() ?? '?'
 
   // Clean up timestamp from generated filenames (e.g., 1779857117107_nama-asli.jpg -> nama-asli.jpg)
   if (/^\d{13}_/.test(name)) {
@@ -72,7 +72,7 @@ function AttachmentThumb({ attachment }: { attachment: Attachment }) {
       {isImg ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={attachment.file_url}
+          src={attachment.fileUrl}
           alt={name}
           className="w-12 h-12 object-cover rounded-md border shrink-0 group-hover:ring-2 ring-gold/50 transition-all"
           style={{ borderColor: '#E8E5E0' }}
@@ -82,7 +82,7 @@ function AttachmentThumb({ attachment }: { attachment: Attachment }) {
           className="w-12 h-12 rounded-md flex items-center justify-center text-xl shrink-0 border group-hover:ring-2 ring-gold/50 transition-all"
           style={{ background: '#F5F3EE', borderColor: '#E8E5E0' }}
         >
-          {fileIcon(attachment.file_type ?? '')}
+          {fileIcon(attachment.fileType ?? '')}
         </div>
       )}
 
@@ -126,7 +126,7 @@ function AttachmentThumb({ attachment }: { attachment: Attachment }) {
         </button>
       ) : (
         <a
-          href={attachment.file_url}
+          href={attachment.fileUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3.5 px-4 py-3 hover:bg-gray-50 transition-colors group"
@@ -155,7 +155,7 @@ function AttachmentThumb({ attachment }: { attachment: Attachment }) {
             
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={attachment.file_url}
+              src={attachment.fileUrl}
               alt={name}
               className="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl"
               onClick={(e) => e.stopPropagation()}
@@ -281,8 +281,8 @@ export default function AttachmentUpload({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        file_url: uploadData.url,
-        file_type: file.type,
+        fileUrl: uploadData.url,
+        fileType: file.type,
       })
     })
 

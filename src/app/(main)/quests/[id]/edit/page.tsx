@@ -34,14 +34,14 @@ export default async function EditQuestPage({ params }: Props) {
     status: quest.status,
     difficulty: quest.difficulty,
     urgency: quest.urgency,
-    assigned_to: quest.assignedTo,
-    created_by: quest.createdBy,
+    assignedTo: quest.assignedTo,
+    createdBy: quest.createdBy,
     created_at: quest.createdAt.toISOString(),
     deadline: quest.deadline?.toISOString() || null,
     success_parameter: quest.successParameter,
-    reward_points: quest.rewardPoints,
+    rewardPoints: quest.rewardPoints,
     brief_attachment_url: quest.briefAttachmentUrl,
-    detail_completed: quest.detailCompleted,
+    detailCompleted: quest.detailCompleted,
   }
 
   // Prevent editing quests that are already Approved or Failed

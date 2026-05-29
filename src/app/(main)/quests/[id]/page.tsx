@@ -37,16 +37,16 @@ export default async function QuestDetailPage({ params }: Props) {
     id: quest.id,
     title: quest.title,
     description: quest.description,
-    assigned_to: quest.assigneeId,
-    created_by: quest.createdById,
+    assignedTo: quest.assignedTo,
+    createdBy: quest.createdBy,
     urgency: quest.urgency,
     difficulty: quest.difficulty,
     deadline: quest.deadline?.toISOString() || null,
     success_parameter: quest.successParameter,
-    reward_points: quest.rewardPoints,
+    rewardPoints: quest.rewardPoints,
     status: quest.status,
     brief_attachment_url: quest.briefAttachmentUrl,
-    detail_completed: quest.detailCompleted,
+    detailCompleted: quest.detailCompleted,
     detail_completed_at: quest.detailCompletedAt?.toISOString() || null,
     created_at: quest.createdAt.toISOString(),
     updated_at: quest.updatedAt.toISOString(),
@@ -56,8 +56,8 @@ export default async function QuestDetailPage({ params }: Props) {
     id: quest.assignee.id,
     nama: quest.assignee.nama,
     role: quest.assignee.role,
-    total_points: quest.assignee.totalPoints,
-    avatar_url: quest.assignee.avatarUrl,
+    totalPoints: quest.assignee.totalPoints,
+    avatarUrl: quest.assignee.avatarUrl,
     created_at: quest.assignee.createdAt.toISOString(),
   } : null
 
@@ -65,17 +65,17 @@ export default async function QuestDetailPage({ params }: Props) {
     id: quest.creator.id,
     nama: quest.creator.nama,
     role: quest.creator.role,
-    total_points: quest.creator.totalPoints,
-    avatar_url: quest.creator.avatarUrl,
+    totalPoints: quest.creator.totalPoints,
+    avatarUrl: quest.creator.avatarUrl,
     created_at: quest.creator.createdAt.toISOString(),
   } : null
 
   const mappedAttachments = quest.attachments.map(a => ({
     id: a.id,
     quest_id: a.questId,
-    file_url: a.fileUrl,
-    file_type: a.fileType,
-    uploaded_by: a.uploadedBy,
+    fileUrl: a.fileUrl,
+    fileType: a.fileType,
+    uploadedBy: a.uploadedBy,
     uploaded_at: a.uploadedAt.toISOString(),
   }))
 
@@ -99,7 +99,7 @@ export default async function QuestDetailPage({ params }: Props) {
       attachments={mappedAttachments as any}
       comments={mappedComments as any}
       currentUserId={session.user.id}
-      currentUserRole={session.user.role as any}
+      currentUserRole={(session.user as any).role as any}
     />
   )
 }

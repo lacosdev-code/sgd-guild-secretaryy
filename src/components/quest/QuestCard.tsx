@@ -19,7 +19,7 @@ interface QuestCardProps {
 
 export default function QuestCard({ quest }: QuestCardProps) {
   const overdue    = isOverdue(quest)
-  const missingDetail = !quest.detail_completed &&
+  const missingDetail = !quest.detailCompleted &&
     quest.status !== 'Approved' &&
     quest.status !== 'Failed'
 
@@ -88,9 +88,9 @@ export default function QuestCard({ quest }: QuestCardProps) {
             </div>
 
             {/* Reward */}
-            {quest.reward_points != null && (
+            {quest.rewardPoints != null && (
               <div className="flex items-center gap-1 text-sm font-bold text-gold shrink-0">
-                +{quest.reward_points} SGD
+                +{quest.rewardPoints} SGD
               </div>
             )}
           </div>
