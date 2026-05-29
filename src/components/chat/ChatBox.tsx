@@ -70,6 +70,24 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [recordingTime, setRecordingTime] = useState(0)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   
+  const forceDownload = async (url: string) => {
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = `Tavern_Image_${Date.now()}.jpg`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      console.error('Download error:', err)
+      window.open(url, '_blank')
+    }
+  }
+  
   const [supabase] = useState(() => createClient())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -206,14 +224,22 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   }
 
   const uploadAudio = async (blob: Blob, mimeType: string) => {
+    if (blob.size === 0) {
+      alert('Rekaman kosong. Coba bicara lebih lama.')
+      return
+    }
+    
     setUploadingImg(true)
     try {
       const ext = mimeType.includes('mp4') ? 'm4a' : 'webm'
       const fileName = `voice_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
       const filePath = `tavern/${fileName}`
       
-      const file = new File([blob], fileName, { type: mimeType })
-      const { error: uploadError } = await supabase.storage.from('attachments').upload(filePath, file)
+      const { error: uploadError } = await supabase.storage.from('attachments').upload(filePath, blob, {
+        contentType: mimeType,
+        upsert: false
+      })
+      
       if (uploadError) throw uploadError
 
       const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(filePath)
@@ -461,14 +487,13 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             className="max-w-full max-h-full object-contain rounded-md"
           />
           
-          <a 
-            href={previewImage}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button 
+            type="button"
+            onClick={() => forceDownload(previewImage)}
             className="absolute bottom-6 px-6 py-2.5 bg-white text-black font-bold text-sm rounded-full flex items-center gap-2 hover:bg-gray-200 transition-colors shadow-lg"
           >
             <Download size={16} /> Unduh Gambar
-          </a>
+          </button>
         </div>
       )}
     </div>
