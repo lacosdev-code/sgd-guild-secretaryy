@@ -15,21 +15,14 @@ function mapErrorMessage(message: string): string {
   return message
 }
 
-// ── Decorative rank divider ──────────────────────────────────────────────────
+// ── Decorative divider ───────────────────────────────────────────────────────
 function RankDivider() {
   return (
     <div className="flex items-center gap-3 my-6">
       <div className="flex-1 h-px bg-gray-200" />
-      <div className="flex gap-1">
-        {['F', 'E', 'D', 'C', 'B', 'A', 'S'].map((rank) => (
-          <span
-            key={rank}
-            className="text-[9px] font-bold text-gray-300 tracking-wider"
-          >
-            {rank}
-          </span>
-        ))}
-      </div>
+      <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">
+        Authorized Access Only
+      </span>
       <div className="flex-1 h-px bg-gray-200" />
     </div>
   )
