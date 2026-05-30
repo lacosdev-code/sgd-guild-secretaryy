@@ -595,12 +595,12 @@ export async function GET(req: Request) {
     await prisma.quest.deleteMany({});
     await prisma.user.deleteMany({});
 
-    if (users.length) await prisma.user.createMany({ data: users });
-    if (quests.length) await prisma.quest.createMany({ data: quests });
-    if (attachments.length) await prisma.attachment.createMany({ data: attachments });
-    if (guildChats.length) await prisma.guildChat.createMany({ data: guildChats });
-    if (notifications.length) await prisma.notification.createMany({ data: notifications });
-    if (pointLogs.length) await prisma.pointLog.createMany({ data: pointLogs });
+    if (users.length) await prisma.user.createMany({ data: users as any });
+    if (quests.length) await prisma.quest.createMany({ data: quests as any });
+    if (attachments.length) await prisma.attachment.createMany({ data: attachments as any });
+    if (guildChats.length) await prisma.guildChat.createMany({ data: guildChats as any });
+    if (notifications.length) await prisma.notification.createMany({ data: notifications as any });
+    if (pointLogs.length) await prisma.pointLog.createMany({ data: pointLogs as any });
 
     return NextResponse.json({ success: true, message: 'Migration via Prisma createMany executed successfully!' });
   } catch (error: any) {
