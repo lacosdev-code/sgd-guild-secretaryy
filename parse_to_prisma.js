@@ -12,7 +12,6 @@ function parseInsert(line) {
   const cols = match[2].split(',').map(s => s.trim());
   const valsStr = match[3];
   
-  // parse values considering commas inside quotes
   const vals = [];
   let current = '';
   let inQuotes = false;
@@ -62,7 +61,6 @@ for (const line of lines) {
   }
 }
 
-// Convert column names from snake_case to camelCase
 function toCamel(str) {
   return str.replace(/_([a-z])/g, function(g) { return g[1].toUpperCase(); });
 }
@@ -81,29 +79,40 @@ function processTable(rows) {
   });
 }
 
-const users = processTable(db.users);
+function fixDate(d) {
+  if (!d) return null;
+  // Convert "2026-05-26 12:18:42.133931+00" to "2026-05-26T12:18:42.133931+00:00"
+  let str = d.replace(' ', 'T');
+  if (str.endsWith('+00')) str += ':00';
+  return new Date(str).toISOString();
+}
+
+const users = processTable(db.users).map(u => {
+  if (u.createdAt) u.createdAt = fixDate(u.createdAt);
+  if (u.updatedAt) u.updatedAt = fixDate(u.updatedAt);
+  return u;
+});
 const quests = processTable(db.quests).map(q => {
-  // Fix dates
-  if (q.deadline) q.deadline = new Date(q.deadline).toISOString();
-  if (q.createdAt) q.createdAt = new Date(q.createdAt).toISOString();
-  if (q.updatedAt) q.updatedAt = new Date(q.updatedAt).toISOString();
-  if (q.detailCompletedAt) q.detailCompletedAt = new Date(q.detailCompletedAt).toISOString();
+  if (q.deadline) q.deadline = fixDate(q.deadline);
+  if (q.createdAt) q.createdAt = fixDate(q.createdAt);
+  if (q.updatedAt) q.updatedAt = fixDate(q.updatedAt);
+  if (q.detailCompletedAt) q.detailCompletedAt = fixDate(q.detailCompletedAt);
   return q;
 });
 const attachments = processTable(db.attachments).map(a => {
-  if (a.uploadedAt) a.uploadedAt = new Date(a.uploadedAt).toISOString();
+  if (a.uploadedAt) a.uploadedAt = fixDate(a.uploadedAt);
   return a;
 });
 const guildChats = processTable(db.guild_chat).map(c => {
-  if (c.createdAt) c.createdAt = new Date(c.createdAt).toISOString();
+  if (c.createdAt) c.createdAt = fixDate(c.createdAt);
   return c;
 });
 const notifications = processTable(db.notifications).map(n => {
-  if (n.createdAt) n.createdAt = new Date(n.createdAt).toISOString();
+  if (n.createdAt) n.createdAt = fixDate(n.createdAt);
   return n;
 });
 const pointLogs = processTable(db.point_logs).map(p => {
-  if (p.createdAt) p.createdAt = new Date(p.createdAt).toISOString();
+  if (p.createdAt) p.createdAt = fixDate(p.createdAt);
   return p;
 });
 
@@ -119,7 +128,6 @@ export async function GET(req: Request) {
     const notifications = ${JSON.stringify(notifications, null, 2)};
     const pointLogs = ${JSON.stringify(pointLogs, null, 2)};
 
-    // Delete existing to prevent duplicate IDs
     await prisma.pointLog.deleteMany({});
     await prisma.notification.deleteMany({});
     await prisma.guildChat.deleteMany({});
@@ -127,12 +135,12 @@ export async function GET(req: Request) {
     await prisma.quest.deleteMany({});
     await prisma.user.deleteMany({});
 
-    if (users.length) await prisma.user.createMany({ data: users });
-    if (quests.length) await prisma.quest.createMany({ data: quests });
-    if (attachments.length) await prisma.attachment.createMany({ data: attachments });
-    if (guildChats.length) await prisma.guildChat.createMany({ data: guildChats });
-    if (notifications.length) await prisma.notification.createMany({ data: notifications });
-    if (pointLogs.length) await prisma.pointLog.createMany({ data: pointLogs });
+    if (users.length) await prisma.user.createMany({ data: users as any });
+    if (quests.length) await prisma.quest.createMany({ data: quests as any });
+    if (attachments.length) await prisma.attachment.createMany({ data: attachments as any });
+    if (guildChats.length) await prisma.guildChat.createMany({ data: guildChats as any });
+    if (notifications.length) await prisma.notification.createMany({ data: notifications as any });
+    if (pointLogs.length) await prisma.pointLog.createMany({ data: pointLogs as any });
 
     return NextResponse.json({ success: true, message: 'Migration via Prisma createMany executed successfully!' });
   } catch (error: any) {
@@ -142,4 +150,4 @@ export async function GET(req: Request) {
 `;
 
 fs.writeFileSync('src/app/api/migrate-now/route.ts', routeContent);
-console.log('API route updated with Prisma createMany!');
+console.log('API route updated with Date fixes!');

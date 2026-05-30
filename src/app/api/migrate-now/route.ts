@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     "nama": "Pris",
     "role": "adventurer",
     "totalPoints": 210,
-    "createdAt": "2026-05-26 12:18:42.133931+00",
+    "createdAt": "2026-05-26T12:18:42.133Z",
     "avatarUrl": null,
     "email": "pris@sgd-corp.com",
     "passwordHash": "$2a$10$BS8yMQuKilVGi3lTEUyD.u8XwwzurGPruIei9RExccfC5x4ko634u"
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     "nama": "Ervan",
     "role": "adventurer",
     "totalPoints": 185,
-    "createdAt": "2026-05-26 12:18:42.216467+00",
+    "createdAt": "2026-05-26T12:18:42.216Z",
     "avatarUrl": null,
     "email": "ervan@sgd-corp.com",
     "passwordHash": "$2a$10$ajs7sSeKBDRqt5o9dSEht.M7IPrpyw9FK.ndcfDV5eoNo1DSmrBS2"
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
     "nama": "Santi",
     "role": "adventurer",
     "totalPoints": 155,
-    "createdAt": "2026-05-26 12:18:42.287375+00",
+    "createdAt": "2026-05-26T12:18:42.287Z",
     "avatarUrl": null,
     "email": "santi@sgd-corp.com",
     "passwordHash": "$2a$10$6fWtlVdWaSdFZv5oWG3czuY3xH2fLckTJZJvoPf.P0vhutMClwooG"
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
     "nama": "Christian",
     "role": "adventurer",
     "totalPoints": 300,
-    "createdAt": "2026-05-26 12:18:42.318098+00",
+    "createdAt": "2026-05-26T12:18:42.318Z",
     "avatarUrl": null,
     "email": "christian@sgd-corp.com",
     "passwordHash": "$2a$10$aOWXtKF/8uqK8BSbWhFCCeieAD/M85ZoYjbTE.8t5Gq.MbZnBHcxS"
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
     "nama": "Bruno",
     "role": "adventurer",
     "totalPoints": 90,
-    "createdAt": "2026-05-26 12:18:42.374789+00",
+    "createdAt": "2026-05-26T12:18:42.374Z",
     "avatarUrl": null,
     "email": "bruno@sgd-corp.com",
     "passwordHash": "$2a$10$W96y3l4HjXnJe9RR0iBiOexYg2gF0vcT79dgeUan9eUtxu8ZY2pL."
@@ -59,7 +59,7 @@ export async function GET(req: Request) {
     "nama": "Reza",
     "role": "guild_master",
     "totalPoints": 340,
-    "createdAt": "2026-05-26 12:18:42.086722+00",
+    "createdAt": "2026-05-26T12:18:42.086Z",
     "avatarUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000001-1779811975155.png",
     "email": "reza@sgd-corp.com",
     "passwordHash": "$2a$10$RfnPCgkIDJCUAmqt8Y8Neem/dyt0axzsr45WaTNsqqoo1fQOOfI7a"
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
     "nama": "Siska",
     "role": "adventurer",
     "totalPoints": 270,
-    "createdAt": "2026-05-26 12:18:42.249947+00",
+    "createdAt": "2026-05-26T12:18:42.249Z",
     "avatarUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000004/00000000-0000-0000-0000-000000000004-1779873998167.jpg",
     "email": "siska@sgd-corp.com",
     "passwordHash": "$2a$10$jKagpdg/Ftxt.4mlUxBJ3.UJ/1D19oG8/9XhTPecyRGBilf4oWzE."
@@ -587,7 +587,6 @@ export async function GET(req: Request) {
   }
 ];
 
-    // Delete existing to prevent duplicate IDs
     await prisma.pointLog.deleteMany({});
     await prisma.notification.deleteMany({});
     await prisma.guildChat.deleteMany({});
