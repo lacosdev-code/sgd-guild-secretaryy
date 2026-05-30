@@ -523,7 +523,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
       {/* Image Preview Modal */}
       {previewImage && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
           <button 
             onClick={() => setPreviewImage(null)} 
             className="absolute top-4 right-4 p-3 text-white hover:bg-white/10 rounded-full transition-colors"
