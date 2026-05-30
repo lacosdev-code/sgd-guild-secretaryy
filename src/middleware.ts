@@ -12,7 +12,7 @@ export default auth((req) => {
 
   // Allow public routes
   const isMigrateNow = req.nextUrl.pathname.startsWith('/api/migrate-now')
-  if (isApiAuth || isPublicFile || isApiFiles || isMigrateNow) {
+  if (isApiAuth || isPublicFile || isMigrateNow) {
     return NextResponse.next()
   }
 

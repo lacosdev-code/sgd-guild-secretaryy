@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request) {
+  // Security: require secret token to prevent unauthorized DB reset
+  const { searchParams } = new URL(req.url);
+  const token = searchParams.get('token');
+  if (!token || token !== (process.env.MIGRATE_SECRET || 'sgd-migrate-2026')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const users = [
   {
