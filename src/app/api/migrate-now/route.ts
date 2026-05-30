@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request) {
   try {
-    const sql = `--
+    const rawSql = `--
 -- PostgreSQL database dump
 --
 
@@ -310,11 +310,13 @@ ALTER TABLE public.quest_comments ENABLE TRIGGER ALL;
 
 
 `;
+    const statements = rawSql.split(';').filter(s => s.trim().length > 0);
     
-    // Prisma $executeRawUnsafe runs raw SQL
-    await prisma.$executeRawUnsafe(sql);
+    for (const statement of statements) {
+      await prisma.$executeRawUnsafe(statement);
+    }
     
-    return NextResponse.json({ success: true, message: 'Migration executed successfully!' });
+    return NextResponse.json({ success: true, message: 'Migration executed successfully! ' + statements.length + ' statements ran.' });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
