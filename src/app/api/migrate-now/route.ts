@@ -3,14 +3,607 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request) {
   try {
-    const statements = ["ALTER TABLE public.users DISABLE TRIGGER ALL","INSERT INTO public.users (id, nama, role, total_points, created_at, avatar_url, email, password_hash) VALUES ('00000000-0000-0000-0000-000000000002', 'Pris', 'adventurer', 210, '2026-05-26 12:18:42.133931+00', NULL, 'pris@sgd-corp.com', '$2a$10$BS8yMQuKilVGi3lTEUyD.u8XwwzurGPruIei9RExccfC5x4ko634u')","INSERT INTO public.users (id, nama, role, total_points, created_at, avatar_url, email, password_hash) VALUES ('00000000-0000-0000-0000-000000000003', 'Ervan', 'adventurer', 185, '2026-05-26 12:18:42.216467+00', NULL, 'ervan@sgd-corp.com', '$2a$10$ajs7sSeKBDRqt5o9dSEht.M7IPrpyw9FK.ndcfDV5eoNo1DSmrBS2')","INSERT INTO public.users (id, nama, role, total_points, created_at, avatar_url, email, password_hash) VALUES ('00000000-0000-0000-0000-000000000005', 'Santi', 'adventurer', 155, '2026-05-26 12:18:42.287375+00', NULL, 'santi@sgd-corp.com', '$2a$10$6fWtlVdWaSdFZv5oWG3czuY3xH2fLckTJZJvoPf.P0vhutMClwooG')","INSERT INTO public.users (id, nama, role, total_points, created_at, avatar_url, email, password_hash) VALUES ('00000000-0000-0000-0000-000000000006', 'Christian', 'adventurer', 300, '2026-05-26 12:18:42.318098+00', NULL, 'christian@sgd-corp.com', '$2a$10$aOWXtKF/8uqK8BSbWhFCCeieAD/M85ZoYjbTE.8t5Gq.MbZnBHcxS')","INSERT INTO public.users (id, nama, role, total_points, created_at, avatar_url, email, password_hash) VALUES ('00000000-0000-0000-0000-000000000007', 'Bruno', 'adventurer', 90, '2026-05-26 12:18:42.374789+00', NULL, 'bruno@sgd-corp.com', '$2a$10$W96y3l4HjXnJe9RR0iBiOexYg2gF0vcT79dgeUan9eUtxu8ZY2pL.')","INSERT INTO public.users (id, nama, role, total_points, created_at, avatar_url, email, password_hash) VALUES ('00000000-0000-0000-0000-000000000001', 'Reza', 'guild_master', 340, '2026-05-26 12:18:42.086722+00', 'https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000001-1779811975155.png', 'reza@sgd-corp.com', '$2a$10$RfnPCgkIDJCUAmqt8Y8Neem/dyt0axzsr45WaTNsqqoo1fQOOfI7a')","INSERT INTO public.users (id, nama, role, total_points, created_at, avatar_url, email, password_hash) VALUES ('00000000-0000-0000-0000-000000000004', 'Siska', 'adventurer', 270, '2026-05-26 12:18:42.249947+00', 'https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000004/00000000-0000-0000-0000-000000000004-1779873998167.jpg', 'siska@sgd-corp.com', '$2a$10$jKagpdg/Ftxt.4mlUxBJ3.UJ/1D19oG8/9XhTPecyRGBilf4oWzE.')","ALTER TABLE public.users ENABLE TRIGGER ALL","ALTER TABLE public.quests DISABLE TRIGGER ALL","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000001', 'Perbaikan AC ICU Bella', 'Koordinasi dengan Bokir untuk memastikan airflow di ruang ICU Bella kembali stabil setelah keluhan dari head nurse.', '00000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'B', '2026-05-24 12:18:42.275+00', 'Airflow stabil, nurse confirmation diterima, foto terlampir, tidak ada complaint 24 jam setelah perbaikan.', 120, 'Approved', true, '2026-05-23 12:18:42.275+00', '2026-05-22 12:18:42.275+00', '2026-05-26 12:18:42.423899+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000002', 'Cek kebocoran pipa lantai 3', 'Laporan kebocoran kecil di pantry lantai 3. Cek sumber kebocoran dan dokumentasikan kondisi pipa.', '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'D', '2026-05-27 12:18:42.275+00', 'Sumber kebocoran ditemukan, foto kondisi terlampir, estimasi perbaikan disiapkan.', 60, 'Active', true, '2026-05-25 12:18:42.275+00', '2026-05-25 12:18:42.275+00', '2026-05-26 12:18:42.467696+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000003', 'Pengajuan quotation genset cadangan', 'Minta minimal 2 penawaran dari vendor untuk genset cadangan 100kVA. Bandingkan spesifikasi dan harga.', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'C', '2026-05-28 12:18:42.275+00', 'Minimal 2 quotation dari vendor berbeda, file PDF terlampir, rekomendasi vendor disertakan.', 80, 'Submitted', true, '2026-05-24 12:18:42.275+00', '2026-05-23 12:18:42.275+00', '2026-05-26 12:18:42.500162+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000004', 'Audit stok spare part AC', 'Cek dan hitung ulang stok spare part AC di gudang. Update spreadsheet stok dan laporkan jika ada yang habis.', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'E', '2026-05-29 12:18:42.275+00', 'Spreadsheet stok diupdate, foto kondisi gudang terlampir, list item yang perlu restock disiapkan.', 40, 'Active', true, '2026-05-25 12:18:42.275+00', '2026-05-24 12:18:42.275+00', '2026-05-26 12:18:42.534817+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000006', 'Laporan bulanan maintenance Mei', 'Buat laporan rekap seluruh pekerjaan maintenance bulan Mei. Format PDF, kirim ke direktur.', '00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'D', '2026-05-23 12:18:42.275+00', 'PDF laporan selesai, sudah dikirim ke direktur, konfirmasi penerimaan screenshot.', 70, 'Approved', true, '2026-05-21 12:18:42.275+00', '2026-05-19 12:18:42.275+00', '2026-05-26 12:18:42.652441+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000007', 'Instalasi CCTV gudang baru', 'Pasang 4 unit CCTV di gudang baru area B. Koordinasi dengan kontraktor, pastikan semua sudut terpantau.', '00000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'B', '2026-05-27 12:18:42.275+00', 'Semua 4 CCTV aktif dan terekam, foto instalasi, screenshot live feed dari NVR.', 100, 'Revise', true, '2026-05-23 12:18:42.275+00', '2026-05-22 12:18:42.275+00', '2026-05-26 12:18:42.683914+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000008', 'Pembersihan AHU rooftop', 'Bersihkan filter dan blower AHU di rooftop. Jadwalkan dengan tim kebersihan.', '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'D', '2026-05-24 12:18:42.275+00', 'Filter bersih, foto before-after terlampir, log pembersihan ditandatangani.', 0, 'Failed', true, '2026-05-20 12:18:42.275+00', '2026-05-19 12:18:42.275+00', '2026-05-26 12:18:42.720268+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000010', 'Survey lokasi proyek Sunter', NULL, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'B', NULL, NULL, 110, 'Draft', false, NULL, '2026-05-26 10:18:42.275+00', '2026-05-26 12:18:42.902929+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('c86ee129-aabf-497b-853f-5a0fc9087af8', 'Membersihkan Selokan Guild', 'Pekerjaan kotor namun penting.', '00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'E', '2026-05-27 02:22:00+00', 'Jalur air lancar', 50, 'Active', true, '2026-05-27 10:19:27.975452+00', '2026-05-26 16:22:20.017155+00', '2026-05-27 10:19:27.975452+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('65d95ead-700c-49db-94f8-ba6627584379', 'Mencari Herb Obat', 'Ramuan obat membutuhkan daun mint biru.', NULL, '00000000-0000-0000-0000-000000000001', 'F', '2026-05-25 16:22:20.017155+00', NULL, 100, 'Failed', false, NULL, '2026-05-23 16:22:20.017155+00', '2026-05-28 06:36:03.44077+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('7171a8ed-7e36-49c3-9427-ec14734a6873', 'Membasmi 10 Slime di Hutan Timur', 'Warga desa melapor banyak slime merusak kebun. Habisi mereka dan bawa buktinya.', NULL, '00000000-0000-0000-0000-000000000001', 'E', '2026-05-28 16:22:20.017155+00', NULL, 250, 'Approved', false, NULL, '2026-05-24 16:22:20.017155+00', '2026-05-28 06:36:03.44077+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('b3b414e8-1364-4f92-a498-abfcb0b9dc1a', 'Menjelajah Dungeon Rank A', 'Temukan artifak langka di lantai 50.', NULL, '00000000-0000-0000-0000-000000000001', 'A', '2026-06-05 16:22:20.017155+00', NULL, 5000, 'Approved', false, NULL, '2026-05-21 16:22:20.017155+00', '2026-05-28 06:36:03.44077+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('d4f6fe74-eb9b-4793-b9d9-a06e70c11414', 'Pengawalan Pedagang ke Ibukota', 'Jaga kereta barang dari serangan bandit.', NULL, '00000000-0000-0000-0000-000000000001', 'D', '2026-05-31 16:22:20.017155+00', NULL, 400, 'Active', false, NULL, '2026-05-25 16:22:20.017155+00', '2026-05-28 06:36:03.44077+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('777bbd39-383e-4b5e-bfaa-adbcc4fb1061', 'Memburu Naga Merah', 'Quest darurat! Seekor naga menyerang pedesaan!', '00000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000001', 'S', '2026-06-02 09:22:00+00', 'Potong kepala naga', 9000, 'Active', true, '2026-05-28 10:11:57.130832+00', '2026-05-26 16:22:20.017155+00', '2026-05-28 10:11:57.130832+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000005', 'Koordinasi vendor lift RSIA', 'Vendor lift hari ini datang. Agar ditemani dan diperjelas masalahnya dimana.', '00000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000001', 'A', '2026-05-29 10:13:00+00', 'Principal menginformasikan parts apa yg perlu diganti.', 150, 'Active', true, '2026-05-28 10:13:48.779034+00', '2026-05-26 06:18:42.275+00', '2026-05-28 10:13:48.779034+00', 'Routine')","INSERT INTO public.quests (id, title, description, assigned_to, created_by, difficulty, deadline, success_parameter, reward_points, status, detail_completed, detail_completed_at, created_at, updated_at, urgency) VALUES ('a0000000-0000-0000-0000-000000000009', 'Update SOP emergency genset', 'Revisi SOP prosedur darurat genset berdasarkan insiden bulan lalu. Konsultasi dengan kepala teknik.', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'C', '2026-05-31 12:18:42.275+00', 'Dokumen SOP direvisi, disetujui kepala teknik, versi baru di-upload ke drive.', 80, 'Revise', true, '2026-05-25 12:18:42.275+00', '2026-05-24 12:18:42.275+00', '2026-05-28 15:02:03.556638+00', 'Routine')","ALTER TABLE public.quests ENABLE TRIGGER ALL","ALTER TABLE public.attachments DISABLE TRIGGER ALL","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'https://storage.example.com/attachments/ac-icu-before.jpg', 'image/jpeg', '00000000-0000-0000-0000-000000000006', '2026-05-24 12:18:42.275+00')","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('b0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'https://storage.example.com/attachments/ac-icu-after.jpg', 'image/jpeg', '00000000-0000-0000-0000-000000000006', '2026-05-24 12:18:42.275+00')","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003', 'https://storage.example.com/attachments/quotation-genset-vendor-a.pdf', 'application/pdf', '00000000-0000-0000-0000-000000000004', '2026-05-25 12:18:42.275+00')","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('b0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000003', 'https://storage.example.com/attachments/quotation-genset-vendor-b.pdf', 'application/pdf', '00000000-0000-0000-0000-000000000004', '2026-05-25 12:18:42.275+00')","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('b0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000006', 'https://storage.example.com/attachments/laporan-maintenance-mei-2026.pdf', 'application/pdf', '00000000-0000-0000-0000-000000000005', '2026-05-22 12:18:42.275+00')","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('b0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000007', 'https://storage.example.com/attachments/cctv-instalasi.jpg', 'image/jpeg', '00000000-0000-0000-0000-000000000006', '2026-05-25 12:18:42.275+00')","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('39739b73-c9c8-4028-a8a9-a0fbf25abee0', 'a0000000-0000-0000-0000-000000000009', 'https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/attachments/a0000000-0000-0000-0000-000000000009/1779857116072_umi0vkyk8i.png', 'image/png', '00000000-0000-0000-0000-000000000004', '2026-05-27 04:45:17.171273+00')","INSERT INTO public.attachments (id, quest_id, file_url, file_type, uploaded_by, uploaded_at) VALUES ('3213c263-58cf-47fa-a6ca-51912fd32377', 'a0000000-0000-0000-0000-000000000009', 'https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/attachments/a0000000-0000-0000-0000-000000000009/1779857117107_1phjtb833pd.jpg', 'image/jpeg', '00000000-0000-0000-0000-000000000004', '2026-05-27 04:45:17.773986+00')","ALTER TABLE public.attachments ENABLE TRIGGER ALL","ALTER TABLE public.guild_chat DISABLE TRIGGER ALL","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('2d6a95b4-334f-487a-abc9-2e89f3608627', '00000000-0000-0000-0000-000000000001', 'halo', '2026-05-28 11:39:02.869415+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('a0e2f6a1-b10e-4f49-b0c9-4451eae9a78e', '00000000-0000-0000-0000-000000000004', 'okej tugas aman', '2026-05-28 11:40:00.770059+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('9287d9b2-b20c-487a-b2a7-731c35030814', '00000000-0000-0000-0000-000000000004', 'tugas baru?', '2026-05-28 11:52:02.862774+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('3e0926d3-2144-432a-bdba-7730c810bce5', '00000000-0000-0000-0000-000000000007', 'tugas bella ac update', '2026-05-28 11:53:42.215913+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('2cd8c011-f60a-4c97-b88f-25340b3bb47f', '00000000-0000-0000-0000-000000000001', 'baik', '2026-05-28 11:58:12.634698+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('61495d52-f17f-4e13-b40e-abc19faa6a9a', '00000000-0000-0000-0000-000000000004', 'baik', '2026-05-28 11:58:27.67928+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('23a92f5c-3c27-43e0-b9a9-2304e7d49988', '00000000-0000-0000-0000-000000000001', 'tolong perbaiki catatan', '2026-05-28 12:05:42.724113+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('7843942f-fa8c-4b74-9d6d-24da873aec71', '00000000-0000-0000-0000-000000000007', 'baik', '2026-05-28 12:05:58.533112+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('abf17181-4083-4513-b4c3-67f8f47c444d', '00000000-0000-0000-0000-000000000001', 'halo pagi', '2026-05-28 12:06:51.419089+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('55de8ef3-0968-4fd6-ab58-6084d943e09f', '00000000-0000-0000-0000-000000000004', 'pagi', '2026-05-28 12:06:57.254909+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('dc6e30b5-3d0e-4e2c-b801-8e1e9c83f1e1', '00000000-0000-0000-0000-000000000007', 'pagi', '2026-05-28 12:07:01.494201+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('874fac76-0472-4a44-87bd-8c8ac251962f', '00000000-0000-0000-0000-000000000001', 'ada tuags bru', '2026-05-28 12:07:09.730152+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('7af81e7b-1cc1-4a29-9a4b-052b6ae13024', '00000000-0000-0000-0000-000000000004', 'ok', '2026-05-28 12:07:14.133783+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('0f6ce977-0073-4870-af3e-74d7a5103b2d', '00000000-0000-0000-0000-000000000007', 'ok', '2026-05-28 12:07:17.503936+00')","INSERT INTO public.guild_chat (id, user_id, message, created_at) VALUES ('1c1c6312-0763-44d7-aee9-5da076112187', '00000000-0000-0000-0000-000000000004', 'malam tim', '2026-05-28 14:54:52.323215+00')","ALTER TABLE public.guild_chat ENABLE TRIGGER ALL","ALTER TABLE public.notifications DISABLE TRIGGER ALL","INSERT INTO public.notifications (id, user_id, title, message, link, is_read, created_at) VALUES ('94c1278b-3d11-4719-ba4e-9945ff1ebebd', '00000000-0000-0000-0000-000000000001', 'Peringatan Deadline', 'Quest Mencari Herb Obat telah melewati deadline.', NULL, true, '2026-05-26 16:22:20.017155+00')","INSERT INTO public.notifications (id, user_id, title, message, link, is_read, created_at) VALUES ('87dffee7-f6e7-4016-98b6-b067b9b0b8b5', '00000000-0000-0000-0000-000000000001', 'Quest Selesai', 'Kirito telah menyelesaikan quest Membasmi Slime.', NULL, true, '2026-05-26 16:22:20.017155+00')","INSERT INTO public.notifications (id, user_id, title, message, link, is_read, created_at) VALUES ('e2cb8c55-112e-4018-be73-578c81afc2ad', '00000000-0000-0000-0000-000000000001', 'Submission Baru', 'Asuna mengirimkan laporan progress quest.', NULL, true, '2026-05-26 16:22:20.017155+00')","ALTER TABLE public.notifications ENABLE TRIGGER ALL","ALTER TABLE public.point_logs DISABLE TRIGGER ALL","INSERT INTO public.point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES ('c0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', 120, 'Quest approved: Perbaikan AC ICU Bella', '2026-05-24 12:18:42.275+00')","INSERT INTO public.point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES ('c0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000006', 70, 'Quest approved: Laporan bulanan maintenance Mei', '2026-05-23 12:18:42.275+00')","INSERT INTO public.point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES ('c0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 30, 'Bonus GM: detail quest lengkap sebelum 21:00', '2026-05-22 12:18:42.275+00')","INSERT INTO public.point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES ('c0000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000006', 30, 'Bonus GM: detail quest lengkap sebelum 21:00', '2026-05-19 12:18:42.275+00')","INSERT INTO public.point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES ('c0000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000005', -20, 'Penalti GM: detail quest belum lengkap melewati 00:00', '2026-05-26 07:18:42.275+00')","INSERT INTO public.point_logs (id, user_id, quest_id, delta, reason, created_at) VALUES ('c0000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000010', -20, 'Penalti GM: detail quest belum lengkap melewati 00:00', '2026-05-26 11:18:42.275+00')","ALTER TABLE public.point_logs ENABLE TRIGGER ALL","ALTER TABLE public.quest_comments DISABLE TRIGGER ALL","ALTER TABLE public.quest_comments ENABLE TRIGGER ALL"];
-    
-    for (const statement of statements) {
-      await prisma.$executeRawUnsafe(statement);
-    }
-    
-    return NextResponse.json({ success: true, message: 'Migration executed successfully! ' + statements.length + ' statements ran.' });
+    const users = [
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "nama": "Pris",
+    "role": "adventurer",
+    "totalPoints": 210,
+    "createdAt": "2026-05-26 12:18:42.133931+00",
+    "avatarUrl": null,
+    "email": "pris@sgd-corp.com",
+    "passwordHash": "$2a$10$BS8yMQuKilVGi3lTEUyD.u8XwwzurGPruIei9RExccfC5x4ko634u"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "nama": "Ervan",
+    "role": "adventurer",
+    "totalPoints": 185,
+    "createdAt": "2026-05-26 12:18:42.216467+00",
+    "avatarUrl": null,
+    "email": "ervan@sgd-corp.com",
+    "passwordHash": "$2a$10$ajs7sSeKBDRqt5o9dSEht.M7IPrpyw9FK.ndcfDV5eoNo1DSmrBS2"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000005",
+    "nama": "Santi",
+    "role": "adventurer",
+    "totalPoints": 155,
+    "createdAt": "2026-05-26 12:18:42.287375+00",
+    "avatarUrl": null,
+    "email": "santi@sgd-corp.com",
+    "passwordHash": "$2a$10$6fWtlVdWaSdFZv5oWG3czuY3xH2fLckTJZJvoPf.P0vhutMClwooG"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000006",
+    "nama": "Christian",
+    "role": "adventurer",
+    "totalPoints": 300,
+    "createdAt": "2026-05-26 12:18:42.318098+00",
+    "avatarUrl": null,
+    "email": "christian@sgd-corp.com",
+    "passwordHash": "$2a$10$aOWXtKF/8uqK8BSbWhFCCeieAD/M85ZoYjbTE.8t5Gq.MbZnBHcxS"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000007",
+    "nama": "Bruno",
+    "role": "adventurer",
+    "totalPoints": 90,
+    "createdAt": "2026-05-26 12:18:42.374789+00",
+    "avatarUrl": null,
+    "email": "bruno@sgd-corp.com",
+    "passwordHash": "$2a$10$W96y3l4HjXnJe9RR0iBiOexYg2gF0vcT79dgeUan9eUtxu8ZY2pL."
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "nama": "Reza",
+    "role": "guild_master",
+    "totalPoints": 340,
+    "createdAt": "2026-05-26 12:18:42.086722+00",
+    "avatarUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000001-1779811975155.png",
+    "email": "reza@sgd-corp.com",
+    "passwordHash": "$2a$10$RfnPCgkIDJCUAmqt8Y8Neem/dyt0axzsr45WaTNsqqoo1fQOOfI7a"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000004",
+    "nama": "Siska",
+    "role": "adventurer",
+    "totalPoints": 270,
+    "createdAt": "2026-05-26 12:18:42.249947+00",
+    "avatarUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000004/00000000-0000-0000-0000-000000000004-1779873998167.jpg",
+    "email": "siska@sgd-corp.com",
+    "passwordHash": "$2a$10$jKagpdg/Ftxt.4mlUxBJ3.UJ/1D19oG8/9XhTPecyRGBilf4oWzE."
+  }
+];
+    const quests = [
+  {
+    "id": "a0000000-0000-0000-0000-000000000001",
+    "title": "Perbaikan AC ICU Bella",
+    "description": "Koordinasi dengan Bokir untuk memastikan airflow di ruang ICU Bella kembali stabil setelah keluhan dari head nurse.",
+    "assignedTo": "00000000-0000-0000-0000-000000000006",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "B",
+    "deadline": "2026-05-24T12:18:42.275Z",
+    "successParameter": "Airflow stabil, nurse confirmation diterima, foto terlampir, tidak ada complaint 24 jam setelah perbaikan.",
+    "rewardPoints": 120,
+    "status": "Approved",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-23T12:18:42.275Z",
+    "createdAt": "2026-05-22T12:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.423Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000002",
+    "title": "Cek kebocoran pipa lantai 3",
+    "description": "Laporan kebocoran kecil di pantry lantai 3. Cek sumber kebocoran dan dokumentasikan kondisi pipa.",
+    "assignedTo": "00000000-0000-0000-0000-000000000003",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "D",
+    "deadline": "2026-05-27T12:18:42.275Z",
+    "successParameter": "Sumber kebocoran ditemukan, foto kondisi terlampir, estimasi perbaikan disiapkan.",
+    "rewardPoints": 60,
+    "status": "Active",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-25T12:18:42.275Z",
+    "createdAt": "2026-05-25T12:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.467Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000003",
+    "title": "Pengajuan quotation genset cadangan",
+    "description": "Minta minimal 2 penawaran dari vendor untuk genset cadangan 100kVA. Bandingkan spesifikasi dan harga.",
+    "assignedTo": "00000000-0000-0000-0000-000000000004",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "C",
+    "deadline": "2026-05-28T12:18:42.275Z",
+    "successParameter": "Minimal 2 quotation dari vendor berbeda, file PDF terlampir, rekomendasi vendor disertakan.",
+    "rewardPoints": 80,
+    "status": "Submitted",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-24T12:18:42.275Z",
+    "createdAt": "2026-05-23T12:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.500Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000004",
+    "title": "Audit stok spare part AC",
+    "description": "Cek dan hitung ulang stok spare part AC di gudang. Update spreadsheet stok dan laporkan jika ada yang habis.",
+    "assignedTo": "00000000-0000-0000-0000-000000000002",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "E",
+    "deadline": "2026-05-29T12:18:42.275Z",
+    "successParameter": "Spreadsheet stok diupdate, foto kondisi gudang terlampir, list item yang perlu restock disiapkan.",
+    "rewardPoints": 40,
+    "status": "Active",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-25T12:18:42.275Z",
+    "createdAt": "2026-05-24T12:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.534Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000006",
+    "title": "Laporan bulanan maintenance Mei",
+    "description": "Buat laporan rekap seluruh pekerjaan maintenance bulan Mei. Format PDF, kirim ke direktur.",
+    "assignedTo": "00000000-0000-0000-0000-000000000005",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "D",
+    "deadline": "2026-05-23T12:18:42.275Z",
+    "successParameter": "PDF laporan selesai, sudah dikirim ke direktur, konfirmasi penerimaan screenshot.",
+    "rewardPoints": 70,
+    "status": "Approved",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-21T12:18:42.275Z",
+    "createdAt": "2026-05-19T12:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.652Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000007",
+    "title": "Instalasi CCTV gudang baru",
+    "description": "Pasang 4 unit CCTV di gudang baru area B. Koordinasi dengan kontraktor, pastikan semua sudut terpantau.",
+    "assignedTo": "00000000-0000-0000-0000-000000000006",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "B",
+    "deadline": "2026-05-27T12:18:42.275Z",
+    "successParameter": "Semua 4 CCTV aktif dan terekam, foto instalasi, screenshot live feed dari NVR.",
+    "rewardPoints": 100,
+    "status": "Revise",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-23T12:18:42.275Z",
+    "createdAt": "2026-05-22T12:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.683Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000008",
+    "title": "Pembersihan AHU rooftop",
+    "description": "Bersihkan filter dan blower AHU di rooftop. Jadwalkan dengan tim kebersihan.",
+    "assignedTo": "00000000-0000-0000-0000-000000000003",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "D",
+    "deadline": "2026-05-24T12:18:42.275Z",
+    "successParameter": "Filter bersih, foto before-after terlampir, log pembersihan ditandatangani.",
+    "rewardPoints": 0,
+    "status": "Failed",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-20T12:18:42.275Z",
+    "createdAt": "2026-05-19T12:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.720Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000010",
+    "title": "Survey lokasi proyek Sunter",
+    "description": null,
+    "assignedTo": "00000000-0000-0000-0000-000000000002",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "B",
+    "deadline": null,
+    "successParameter": null,
+    "rewardPoints": 110,
+    "status": "Draft",
+    "detailCompleted": false,
+    "detailCompletedAt": null,
+    "createdAt": "2026-05-26T10:18:42.275Z",
+    "updatedAt": "2026-05-26T12:18:42.902Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "c86ee129-aabf-497b-853f-5a0fc9087af8",
+    "title": "Membersihkan Selokan Guild",
+    "description": "Pekerjaan kotor namun penting.",
+    "assignedTo": "00000000-0000-0000-0000-000000000005",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "E",
+    "deadline": "2026-05-27T02:22:00.000Z",
+    "successParameter": "Jalur air lancar",
+    "rewardPoints": 50,
+    "status": "Active",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-27T10:19:27.975Z",
+    "createdAt": "2026-05-26T16:22:20.017Z",
+    "updatedAt": "2026-05-27T10:19:27.975Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "65d95ead-700c-49db-94f8-ba6627584379",
+    "title": "Mencari Herb Obat",
+    "description": "Ramuan obat membutuhkan daun mint biru.",
+    "assignedTo": null,
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "F",
+    "deadline": "2026-05-25T16:22:20.017Z",
+    "successParameter": null,
+    "rewardPoints": 100,
+    "status": "Failed",
+    "detailCompleted": false,
+    "detailCompletedAt": null,
+    "createdAt": "2026-05-23T16:22:20.017Z",
+    "updatedAt": "2026-05-28T06:36:03.440Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "7171a8ed-7e36-49c3-9427-ec14734a6873",
+    "title": "Membasmi 10 Slime di Hutan Timur",
+    "description": "Warga desa melapor banyak slime merusak kebun. Habisi mereka dan bawa buktinya.",
+    "assignedTo": null,
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "E",
+    "deadline": "2026-05-28T16:22:20.017Z",
+    "successParameter": null,
+    "rewardPoints": 250,
+    "status": "Approved",
+    "detailCompleted": false,
+    "detailCompletedAt": null,
+    "createdAt": "2026-05-24T16:22:20.017Z",
+    "updatedAt": "2026-05-28T06:36:03.440Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "b3b414e8-1364-4f92-a498-abfcb0b9dc1a",
+    "title": "Menjelajah Dungeon Rank A",
+    "description": "Temukan artifak langka di lantai 50.",
+    "assignedTo": null,
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "A",
+    "deadline": "2026-06-05T16:22:20.017Z",
+    "successParameter": null,
+    "rewardPoints": 5000,
+    "status": "Approved",
+    "detailCompleted": false,
+    "detailCompletedAt": null,
+    "createdAt": "2026-05-21T16:22:20.017Z",
+    "updatedAt": "2026-05-28T06:36:03.440Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "d4f6fe74-eb9b-4793-b9d9-a06e70c11414",
+    "title": "Pengawalan Pedagang ke Ibukota",
+    "description": "Jaga kereta barang dari serangan bandit.",
+    "assignedTo": null,
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "D",
+    "deadline": "2026-05-31T16:22:20.017Z",
+    "successParameter": null,
+    "rewardPoints": 400,
+    "status": "Active",
+    "detailCompleted": false,
+    "detailCompletedAt": null,
+    "createdAt": "2026-05-25T16:22:20.017Z",
+    "updatedAt": "2026-05-28T06:36:03.440Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "777bbd39-383e-4b5e-bfaa-adbcc4fb1061",
+    "title": "Memburu Naga Merah",
+    "description": "Quest darurat! Seekor naga menyerang pedesaan!",
+    "assignedTo": "00000000-0000-0000-0000-000000000007",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "S",
+    "deadline": "2026-06-02T09:22:00.000Z",
+    "successParameter": "Potong kepala naga",
+    "rewardPoints": 9000,
+    "status": "Active",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-28T10:11:57.130Z",
+    "createdAt": "2026-05-26T16:22:20.017Z",
+    "updatedAt": "2026-05-28T10:11:57.130Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000005",
+    "title": "Koordinasi vendor lift RSIA",
+    "description": "Vendor lift hari ini datang. Agar ditemani dan diperjelas masalahnya dimana.",
+    "assignedTo": "00000000-0000-0000-0000-000000000007",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "A",
+    "deadline": "2026-05-29T10:13:00.000Z",
+    "successParameter": "Principal menginformasikan parts apa yg perlu diganti.",
+    "rewardPoints": 150,
+    "status": "Active",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-28T10:13:48.779Z",
+    "createdAt": "2026-05-26T06:18:42.275Z",
+    "updatedAt": "2026-05-28T10:13:48.779Z",
+    "urgency": "Routine"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000009",
+    "title": "Update SOP emergency genset",
+    "description": "Revisi SOP prosedur darurat genset berdasarkan insiden bulan lalu. Konsultasi dengan kepala teknik.",
+    "assignedTo": "00000000-0000-0000-0000-000000000004",
+    "createdBy": "00000000-0000-0000-0000-000000000001",
+    "difficulty": "C",
+    "deadline": "2026-05-31T12:18:42.275Z",
+    "successParameter": "Dokumen SOP direvisi, disetujui kepala teknik, versi baru di-upload ke drive.",
+    "rewardPoints": 80,
+    "status": "Revise",
+    "detailCompleted": true,
+    "detailCompletedAt": "2026-05-25T12:18:42.275Z",
+    "createdAt": "2026-05-24T12:18:42.275Z",
+    "updatedAt": "2026-05-28T15:02:03.556Z",
+    "urgency": "Routine"
+  }
+];
+    const attachments = [
+  {
+    "id": "b0000000-0000-0000-0000-000000000001",
+    "questId": "a0000000-0000-0000-0000-000000000001",
+    "fileUrl": "https://storage.example.com/attachments/ac-icu-before.jpg",
+    "fileType": "image/jpeg",
+    "uploadedBy": "00000000-0000-0000-0000-000000000006",
+    "uploadedAt": "2026-05-24T12:18:42.275Z"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000002",
+    "questId": "a0000000-0000-0000-0000-000000000001",
+    "fileUrl": "https://storage.example.com/attachments/ac-icu-after.jpg",
+    "fileType": "image/jpeg",
+    "uploadedBy": "00000000-0000-0000-0000-000000000006",
+    "uploadedAt": "2026-05-24T12:18:42.275Z"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000003",
+    "questId": "a0000000-0000-0000-0000-000000000003",
+    "fileUrl": "https://storage.example.com/attachments/quotation-genset-vendor-a.pdf",
+    "fileType": "application/pdf",
+    "uploadedBy": "00000000-0000-0000-0000-000000000004",
+    "uploadedAt": "2026-05-25T12:18:42.275Z"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000004",
+    "questId": "a0000000-0000-0000-0000-000000000003",
+    "fileUrl": "https://storage.example.com/attachments/quotation-genset-vendor-b.pdf",
+    "fileType": "application/pdf",
+    "uploadedBy": "00000000-0000-0000-0000-000000000004",
+    "uploadedAt": "2026-05-25T12:18:42.275Z"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000005",
+    "questId": "a0000000-0000-0000-0000-000000000006",
+    "fileUrl": "https://storage.example.com/attachments/laporan-maintenance-mei-2026.pdf",
+    "fileType": "application/pdf",
+    "uploadedBy": "00000000-0000-0000-0000-000000000005",
+    "uploadedAt": "2026-05-22T12:18:42.275Z"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000006",
+    "questId": "a0000000-0000-0000-0000-000000000007",
+    "fileUrl": "https://storage.example.com/attachments/cctv-instalasi.jpg",
+    "fileType": "image/jpeg",
+    "uploadedBy": "00000000-0000-0000-0000-000000000006",
+    "uploadedAt": "2026-05-25T12:18:42.275Z"
+  },
+  {
+    "id": "39739b73-c9c8-4028-a8a9-a0fbf25abee0",
+    "questId": "a0000000-0000-0000-0000-000000000009",
+    "fileUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/attachments/a0000000-0000-0000-0000-000000000009/1779857116072_umi0vkyk8i.png",
+    "fileType": "image/png",
+    "uploadedBy": "00000000-0000-0000-0000-000000000004",
+    "uploadedAt": "2026-05-27T04:45:17.171Z"
+  },
+  {
+    "id": "3213c263-58cf-47fa-a6ca-51912fd32377",
+    "questId": "a0000000-0000-0000-0000-000000000009",
+    "fileUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/attachments/a0000000-0000-0000-0000-000000000009/1779857117107_1phjtb833pd.jpg",
+    "fileType": "image/jpeg",
+    "uploadedBy": "00000000-0000-0000-0000-000000000004",
+    "uploadedAt": "2026-05-27T04:45:17.773Z"
+  }
+];
+    const guildChats = [
+  {
+    "id": "2d6a95b4-334f-487a-abc9-2e89f3608627",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "message": "halo",
+    "createdAt": "2026-05-28T11:39:02.869Z"
+  },
+  {
+    "id": "a0e2f6a1-b10e-4f49-b0c9-4451eae9a78e",
+    "userId": "00000000-0000-0000-0000-000000000004",
+    "message": "okej tugas aman",
+    "createdAt": "2026-05-28T11:40:00.770Z"
+  },
+  {
+    "id": "9287d9b2-b20c-487a-b2a7-731c35030814",
+    "userId": "00000000-0000-0000-0000-000000000004",
+    "message": "tugas baru?",
+    "createdAt": "2026-05-28T11:52:02.862Z"
+  },
+  {
+    "id": "3e0926d3-2144-432a-bdba-7730c810bce5",
+    "userId": "00000000-0000-0000-0000-000000000007",
+    "message": "tugas bella ac update",
+    "createdAt": "2026-05-28T11:53:42.215Z"
+  },
+  {
+    "id": "2cd8c011-f60a-4c97-b88f-25340b3bb47f",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "message": "baik",
+    "createdAt": "2026-05-28T11:58:12.634Z"
+  },
+  {
+    "id": "61495d52-f17f-4e13-b40e-abc19faa6a9a",
+    "userId": "00000000-0000-0000-0000-000000000004",
+    "message": "baik",
+    "createdAt": "2026-05-28T11:58:27.679Z"
+  },
+  {
+    "id": "23a92f5c-3c27-43e0-b9a9-2304e7d49988",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "message": "tolong perbaiki catatan",
+    "createdAt": "2026-05-28T12:05:42.724Z"
+  },
+  {
+    "id": "7843942f-fa8c-4b74-9d6d-24da873aec71",
+    "userId": "00000000-0000-0000-0000-000000000007",
+    "message": "baik",
+    "createdAt": "2026-05-28T12:05:58.533Z"
+  },
+  {
+    "id": "abf17181-4083-4513-b4c3-67f8f47c444d",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "message": "halo pagi",
+    "createdAt": "2026-05-28T12:06:51.419Z"
+  },
+  {
+    "id": "55de8ef3-0968-4fd6-ab58-6084d943e09f",
+    "userId": "00000000-0000-0000-0000-000000000004",
+    "message": "pagi",
+    "createdAt": "2026-05-28T12:06:57.254Z"
+  },
+  {
+    "id": "dc6e30b5-3d0e-4e2c-b801-8e1e9c83f1e1",
+    "userId": "00000000-0000-0000-0000-000000000007",
+    "message": "pagi",
+    "createdAt": "2026-05-28T12:07:01.494Z"
+  },
+  {
+    "id": "874fac76-0472-4a44-87bd-8c8ac251962f",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "message": "ada tuags bru",
+    "createdAt": "2026-05-28T12:07:09.730Z"
+  },
+  {
+    "id": "7af81e7b-1cc1-4a29-9a4b-052b6ae13024",
+    "userId": "00000000-0000-0000-0000-000000000004",
+    "message": "ok",
+    "createdAt": "2026-05-28T12:07:14.133Z"
+  },
+  {
+    "id": "0f6ce977-0073-4870-af3e-74d7a5103b2d",
+    "userId": "00000000-0000-0000-0000-000000000007",
+    "message": "ok",
+    "createdAt": "2026-05-28T12:07:17.503Z"
+  },
+  {
+    "id": "1c1c6312-0763-44d7-aee9-5da076112187",
+    "userId": "00000000-0000-0000-0000-000000000004",
+    "message": "malam tim",
+    "createdAt": "2026-05-28T14:54:52.323Z"
+  }
+];
+    const notifications = [
+  {
+    "id": "94c1278b-3d11-4719-ba4e-9945ff1ebebd",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "title": "Peringatan Deadline",
+    "message": "Quest Mencari Herb Obat telah melewati deadline.",
+    "link": null,
+    "isRead": true,
+    "createdAt": "2026-05-26T16:22:20.017Z"
+  },
+  {
+    "id": "87dffee7-f6e7-4016-98b6-b067b9b0b8b5",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "title": "Quest Selesai",
+    "message": "Kirito telah menyelesaikan quest Membasmi Slime.",
+    "link": null,
+    "isRead": true,
+    "createdAt": "2026-05-26T16:22:20.017Z"
+  },
+  {
+    "id": "e2cb8c55-112e-4018-be73-578c81afc2ad",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "title": "Submission Baru",
+    "message": "Asuna mengirimkan laporan progress quest.",
+    "link": null,
+    "isRead": true,
+    "createdAt": "2026-05-26T16:22:20.017Z"
+  }
+];
+    const pointLogs = [
+  {
+    "id": "c0000000-0000-0000-0000-000000000001",
+    "userId": "00000000-0000-0000-0000-000000000006",
+    "questId": "a0000000-0000-0000-0000-000000000001",
+    "delta": 120,
+    "reason": "Quest approved: Perbaikan AC ICU Bella",
+    "createdAt": "2026-05-24T12:18:42.275Z"
+  },
+  {
+    "id": "c0000000-0000-0000-0000-000000000002",
+    "userId": "00000000-0000-0000-0000-000000000005",
+    "questId": "a0000000-0000-0000-0000-000000000006",
+    "delta": 70,
+    "reason": "Quest approved: Laporan bulanan maintenance Mei",
+    "createdAt": "2026-05-23T12:18:42.275Z"
+  },
+  {
+    "id": "c0000000-0000-0000-0000-000000000003",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "questId": "a0000000-0000-0000-0000-000000000001",
+    "delta": 30,
+    "reason": "Bonus GM: detail quest lengkap sebelum 21:00",
+    "createdAt": "2026-05-22T12:18:42.275Z"
+  },
+  {
+    "id": "c0000000-0000-0000-0000-000000000004",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "questId": "a0000000-0000-0000-0000-000000000006",
+    "delta": 30,
+    "reason": "Bonus GM: detail quest lengkap sebelum 21:00",
+    "createdAt": "2026-05-19T12:18:42.275Z"
+  },
+  {
+    "id": "c0000000-0000-0000-0000-000000000005",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "questId": "a0000000-0000-0000-0000-000000000005",
+    "delta": -20,
+    "reason": "Penalti GM: detail quest belum lengkap melewati 00:00",
+    "createdAt": "2026-05-26T07:18:42.275Z"
+  },
+  {
+    "id": "c0000000-0000-0000-0000-000000000006",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "questId": "a0000000-0000-0000-0000-000000000010",
+    "delta": -20,
+    "reason": "Penalti GM: detail quest belum lengkap melewati 00:00",
+    "createdAt": "2026-05-26T11:18:42.275Z"
+  }
+];
+
+    // Delete existing to prevent duplicate IDs
+    await prisma.pointLog.deleteMany({});
+    await prisma.notification.deleteMany({});
+    await prisma.guildChat.deleteMany({});
+    await prisma.attachment.deleteMany({});
+    await prisma.quest.deleteMany({});
+    await prisma.user.deleteMany({});
+
+    if (users.length) await prisma.user.createMany({ data: users });
+    if (quests.length) await prisma.quest.createMany({ data: quests });
+    if (attachments.length) await prisma.attachment.createMany({ data: attachments });
+    if (guildChats.length) await prisma.guildChat.createMany({ data: guildChats });
+    if (notifications.length) await prisma.notification.createMany({ data: notifications });
+    if (pointLogs.length) await prisma.pointLog.createMany({ data: pointLogs });
+
+    return NextResponse.json({ success: true, message: 'Migration via Prisma createMany executed successfully!' });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message, stack: error.stack }, { status: 500 });
   }
 }
