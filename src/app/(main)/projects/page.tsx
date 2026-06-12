@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import Link from 'next/link'
 
 async function createProject(formData: FormData) {
   'use server'
@@ -58,16 +59,18 @@ export default async function ProjectsPage() {
 
       <div className="grid gap-4 md:grid-cols-2 max-w-4xl">
         {projects.map(proj => (
-          <div key={proj.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-white/10">
-            <div className="flex justify-between items-start">
-              <h3 className="font-bold text-navy dark:text-white">{proj.name}</h3>
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">{proj.health}</span>
+          <Link href={`/projects/${proj.id}`} key={proj.id} className="block group">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-white/10 transition-all hover:border-navy dark:hover:border-slate-500 hover:shadow-md h-full">
+              <div className="flex justify-between items-start">
+                <h3 className="font-bold text-navy dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.name}</h3>
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">{proj.health}</span>
+              </div>
+              {proj.arc && <p className="text-xs text-indigo-500 font-bold mt-1 tracking-wider uppercase">ARC: {proj.arc.name}</p>}
+              <div className="mt-4 text-xs font-medium text-gray-400">
+                {proj._count.quests} Quests
+              </div>
             </div>
-            {proj.arc && <p className="text-xs text-indigo-500 font-bold mt-1 tracking-wider uppercase">ARC: {proj.arc.name}</p>}
-            <div className="mt-4 text-xs font-medium text-gray-400">
-              {proj._count.quests} Quests
-            </div>
-          </div>
+          </Link>
         ))}
         {projects.length === 0 && <p className="text-sm text-gray-500">Belum ada Project yang dibuat.</p>}
       </div>

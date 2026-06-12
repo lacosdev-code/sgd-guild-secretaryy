@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import Link from 'next/link'
 
 async function createArc(formData: FormData) {
   'use server'
@@ -54,16 +55,18 @@ export default async function ArcsPage() {
 
       <div className="grid gap-4 md:grid-cols-2 max-w-4xl">
         {arcs.map(arc => (
-          <div key={arc.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-white/10">
-            <div className="flex justify-between items-start">
-              <h3 className="font-bold text-navy dark:text-white">{arc.name}</h3>
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{arc.status}</span>
+          <Link href={`/arcs/${arc.id}`} key={arc.id} className="block group">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-white/10 transition-all hover:border-navy dark:hover:border-slate-500 hover:shadow-md">
+              <div className="flex justify-between items-start">
+                <h3 className="font-bold text-navy dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{arc.name}</h3>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{arc.status}</span>
+              </div>
+              {arc.strategicObjective && <p className="text-sm text-gray-500 mt-2 line-clamp-2">{arc.strategicObjective}</p>}
+              <div className="mt-4 text-xs font-medium text-gray-400">
+                {arc._count.projects} Projects
+              </div>
             </div>
-            {arc.strategicObjective && <p className="text-sm text-gray-500 mt-2">{arc.strategicObjective}</p>}
-            <div className="mt-4 text-xs font-medium text-gray-400">
-              {arc._count.projects} Projects
-            </div>
-          </div>
+          </Link>
         ))}
         {arcs.length === 0 && <p className="text-sm text-gray-500">Belum ada Arc yang dibuat.</p>}
       </div>
