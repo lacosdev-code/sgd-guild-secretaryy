@@ -1,7 +1,19 @@
 type SSEController = ReadableStreamDefaultController<Uint8Array>
 
-const chatClients = new Set<SSEController>()
-const notificationClients = new Map<string, Set<SSEController>>()
+const globalForSSE = globalThis as unknown as {
+  chatClients: Set<SSEController>
+  notificationClients: Map<string, Set<SSEController>>
+}
+
+if (!globalForSSE.chatClients) {
+  globalForSSE.chatClients = new Set<SSEController>()
+}
+if (!globalForSSE.notificationClients) {
+  globalForSSE.notificationClients = new Map<string, Set<SSEController>>()
+}
+
+const chatClients = globalForSSE.chatClients
+const notificationClients = globalForSSE.notificationClients
 
 // --- Chat SSE ---
 export function broadcastChatEvent(data: any) {
