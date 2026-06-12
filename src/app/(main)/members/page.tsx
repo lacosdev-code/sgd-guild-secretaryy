@@ -74,9 +74,9 @@ export default function MembersPage() {
       </div>
 
       <div className="bg-white dark:bg-charcoal rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
+        <div className="overflow-x-hidden sm:overflow-x-auto">
+          <table className="w-full text-left block sm:table">
+            <thead className="hidden sm:table-header-group">
               <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-navy/20">
                 <th className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
                 <th className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
@@ -84,26 +84,26 @@ export default function MembersPage() {
                 <th className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Points</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+            <tbody className="block sm:table-row-group divide-y divide-gray-100 dark:divide-white/5">
               {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">Loading data...</td>
+                <tr className="block sm:table-row">
+                  <td colSpan={4} className="block sm:table-cell px-6 py-8 text-center text-gray-500">Loading data...</td>
                 </tr>
               ) : error ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-red-500">{error}</td>
+                <tr className="block sm:table-row">
+                  <td colSpan={4} className="block sm:table-cell px-6 py-8 text-center text-red-500">{error}</td>
                 </tr>
               ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">No members registered yet.</td>
+                <tr className="block sm:table-row">
+                  <td colSpan={4} className="block sm:table-cell px-6 py-8 text-center text-gray-500">No members registered yet.</td>
                 </tr>
               ) : (
                 users.map(user => {
                   const rank = user.role === 'adventurer' ? getRankInfo(user.totalPoints) : null
 
                   return (
-                    <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr key={user.id} className="block sm:table-row p-4 sm:p-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                      <td className="block sm:table-cell sm:px-6 sm:py-4 mb-3 sm:mb-0">
                         <Link href={`/members/${user.id}`} className="flex items-center gap-3 group">
                           <Avatar 
                             url={user.avatarUrl} 
@@ -117,7 +117,8 @@ export default function MembersPage() {
                           </div>
                         </Link>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="flex sm:table-cell justify-between items-center sm:px-6 sm:py-4 py-1.5 border-t border-gray-50 dark:border-white/5 sm:border-t-0">
+                        <span className="sm:hidden text-xs font-bold text-gray-500 uppercase tracking-widest">Role</span>
                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
                           user.role === 'guild_master' 
                             ? 'bg-gold/10 text-gold border-gold/20'
@@ -127,7 +128,8 @@ export default function MembersPage() {
                           {user.role === 'guild_master' ? 'Guild Master' : 'Adventurer'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="flex sm:table-cell justify-between items-center sm:px-6 sm:py-4 py-1.5">
+                        <span className="sm:hidden text-xs font-bold text-gray-500 uppercase tracking-widest">Rank</span>
                         {rank ? (
                           <span className="px-2 py-1 rounded text-xs font-bold bg-navy dark:bg-white/10 text-gold whitespace-nowrap">
                             RANK {rank.currentRank}
@@ -136,7 +138,8 @@ export default function MembersPage() {
                           <span className="text-gray-400 text-sm">-</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="flex sm:table-cell justify-between items-center sm:px-6 sm:py-4 py-1.5">
+                        <span className="sm:hidden text-xs font-bold text-gray-500 uppercase tracking-widest">Points</span>
                         <div className="font-bold text-navy dark:text-white tabular-nums">
                           {user.totalPoints.toLocaleString('id-ID')}
                         </div>

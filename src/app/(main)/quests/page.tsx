@@ -189,9 +189,9 @@ export default function QuestsPage() {
       <div className="space-y-0">
         <SearchBar value={search} onChange={setSearch} />
 
-        {/* Filter tabs */}
+        {/* Filter tabs (Desktop) */}
         <div
-          className="flex gap-0 overflow-x-auto border-b"
+          className="hidden sm:flex gap-0 overflow-x-auto border-b"
           style={{ borderColor: '#E8E5E0' }}
         >
           <FilterTab
@@ -209,6 +209,35 @@ export default function QuestsPage() {
               onClick={() => setActiveFilter(s)}
             />
           ))}
+        </div>
+
+        {/* Filter Dropdown (Mobile) */}
+        <div className="sm:hidden px-4 py-3 border-b bg-gray-50/50" style={{ borderColor: '#E8E5E0' }}>
+          <select
+            value={activeFilter}
+            onChange={(e) => setActiveFilter(e.target.value as any)}
+            className="w-full bg-white border border-gray-200 rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-widest outline-none focus:border-navy focus:ring-1 focus:ring-navy appearance-none"
+            style={{
+              color: '#1B2E52', // text-navy
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%231B2E52' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.5rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em',
+              paddingRight: '2.5rem'
+            }}
+          >
+            <option value="Semua">
+              SEMUA {quests.length > 0 ? `(${quests.length > 99 ? '99+' : quests.length})` : ''}
+            </option>
+            {ALL_STATUSES.map((s) => {
+              const count = countByStatus[s];
+              return (
+                <option key={s} value={s}>
+                  {s.toUpperCase()} {count ? `(${count > 99 ? '99+' : count})` : ''}
+                </option>
+              )
+            })}
+          </select>
         </div>
       </div>
 
