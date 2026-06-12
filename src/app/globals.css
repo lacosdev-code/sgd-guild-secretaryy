@@ -35,3 +35,26 @@ body {
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; }
 input[type='number']                            { -moz-appearance: textfield; }
+
+/* ── Bottom Nav Ripple Effect ───────────────────────────────────────────── */
+.nav-item {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(201,162,39,0.25) 0%, transparent 70%);
+  transform: scale(0);
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  opacity: 0;
+  border-radius: 9999px;
+}
+
+.nav-item:active::after {
+  transform: scale(2.5);
+  opacity: 1;
+}

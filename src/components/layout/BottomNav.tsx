@@ -56,10 +56,15 @@ export default function BottomNav() {
 
       {/* The 'More' Menu Popup */}
       <div 
-        className={cn(
-          "lg:hidden fixed bottom-[80px] right-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-white/10 z-50 overflow-hidden transition-all duration-200 transform origin-bottom-right",
-          showMore ? "scale-100 opacity-100 pointer-events-auto" : "scale-95 opacity-0 pointer-events-none"
-        )}
+        className={`
+          lg:hidden fixed bottom-[80px] right-4
+          bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-50 overflow-hidden
+          transition-all duration-200 ease-out origin-bottom-right
+          ${showMore
+            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
+          }
+        `}
       >
         <div className="flex flex-col py-2 min-w-[160px]">
           {MORE_ITEMS.map((item) => {
@@ -90,17 +95,20 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               onClick={handleLinkClick}
-              className={cn(
-                'flex flex-col items-center justify-center w-full h-full space-y-1 transition-all',
-                active ? 'text-gold' : 'text-white/50 hover:text-white/80'
-              )}
+              className="nav-item flex flex-col items-center justify-center w-full h-full transition-transform duration-200 active:scale-90"
             >
-              <span className={cn('transition-transform duration-200', active ? 'scale-110' : 'scale-100')}>
-                {item.icon}
-              </span>
-              <span className="text-[10px] font-medium tracking-wide">
-                {item.label}
-              </span>
+              <div className={`
+                flex flex-col items-center gap-1 px-4 py-2 rounded-2xl
+                transition-all duration-300 ease-in-out
+                ${active ? 'bg-[#C9A227]/15 scale-105' : 'scale-100'}
+              `}>
+                <span className={cn('transition-all duration-300', active ? 'text-[#C9A227]' : 'text-gray-400')}>
+                  {item.icon}
+                </span>
+                <span className={cn('text-[10px] font-semibold tracking-wide transition-all duration-300', active ? 'text-[#C9A227]' : 'text-gray-400')}>
+                  {item.label}
+                </span>
+              </div>
             </Link>
           )
         })}
@@ -108,17 +116,20 @@ export default function BottomNav() {
         {/* More Button */}
         <button
           onClick={() => setShowMore(!showMore)}
-          className={cn(
-            'flex flex-col items-center justify-center w-full h-full space-y-1 transition-all',
-            showMore ? 'text-gold' : 'text-white/50 hover:text-white/80'
-          )}
+          className="nav-item flex flex-col items-center justify-center w-full h-full transition-transform duration-200 active:scale-90"
         >
-          <span className={cn('transition-transform duration-200', showMore ? 'scale-110 rotate-90' : 'scale-100')}>
-            <MoreHorizontal size={20} />
-          </span>
-          <span className="text-[10px] font-medium tracking-wide">
-            More
-          </span>
+          <div className={`
+            flex flex-col items-center gap-1 px-4 py-2 rounded-2xl
+            transition-all duration-300 ease-in-out
+            ${showMore ? 'bg-[#C9A227]/15 scale-105' : 'scale-100'}
+          `}>
+            <span className={cn('transition-all duration-300', showMore ? 'text-[#C9A227] rotate-90' : 'text-gray-400')}>
+              <MoreHorizontal size={20} />
+            </span>
+            <span className={cn('text-[10px] font-semibold tracking-wide transition-all duration-300', showMore ? 'text-[#C9A227]' : 'text-gray-400')}>
+              More
+            </span>
+          </div>
         </button>
       </nav>
     </>
