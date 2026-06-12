@@ -66,22 +66,19 @@ function FilterTab({
   onClick: () => void
 }) {
   const badgeColor = BADGE_COLORS[label] || BADGE_COLORS.Semua
-  const textColor = active 
-    ? (STATUS_COLORS[label] || STATUS_COLORS.Semua) 
-    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-  const borderColor = active 
-    ? (ACTIVE_BORDER[label] || ACTIVE_BORDER.Semua) 
-    : 'border-transparent hover:border-gray-200 dark:hover:border-gray-800'
+  const activeStyle = active 
+    ? 'bg-[#1B2E52] dark:bg-[#C9A227] text-[#C9A227] dark:text-[#1B2E52] border-transparent shadow-md scale-105' 
+    : 'bg-white dark:bg-[#1B2E52]/50 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#2A3F6B] hover:bg-gray-50 dark:hover:bg-[#1B2E52]'
 
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold tracking-widest uppercase border-b-2 transition-all whitespace-nowrap ${textColor} ${borderColor}`}
+      className={`flex items-center gap-2 px-4 py-2 text-[11px] font-bold tracking-widest uppercase border rounded-full transition-all duration-300 whitespace-nowrap ${activeStyle}`}
     >
       {label}
       {count != null && count > 0 && (
         <span
-          className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold ${badgeColor}`}
+          className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold transition-colors ${active ? 'bg-white/20 dark:bg-black/20 text-inherit' : badgeColor}`}
         >
           {count > 99 ? '99+' : count}
         </span>
@@ -100,11 +97,11 @@ function SearchBar({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="relative">
+    <div className="relative border-b border-gray-100 dark:border-[#2A3F6B] bg-white dark:bg-[#0F1B2D]">
       <svg
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#C9A227]/70"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
       >
         <circle cx="11" cy="11" r="8" />
         <path d="m21 21-4.35-4.35" />
@@ -114,8 +111,7 @@ function SearchBar({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Cari quest…"
-        className="w-full pl-9 pr-4 py-2 text-sm border bg-white focus:outline-none focus:ring-2 transition-all"
-        style={{ borderColor: '#DDD9D3', '--tw-ring-color': '#C9A227' } as React.CSSProperties}
+        className="w-full pl-11 pr-4 py-3 text-sm bg-transparent text-navy dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition-all"
       />
     </div>
   )
@@ -186,14 +182,11 @@ export default function QuestsPage() {
       </div>
 
       {/* ── Search + filter bar ─────────────────────────────────────────── */}
-      <div className="space-y-0">
+      <div className="space-y-0 bg-white dark:bg-[#1B2E52] border border-gray-100 dark:border-[#2A3F6B] rounded-2xl shadow-sm overflow-hidden mb-6">
         <SearchBar value={search} onChange={setSearch} />
 
-        {/* Filter tabs (Desktop) */}
-        <div
-          className="hidden sm:flex gap-0 overflow-x-auto border-b"
-          style={{ borderColor: '#E8E5E0' }}
-        >
+        {/* Filter chips (Responsive) */}
+        <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide bg-gray-50/50 dark:bg-[#0F1B2D]">
           <FilterTab
             label="Semua"
             count={quests.length}
@@ -209,35 +202,6 @@ export default function QuestsPage() {
               onClick={() => setActiveFilter(s)}
             />
           ))}
-        </div>
-
-        {/* Filter Dropdown (Mobile) */}
-        <div className="sm:hidden px-4 py-3 border-b bg-gray-50/50" style={{ borderColor: '#E8E5E0' }}>
-          <select
-            value={activeFilter}
-            onChange={(e) => setActiveFilter(e.target.value as any)}
-            className="w-full bg-white border border-gray-200 rounded-md px-3 py-2.5 text-xs font-bold uppercase tracking-widest outline-none focus:border-navy focus:ring-1 focus:ring-navy appearance-none"
-            style={{
-              color: '#1B2E52', // text-navy
-              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%231B2E52' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-              backgroundPosition: 'right 0.5rem center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '1.5em 1.5em',
-              paddingRight: '2.5rem'
-            }}
-          >
-            <option value="Semua">
-              SEMUA {quests.length > 0 ? `(${quests.length > 99 ? '99+' : quests.length})` : ''}
-            </option>
-            {ALL_STATUSES.map((s) => {
-              const count = countByStatus[s];
-              return (
-                <option key={s} value={s}>
-                  {s.toUpperCase()} {count ? `(${count > 99 ? '99+' : count})` : ''}
-                </option>
-              )
-            })}
-          </select>
         </div>
       </div>
 
