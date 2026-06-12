@@ -229,7 +229,7 @@ export default function QuestSheet({
             origin: { y: 0.6 },
             colors: ['#C9A227', '#1B2E52', '#ffffff']
           })
-        } catch(e) {}
+        } catch {}
       } else {
         const body: any = { status: action };
         if (action === 'Rejected') body.rejectionReason = reason;

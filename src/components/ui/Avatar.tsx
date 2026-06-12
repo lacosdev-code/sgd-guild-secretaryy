@@ -1,6 +1,8 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 
+import Image from 'next/image'
+
 interface AvatarProps {
   url?: string | null
   name: string
@@ -21,9 +23,12 @@ export function Avatar({ url, name, className, size = 'md' }: AvatarProps) {
 
   if (url) {
     return (
-      <img
+      <Image
         src={url}
         alt={name}
+        width={96}
+        height={96}
+        unoptimized
         className={cn(
           'rounded-full object-cover shrink-0',
           sizeClasses[size],

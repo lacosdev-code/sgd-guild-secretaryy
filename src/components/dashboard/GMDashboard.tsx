@@ -222,7 +222,7 @@ export default function GMDashboard() {
               doc.addImage(img, 'PNG', 14, 12, 12, 12);
               doc.setFontSize(18);
               doc.text("Laporan Operasional Guild", 29, 20);
-            } catch (err) {
+            } catch {
               doc.setFontSize(18);
               doc.text("Laporan Operasional Guild", 14, 22);
             }

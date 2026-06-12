@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET /api/notifications
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest) {
         data: { isRead: true },
       })
     }
-  } catch (err) {
+  } catch {
     // ignore if body is missing or invalid
     await prisma.notification.updateMany({
       where: { userId: session.user.id, isRead: false },

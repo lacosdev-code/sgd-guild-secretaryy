@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { questUpdateSchema } from '@/lib/validators/schemas'
 
 // GET /api/quests/[id]
 export async function GET(
@@ -41,25 +42,38 @@ export async function PATCH(
 
   const body = await req.json()
 
+  const parsed = questUpdateSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
+  }
+  const validBody = parsed.data
+
   const isGM = (session.user as any).role === 'guild_master'
 
+  const currentQuest = await prisma.quest.findUnique({ where: { id: params.id } })
+  if (!currentQuest) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
+
+  if (!isGM && currentQuest.createdBy !== session.user.id && currentQuest.assignedTo !== session.user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const updateData: any = {}
-  if ('title' in body) updateData.title = body.title
-  if ('description' in body) updateData.description = body.description
-  if ('urgency' in body) updateData.urgency = body.urgency
-  if ('deadline' in body) updateData.deadline = body.deadline ? new Date(body.deadline) : null
-  if ('successParameter' in body) updateData.successParameter = body.successParameter
-  if ('briefAttachmentUrl' in body) updateData.briefAttachmentUrl = body.briefAttachmentUrl
-  if ('detailCompleted' in body) updateData.detailCompleted = body.detailCompleted
-  if (body.detailCompleted === true) updateData.detailCompletedAt = new Date()
-  if ('projectId' in body) updateData.projectId = body.projectId
+  if ('title' in validBody) updateData.title = validBody.title
+  if ('description' in validBody) updateData.description = validBody.description
+  if ('urgency' in validBody) updateData.urgency = validBody.urgency
+  if ('deadline' in validBody) updateData.deadline = validBody.deadline ? new Date(validBody.deadline) : null
+  if ('successParameter' in validBody) updateData.successParameter = validBody.successParameter
+  if ('briefAttachmentUrl' in validBody) updateData.briefAttachmentUrl = validBody.briefAttachmentUrl
+  if ('detailCompleted' in validBody) updateData.detailCompleted = validBody.detailCompleted
+  if (validBody.detailCompleted === true) updateData.detailCompletedAt = new Date()
+  if ('projectId' in validBody) updateData.projectId = validBody.projectId
 
   // GM only fields
   if (isGM) {
-    if ('assignedTo' in body) updateData.assignedTo = body.assignedTo
-    if ('difficulty' in body) updateData.difficulty = body.difficulty
-    if ('rewardPoints' in body) updateData.rewardPoints = body.rewardPoints ? parseInt(body.rewardPoints) : null
-    if ('status' in body) updateData.status = body.status
+    if ('assignedTo' in validBody) updateData.assignedTo = validBody.assignedTo
+    if ('difficulty' in validBody) updateData.difficulty = validBody.difficulty
+    if ('rewardPoints' in validBody) updateData.rewardPoints = validBody.rewardPoints ? Number(validBody.rewardPoints) : null
+    if ('status' in validBody) updateData.status = validBody.status
   }
 
   const quest = await prisma.quest.update({
@@ -82,10 +96,16 @@ export async function DELETE(
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Only GM can delete
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-  if (user?.role !== 'guild_master') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const isGM = (session.user as any).role === 'guild_master'
+
+  const currentQuest = await prisma.quest.findUnique({ where: { id: params.id } })
+  if (!currentQuest) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
+
+  // Only GM or creator of a Draft quest can delete
+  if (!isGM) {
+    if (currentQuest.createdBy !== session.user.id || currentQuest.status !== 'Draft') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   }
 
   await prisma.quest.delete({ where: { id: params.id } })

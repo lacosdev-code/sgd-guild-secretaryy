@@ -226,7 +226,6 @@ interface AttachmentUploadProps {
  
 export default function AttachmentUpload({
   questId,
-  currentUserId,
   canUpload,
   attachments,
 }: AttachmentUploadProps) {

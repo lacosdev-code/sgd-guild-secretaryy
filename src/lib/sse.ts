@@ -25,7 +25,7 @@ export function removeChatClient(ctrl: SSEController) {
 }
 
 // --- Notifications SSE ---
-export function sendNotificationToUser(userId: string, data: any) {
+function sendNotificationToUser(userId: string, data: any) {
   const userClients = notificationClients.get(userId)
   if (!userClients) return
 

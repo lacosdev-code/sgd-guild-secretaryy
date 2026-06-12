@@ -10,22 +10,25 @@ interface NavItem {
   icon: React.ReactNode
 }
 
-import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users, MessagesSquare } from 'lucide-react'
+import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users, MessagesSquare, Database, Activity } from 'lucide-react'
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard',   href: '/dashboard',   icon: <LayoutDashboard size={18} /> },
   { label: 'Arcs',        href: '/arcs',        icon: <ScrollText size={18} /> },
   { label: 'Projects',    href: '/projects',    icon: <ScrollText size={18} /> },
   { label: 'Quests',      href: '/quests',      icon: <ScrollText size={18} /> },
+  { label: 'Vault',       href: '/vault',       icon: <Database size={18} /> },
   { label: 'Leaderboards',href: '/leaderboard', icon: <Trophy size={18} /> },
   { label: 'Tavern',      href: '/tavern',      icon: <MessagesSquare size={18} /> },
   { label: 'Members',     href: '/members',     icon: <Users size={18} /> },
+  { label: 'GM Logs',     href: '/gm-logs',     icon: <Activity size={18} /> },
   { label: 'Profile',     href: '/profile',     icon: <UserCircle size={18} /> },
 ]
 
 
 
 import { useUser } from '@/hooks/useUser'
+import Image from 'next/image'
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -36,10 +39,13 @@ export default function Sidebar() {
       {/* Brand */}
       <div className="px-5 py-6 border-b border-white/10 flex flex-col items-center text-center">
         <div className="bg-white/90 p-2 rounded-xl mb-3 w-28 flex justify-center">
-          <img 
+          <Image 
             src="https://ik.imagekit.io/Sgd/Logo%20Potrait.png?updatedAt=1771273586419" 
             alt="SGD Care" 
-            className="h-12 object-contain" 
+            width={80}
+            height={80}
+            unoptimized
+            className="h-12 w-auto object-contain" 
           />
         </div>
         <h2 className="text-base font-bold tracking-wide text-white leading-snug">
@@ -53,7 +59,7 @@ export default function Sidebar() {
           Navigation
         </p>
         {NAV_ITEMS.map((item) => {
-          if (item.href === '/members' && role !== 'guild_master') return null
+          if ((item.href === '/members' || item.href === '/gm-logs') && role !== 'guild_master') return null
           const active = pathname === item.href ||
             (item.href !== '/dashboard' && pathname.startsWith(item.href))
           return (

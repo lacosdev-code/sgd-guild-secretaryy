@@ -6,9 +6,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDeadline(dateString: string): string {
-  if (!dateString) return ''
-  const date = new Date(dateString)
+export function formatDeadline(dateInput: string | Date): string {
+  if (!dateInput) return ''
+  const date = new Date(dateInput)
   
   const months = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',

@@ -202,6 +202,8 @@ model Quest {
   attachments Attachment[]
   emailLogs   EmailLog[]
 
+  @@index([status, createdAt])
+  @@index([assignedTo, status])
   @@map("quests")
 }
 

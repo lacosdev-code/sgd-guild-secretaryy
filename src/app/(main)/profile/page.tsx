@@ -72,10 +72,6 @@ export default function ProfilePage() {
         console.error('Compression failed, using original:', err)
       }
 
-      const ext = file.name.split('.').pop()
-      const fileName = `${user.id}-${Date.now()}.${ext}`
-      const filePath = `${user.id}/${fileName}`
-
       // Upload to storage API
       const formData = new FormData()
       formData.append('file', file)

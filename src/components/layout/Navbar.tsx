@@ -4,8 +4,7 @@ import { useUser } from '@/hooks/useUser'
 import { ThemeToggle } from './ThemeToggle'
 import { NotificationsDropdown } from './NotificationsDropdown'
 import { Avatar } from '@/components/ui/Avatar'
-
-
+import Image from 'next/image'
 
 function CoinIcon() {
   return (
@@ -37,10 +36,13 @@ export default function Navbar() {
     <header className="h-14 bg-white dark:bg-[#151515] border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-20">
       {/* Left — brand logo + page title */}
       <div className="flex items-center gap-3">
-        <img 
+        <Image 
           src="https://ik.imagekit.io/Sgd/Logo%20Landscape.png?updatedAt=1771273586511" 
           alt="SGD Care" 
-          className="h-6 object-contain" 
+          width={150}
+          height={30}
+          unoptimized
+          className="h-6 w-auto object-contain" 
         />
         <span
           className="hidden sm:block text-xs font-bold tracking-[0.18em] uppercase border-l border-gray-300 dark:border-gray-700 pl-3 ml-1"

@@ -292,7 +292,6 @@ interface QuestFormProps {
 
 export default function QuestForm({
   existingQuest,
-  currentUserId,
   mode,
 }: QuestFormProps) {
   const router   = useRouter()
@@ -311,7 +310,7 @@ export default function QuestForm({
   const [form, setForm] = useState<FormState>({
     title:             existingQuest?.title ?? '',
     assignedTo:       existingQuest?.assignedTo ?? '',
-    projectId:        existingQuest?.projectId ?? '',
+    projectId:        existingQuest?.project_id ?? '',
     urgency:           existingQuest?.urgency ?? 'Routine',
     description:       existingQuest?.description ?? '',
     deadline:          existingQuest?.deadline

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 
+import Image from 'next/image'
+
 // Map error messages to user-friendly text
 function mapErrorMessage(message: string): string {
   if (message.includes('CredentialsSignin') || message.includes('credentials')) {
@@ -100,9 +102,12 @@ export default function LoginPage() {
               className="w-20 h-20 rounded-full flex items-center justify-center border-2 bg-white"
               style={{ borderColor: '#C9A227' }}
             >
-              <img 
+              <Image 
                 src="https://ik.imagekit.io/Sgd/sgd.png?updatedAt=1771273258582" 
                 alt="SGD Logo" 
+                width={48}
+                height={48}
+                unoptimized
                 className="w-12 h-12 object-contain" 
               />
             </div>

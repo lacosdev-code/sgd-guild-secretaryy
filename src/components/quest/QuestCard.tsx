@@ -6,8 +6,8 @@ import StatusPill from '@/components/ui/StatusPill'
 import { formatDeadline } from '@/lib/utils'
 import type { QuestWithAssignee } from '@/hooks/useQuests'
 
-// Re-export isOverdue so callers can use it from utils
-export function isOverdue(q: QuestWithAssignee) {
+// Local helper for overdue check
+function isOverdue(q: QuestWithAssignee) {
   if (!q.deadline) return false
   if (['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(q.status)) return false
   return new Date(q.deadline) < new Date()

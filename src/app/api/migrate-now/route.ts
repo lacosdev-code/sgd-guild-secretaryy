@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const users = [
   {
@@ -603,6 +603,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ success: true, message: 'Migration via Prisma createMany executed successfully!' });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message, stack: error.stack }, { status: 500 });
+    console.error('[API Error]', error) // log server-side
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

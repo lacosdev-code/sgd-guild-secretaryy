@@ -47,7 +47,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
       g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
       o.start(ctx.currentTime)
       o.stop(ctx.currentTime + 0.4)
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
   }
 
   // Check current permission status on mount
@@ -114,7 +114,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
           })
           fetchNotifications()
         }
-      } catch (err) {
+      } catch {
         // Ignored, might be heartbeat or malformed
       }
     }

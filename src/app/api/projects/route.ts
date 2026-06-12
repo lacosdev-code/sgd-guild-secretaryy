@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(projects)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[API Error]', error) // log server-side
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

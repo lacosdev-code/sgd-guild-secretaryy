@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { questSchema } from '@/lib/validators/schemas'
 
 // GET /api/quests
 export async function GET(req: NextRequest) {
@@ -34,23 +35,30 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
+  
+  const parsed = questSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
+  }
+  const validBody = parsed.data
+
   const isGM = (session.user as any).role === 'guild_master'
 
   const quest = await prisma.quest.create({
     data: {
-      title: body.title,
-      description: body.description || null,
-      assignedTo: isGM ? (body.assignedTo || null) : null,
+      title: validBody.title,
+      description: validBody.description || null,
+      assignedTo: isGM ? (validBody.assignedTo || null) : null,
       createdBy: session.user.id,
-      urgency: body.urgency || 'Routine',
-      difficulty: isGM ? (body.difficulty || null) : null,
-      deadline: body.deadline ? new Date(body.deadline) : null,
-      successParameter: body.successParameter || null,
-      rewardPoints: isGM && body.rewardPoints ? parseInt(body.rewardPoints) : null,
-      status: isGM ? (body.status || 'Draft') : 'Draft',
-      briefAttachmentUrl: body.briefAttachmentUrl || null,
-      detailCompleted: body.detailCompleted || false,
-      projectId: body.projectId || null,
+      urgency: validBody.urgency || 'Routine',
+      difficulty: isGM ? (validBody.difficulty as any || null) : null,
+      deadline: validBody.deadline ? new Date(validBody.deadline) : null,
+      successParameter: validBody.successParameter || null,
+      rewardPoints: isGM && validBody.rewardPoints ? Number(validBody.rewardPoints) : null,
+      status: isGM ? (validBody.status as any || 'Draft') : 'Draft',
+      briefAttachmentUrl: validBody.briefAttachmentUrl || null,
+      detailCompleted: validBody.detailCompleted || false,
+      projectId: validBody.projectId || null,
     },
     include: {
       assignee: { select: { id: true, nama: true } },

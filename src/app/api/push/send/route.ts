@@ -77,8 +77,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, results })
-  } catch (err: any) {
-    console.error('Send push error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (error: any) {
+    console.error('[API Error]', error) // log server-side
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

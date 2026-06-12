@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, X, Trash2 } from 'lucide-react'
+import Image from 'next/image'
 import imageCompression from 'browser-image-compression'
 import { useUser } from '@/hooks/useUser'
 
@@ -44,10 +45,13 @@ const ChatImage = ({ url, onPreview }: { url: string, onPreview: (url: string) =
       className="relative group block cursor-zoom-in text-left"
       title="Klik untuk melihat"
     >
-      <img 
+      <Image 
         src={url} 
         alt="Shared image" 
-        className="max-w-full rounded-md shadow-sm border border-gray-200/20 max-h-64 object-contain group-hover:opacity-90 transition-opacity" 
+        width={400}
+        height={400}
+        unoptimized
+        className="max-w-full h-auto rounded-md shadow-sm border border-gray-200/20 max-h-64 object-contain group-hover:opacity-90 transition-opacity" 
         onError={() => setError(true)}
       />
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-md">
@@ -161,7 +165,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             setTimeout(scrollToBottom, 100)
           }
         }
-      } catch (err) {
+      } catch {
         // Ignored, might be heartbeat or malformed
       }
     }
@@ -531,10 +535,12 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             <X size={24} />
           </button>
           
-          <img 
+          <Image 
             src={previewImage} 
             alt="Preview" 
-            className="max-w-full max-h-full object-contain rounded-md"
+            fill
+            unoptimized
+            className="object-contain rounded-md"
           />
           
           <button 

@@ -34,8 +34,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     })
 
     return NextResponse.json(attachment, { status: 201 })
-  } catch (err: any) {
-    console.error('Attachment insert error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (error: any) {
+    console.error('[API Error]', error) // log server-side
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

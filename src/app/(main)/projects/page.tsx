@@ -23,11 +23,15 @@ async function createProject(formData: FormData) {
   revalidatePath('/projects')
 }
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage({ searchParams }: { searchParams: { filter?: string } }) {
+  const filter = searchParams.filter
   const session = await auth()
   if (!session) redirect('/login')
 
+  const whereCondition = filter === 'orphan' ? { arcId: null } : {}
+
   const projects = await prisma.project.findMany({
+    where: whereCondition,
     orderBy: { createdAt: 'desc' },
     include: { arc: true, _count: { select: { quests: true } } }
   })
@@ -56,6 +60,15 @@ export default async function ProjectsPage() {
           </button>
         </div>
       </form>
+
+      <div className="flex gap-2 mb-6">
+        <Link href="/projects" className={`px-4 py-2 rounded-lg text-sm font-medium ${!filter ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'}`}>
+          Semua Project
+        </Link>
+        <Link href="/projects?filter=orphan" className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'orphan' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'}`}>
+          Proyek Tanpa Arc (Orphan)
+        </Link>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 max-w-4xl">
         {projects.map(proj => (

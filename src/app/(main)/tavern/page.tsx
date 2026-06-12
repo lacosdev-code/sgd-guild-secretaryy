@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { ChatBox } from '@/components/chat/ChatBox'
 import { MessagesSquare } from 'lucide-react'

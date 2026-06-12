@@ -29,9 +29,9 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (err: any) {
-    console.error('Push subscribe error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (error: any) {
+    console.error('[API Error]', error) // log server-side
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
 
@@ -48,8 +48,8 @@ export async function DELETE(req: Request) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (err: any) {
-    console.error('Push unsubscribe error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (error: any) {
+    console.error('[API Error]', error) // log server-side
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
