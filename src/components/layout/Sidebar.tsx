@@ -17,7 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Arcs',        href: '/arcs',        icon: <ScrollText size={18} /> },
   { label: 'Projects',    href: '/projects',    icon: <ScrollText size={18} /> },
   { label: 'Quests',      href: '/quests',      icon: <ScrollText size={18} /> },
-  { label: 'Vault',       href: '/vault',       icon: <Database size={18} /> },
+
   { label: 'Leaderboards',href: '/leaderboard', icon: <Trophy size={18} /> },
   { label: 'Tavern',      href: '/tavern',      icon: <MessagesSquare size={18} /> },
   { label: 'Members',     href: '/members',     icon: <Users size={18} /> },
