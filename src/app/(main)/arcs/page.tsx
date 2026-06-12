@@ -3,6 +3,25 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
+async function createArc(formData: FormData) {
+  'use server'
+  const session = await auth()
+  if (!session?.user?.id) return
+  const name = formData.get('name') as string
+  const strategicObjective = formData.get('strategicObjective') as string
+  
+  if (!name) return
+
+  await prisma.arc.create({
+    data: {
+      name,
+      strategicObjective,
+      ownerId: session.user.id
+    }
+  })
+  revalidatePath('/arcs')
+}
+
 export default async function ArcsPage() {
   const session = await auth()
   if (!session) redirect('/login')
@@ -11,25 +30,6 @@ export default async function ArcsPage() {
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { projects: true } } }
   })
-
-  async function createArc(formData: FormData) {
-    'use server'
-    const session = await auth()
-    if (!session?.user?.id) return
-    const name = formData.get('name') as string
-    const strategicObjective = formData.get('strategicObjective') as string
-    
-    if (!name) return
-
-    await prisma.arc.create({
-      data: {
-        name,
-        strategicObjective,
-        ownerId: session.user.id
-      }
-    })
-    revalidatePath('/arcs')
-  }
 
   return (
     <div className="p-6">

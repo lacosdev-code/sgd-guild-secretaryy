@@ -3,6 +3,25 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
+async function createProject(formData: FormData) {
+  'use server'
+  const session = await auth()
+  if (!session?.user?.id) return
+  const name = formData.get('name') as string
+  const arcId = formData.get('arcId') as string
+  
+  if (!name) return
+
+  await prisma.project.create({
+    data: {
+      name,
+      arcId: arcId || null,
+      ownerId: session.user.id
+    }
+  })
+  revalidatePath('/projects')
+}
+
 export default async function ProjectsPage() {
   const session = await auth()
   if (!session) redirect('/login')
@@ -12,25 +31,6 @@ export default async function ProjectsPage() {
     include: { arc: true, _count: { select: { quests: true } } }
   })
   const arcs = await prisma.arc.findMany()
-
-  async function createProject(formData: FormData) {
-    'use server'
-    const session = await auth()
-    if (!session?.user?.id) return
-    const name = formData.get('name') as string
-    const arcId = formData.get('arcId') as string
-    
-    if (!name) return
-
-    await prisma.project.create({
-      data: {
-        name,
-        arcId: arcId || null,
-        ownerId: session.user.id
-      }
-    })
-    revalidatePath('/projects')
-  }
 
   return (
     <div className="p-6">
