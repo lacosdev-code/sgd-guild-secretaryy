@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Paperclip, Loader2, X } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
+import toast from 'react-hot-toast'
 import type { Quest, DifficultyRank, QuestUrgency, User } from '@/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -458,6 +459,7 @@ export default function QuestForm({
         questId = existingQuest!.id
       }
 
+      toast.success(mode === 'create' ? 'Quest berhasil ditambahkan!' : 'Quest berhasil diperbarui!')
       router.push(`/quests/${questId}`)
       router.refresh()
     } catch (err: any) {

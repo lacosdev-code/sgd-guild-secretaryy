@@ -5,6 +5,7 @@ import { UserProvider } from '@/hooks/useUser'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { SessionProvider } from 'next-auth/react'
 import { InstallPWAPrompt } from '@/components/layout/InstallPWAPrompt'
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -57,6 +58,7 @@ export default function RootLayout({
             <UserProvider>
               {children}
               <InstallPWAPrompt />
+              <Toaster position="bottom-center" />
             </UserProvider>
           </ThemeProvider>
         </SessionProvider>
