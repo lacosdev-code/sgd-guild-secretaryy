@@ -21,24 +21,37 @@ function StatCard({
   danger?: boolean
   warning?: boolean
 }) {
-  const bg    = danger  ? '#FDF2F0' : warning ? '#FFFBEB' : accent ? '#1B2E52' : '#FFFFFF'
-  const color = danger  ? '#993C1D' : warning ? '#92400E' : accent ? '#C9A227' : '#1B2E52'
-  const sub   = danger  ? '#993C1D99' : warning ? '#92400E88' : accent ? '#C9A22799' : '#1B2E5266'
+  if (accent) {
+    return (
+      <div className="bg-[#1B2E52] dark:bg-[#C9A227]/15 border border-transparent dark:border-[#C9A227]/30 rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
+        <span className="text-3xl font-bold tabular-nums text-[#C9A227]">{value}</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-[#C9A227]/60">{label}</span>
+      </div>
+    )
+  }
+  
+  if (danger) {
+    return (
+      <div className="bg-[#FDF2F0] dark:bg-red-900/20 border border-[#993C1D22] dark:border-red-900/30 rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
+        <span className="text-3xl font-bold tabular-nums text-[#993C1D] dark:text-red-400">{value}</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-[#993C1D99] dark:text-red-400/70">{label}</span>
+      </div>
+    )
+  }
+
+  if (warning) {
+    return (
+      <div className="bg-[#FFFBEB] dark:bg-amber-900/20 border border-[#F59E0B22] dark:border-amber-900/30 rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
+        <span className="text-3xl font-bold tabular-nums text-[#92400E] dark:text-amber-400">{value}</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-[#92400E88] dark:text-amber-400/70">{label}</span>
+      </div>
+    )
+  }
 
   return (
-    <div
-      className="rounded-xl p-5 flex flex-col gap-1 border transition-shadow hover:shadow-md"
-      style={{
-        background: bg,
-        borderColor: danger ? '#993C1D22' : warning ? '#F59E0B22' : accent ? 'transparent' : '#E5E2DC',
-      }}
-    >
-      <span className="text-3xl font-bold tabular-nums" style={{ color }}>
-        {value}
-      </span>
-      <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: sub }}>
-        {label}
-      </span>
+    <div className="bg-white dark:bg-[#1B2E52] border border-[#E5E2DC] dark:border-[#2A3F6B] rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
+      <span className="text-3xl font-bold tabular-nums text-[#1B2E52] dark:text-white">{value}</span>
+      <span className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-[#C9A227]/70">{label}</span>
     </div>
   )
 }
@@ -168,10 +181,10 @@ export default function GMDashboard() {
 
       {/* ── Greeting ─────────────────────────────────────────────────── */}
       <div>
-        <h1 className="text-xl font-bold text-charcoal">
-          Selamat datang, <span style={{ color: '#1B2E52' }}>{user?.nama}</span>
+        <h1 className="text-xl font-bold text-[#1B2E52] dark:text-white">
+          Selamat datang, <span className="text-[#C9A227]">{user?.nama}</span>
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <p className="text-sm text-gray-500 dark:text-gray-300 mt-0.5">
           Fokuskan perhatian Anda pada daftar prioritas operasional hari ini.
         </p>
       </div>
@@ -196,8 +209,7 @@ export default function GMDashboard() {
       <div className="flex flex-wrap gap-3">
         <Link
           href="/quests/new"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold transition-all hover:opacity-90"
-          style={{ background: '#1B2E52', color: '#C9A227' }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold transition-all hover:opacity-90 bg-[#1B2E52] dark:bg-[#C9A227] text-[#C9A227] dark:text-[#1B2E52]"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -262,8 +274,7 @@ export default function GMDashboard() {
             const pdfBlob = doc.output('blob');
             setPdfPreviewUrl(URL.createObjectURL(pdfBlob));
           }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold border transition-all hover:bg-gray-100 dark:hover:bg-gray-800 dark:border-gray-700"
-          style={{ color: '#1B2E52' }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold transition-all hover:bg-gray-100 dark:hover:bg-[#C9A227]/10 border border-[#1B2E52] dark:border-[#C9A227] text-[#1B2E52] dark:text-[#C9A227]"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -271,7 +282,7 @@ export default function GMDashboard() {
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          <span className="dark:text-gray-300">Export Laporan</span>
+          <span>Export Laporan</span>
         </button>
       </div>
 
@@ -323,7 +334,7 @@ export default function GMDashboard() {
             </h2>
             <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 rounded-sm">{submittedQuests.length}</span>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-[#1B2E52] rounded-2xl border border-gray-100 dark:border-[#2A3F6B] overflow-hidden shadow-sm">
             {submittedQuests.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-400 italic">Tidak ada quest yang menunggu persetujuan.</div>
             ) : (
@@ -345,7 +356,7 @@ export default function GMDashboard() {
               Priority & Kritis
             </h2>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-[#1B2E52] rounded-2xl border border-gray-100 dark:border-[#2A3F6B] overflow-hidden shadow-sm">
             {priorityQuests.length === 0 && overdueActiveQuests.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-400 italic">Situasi aman. Tidak ada quest kritis.</div>
             ) : (
@@ -364,7 +375,7 @@ export default function GMDashboard() {
             </h2>
             <span className="text-xs font-bold bg-orange-100 text-orange-800 px-2 rounded-sm">{incompleteQuests.length}</span>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-[#1B2E52] rounded-2xl border border-gray-100 dark:border-[#2A3F6B] overflow-hidden shadow-sm">
             {incompleteQuests.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-400 italic">Semua quest memiliki instruksi yang baik.</div>
             ) : (

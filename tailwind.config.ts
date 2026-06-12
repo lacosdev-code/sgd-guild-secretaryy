@@ -12,10 +12,21 @@ const config: Config = {
       colors: {
         navy: "#1B2E52",
         gold: "#C9A227",
-        background: "#F5F3EE",
         success: "#0F6E56",
         danger: "#993C1D",
         charcoal: "#2C2C2A",
+        background: {
+          DEFAULT: '#F5F3EE',
+          dark: '#0F1B2D',
+        },
+        surface: {
+          DEFAULT: '#ffffff',
+          dark: '#1B2E52',
+        },
+        border: {
+          DEFAULT: '#e5e7eb',
+          dark: '#2A3F6B',
+        }
       },
     },
   },

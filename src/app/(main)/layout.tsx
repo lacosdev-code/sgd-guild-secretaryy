@@ -10,7 +10,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background dark:bg-[#121212]">
+    <div className="flex h-screen overflow-hidden bg-background dark:bg-[#0F1B2D]">
       {/* Sidebar (hidden on mobile) */}
       <Sidebar />
 
