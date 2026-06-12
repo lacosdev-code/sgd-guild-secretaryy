@@ -42,6 +42,8 @@ enum QuestStatus {
   Submitted
   Approved
   Rejected
+  Revise
+  Failed
   Completed
   Cancelled
   Aborted
