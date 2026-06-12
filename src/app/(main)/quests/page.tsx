@@ -243,8 +243,8 @@ export default function QuestsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((q) => (
-            <QuestCard key={q.id} quest={q} />
+          {filtered.map((q, i) => (
+            <QuestCard key={q.id} quest={q} index={i} />
           ))}
           <p className="text-right text-[11px] text-gray-400 pt-1">
             Menampilkan {filtered.length} dari {quests.length} quest

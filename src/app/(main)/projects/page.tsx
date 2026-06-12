@@ -71,8 +71,13 @@ export default async function ProjectsPage({ searchParams }: { searchParams: { f
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 max-w-4xl">
-        {projects.map(proj => (
-          <Link href={`/projects/${proj.id}`} key={proj.id} className="block group">
+        {projects.map((proj, index) => (
+          <Link 
+            href={`/projects/${proj.id}`} 
+            key={proj.id} 
+            className="block group animate-in slide-in-from-bottom-2 fade-in duration-500 fill-mode-both"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-white/10 transition-all hover:border-navy dark:hover:border-slate-500 hover:shadow-md h-full">
               <div className="flex justify-between items-start">
                 <h3 className="font-bold text-navy dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.name}</h3>

@@ -15,9 +15,10 @@ function isOverdue(q: QuestWithAssignee) {
 
 interface QuestCardProps {
   quest: QuestWithAssignee
+  index?: number
 }
 
-export default function QuestCard({ quest }: QuestCardProps) {
+export default function QuestCard({ quest, index = 0 }: QuestCardProps) {
   const overdue    = isOverdue(quest)
   const missingDetail = !quest.detailCompleted &&
     !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status)
@@ -25,7 +26,8 @@ export default function QuestCard({ quest }: QuestCardProps) {
   return (
     <Link
       href={`/quests/${quest.id}`}
-      className="block group transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded-2xl"
+      className="block group transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded-2xl animate-in slide-in-from-bottom-2 fade-in duration-500 fill-mode-both"
+      style={{ animationDelay: `${index * 50}ms` }}
     >
       <div
         className={`relative bg-white dark:bg-[#1C1C1E] border border-gray-100 dark:border-white/5 rounded-2xl transition-all duration-300 group-hover:shadow-lg dark:group-hover:shadow-[0_8px_30px_rgb(255,255,255,0.03)] group-hover:-translate-y-1 overflow-hidden flex flex-col h-full`}

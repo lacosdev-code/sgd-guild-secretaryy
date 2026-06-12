@@ -98,11 +98,15 @@ export default function MembersPage() {
                   <td colSpan={4} className="block sm:table-cell px-6 py-8 text-center text-gray-500">No members registered yet.</td>
                 </tr>
               ) : (
-                users.map(user => {
+                users.map((user, index) => {
                   const rank = user.role === 'adventurer' ? getRankInfo(user.totalPoints) : null
 
                   return (
-                    <tr key={user.id} className="block sm:table-row p-4 sm:p-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                    <tr 
+                      key={user.id} 
+                      className="block sm:table-row p-4 sm:p-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors animate-in slide-in-from-bottom-2 fade-in duration-500 fill-mode-both"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
                       <td className="block sm:table-cell sm:px-6 sm:py-4 mb-3 sm:mb-0">
                         <Link href={`/members/${user.id}`} className="flex items-center gap-3 group">
                           <Avatar 

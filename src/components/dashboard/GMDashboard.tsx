@@ -41,15 +41,21 @@ function StatCard({
 
   if (warning) {
     return (
-      <div className="bg-[#FFFBEB] dark:bg-amber-900/20 border border-[#F59E0B22] dark:border-amber-900/30 rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
-        <span className="text-3xl font-bold tabular-nums text-[#92400E] dark:text-amber-400">{value}</span>
-        <span className="text-xs font-semibold uppercase tracking-widest text-[#92400E88] dark:text-amber-400/70">{label}</span>
+      <div 
+        className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900/50 rounded-2xl p-5 flex flex-col gap-1 transition-all hover:shadow-md hover:-translate-y-1 animate-in slide-in-from-bottom-4 fade-in duration-500 fill-mode-both"
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        <span className="text-3xl font-bold tabular-nums text-orange-600 dark:text-orange-400">{value}</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-orange-600/70 dark:text-orange-400/70">{label}</span>
       </div>
     )
   }
 
   return (
-    <div className="bg-white dark:bg-[#1B2E52] border border-[#E5E2DC] dark:border-[#2A3F6B] rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
+    <div 
+      className="bg-white dark:bg-[#1B2E52] border border-[#E5E2DC] dark:border-[#2A3F6B] rounded-2xl p-5 flex flex-col gap-1 transition-all hover:shadow-md hover:-translate-y-1 animate-in slide-in-from-bottom-4 fade-in duration-500 fill-mode-both"
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <span className="text-3xl font-bold tabular-nums text-[#1B2E52] dark:text-white">{value}</span>
       <span className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-[#C9A227]/70">{label}</span>
     </div>
@@ -198,15 +204,15 @@ export default function GMDashboard() {
 
       {/* ── Stat grid ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <StatCard label="Active" value={stats.active} />
-        <StatCard label="Submitted" value={stats.submitted} warning={stats.submitted > 0} />
-        <StatCard label="Overdue" value={stats.overdue} danger={stats.overdue > 0} />
-        <StatCard label="Detail Kurang" value={stats.incomplete} warning={stats.incomplete > 0} />
-        <StatCard label="SGD Points" value={user?.totalPoints ?? 0} accent />
+        <StatCard label="Active" value={stats.active} delay={100} />
+        <StatCard label="Submitted" value={stats.submitted} warning={stats.submitted > 0} delay={200} />
+        <StatCard label="Overdue" value={stats.overdue} danger={stats.overdue > 0} delay={300} />
+        <StatCard label="Detail Kurang" value={stats.incomplete} warning={stats.incomplete > 0} delay={400} />
+        <StatCard label="SGD Points" value={user?.totalPoints ?? 0} accent delay={500} />
       </div>
 
       {/* ── Action buttons ────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 animate-in slide-in-from-bottom-2 fade-in duration-700 delay-500 fill-mode-both">
         <Link
           href="/quests/new"
           className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold transition-all hover:opacity-90 bg-[#1B2E52] dark:bg-[#C9A227] text-[#C9A227] dark:text-[#1B2E52]"
@@ -352,7 +358,7 @@ export default function GMDashboard() {
       )}
 
       {/* ── Actionable Lists Grid ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 animate-in slide-in-from-bottom-4 fade-in duration-700 delay-700 fill-mode-both">
         
         {/* Awaiting Approval */}
         <div>
