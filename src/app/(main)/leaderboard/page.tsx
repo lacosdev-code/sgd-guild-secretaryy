@@ -74,12 +74,12 @@ export default function LeaderboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mt-8">
           {/* Rank 2 (Left) */}
           {top3[1] && (
-            <div className="order-2 md:order-1 relative bg-gradient-to-b from-slate-100 to-white dark:from-slate-800 dark:to-[#1C1C1E] border border-slate-200 dark:border-slate-700 rounded-t-2xl shadow-lg flex flex-col items-center pt-8 pb-6 px-4">
+            <div className="order-2 md:order-1 relative bg-gradient-to-b from-slate-100 to-white dark:from-slate-800 dark:to-[#1C1C1E] border border-slate-200 dark:border-slate-700 rounded-t-2xl shadow-lg flex flex-col items-center pt-8 pb-6 px-4 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200 fill-mode-both hover:-translate-y-2 hover:shadow-2xl transition-all cursor-default">
               <div className="absolute -top-6 bg-slate-200 dark:bg-slate-700 p-2 rounded-full border-4 border-white dark:border-[#151515] shadow-sm">
                 <Medal className="w-6 h-6 text-slate-500 dark:text-slate-300" />
               </div>
               <Link href={`/members/${top3[1].id}`} className="flex flex-col items-center group">
-                <Avatar url={top3[1].avatarUrl} name={top3[1].nama} size="lg" className="mb-3 ring-4 ring-slate-100 dark:ring-slate-800 shadow-sm group-hover:scale-105 transition-transform" />
+                <Avatar url={top3[1].avatarUrl} name={top3[1].nama} size="lg" className="mb-3 ring-4 ring-slate-100 dark:ring-slate-800 shadow-sm group-hover:scale-110 transition-transform duration-300" />
                 <span className="font-bold text-lg text-charcoal dark:text-gray-200 group-hover:text-slate-500 transition-colors">{top3[1].nama}</span>
               </Link>
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">{getRankInfo(top3[1].totalPoints).currentRank}</span>
@@ -89,12 +89,12 @@ export default function LeaderboardPage() {
 
           {/* Rank 1 (Center) */}
           {top3[0] && (
-            <div className="order-1 md:order-2 relative bg-gradient-to-b from-amber-100 to-amber-50 dark:from-amber-900/40 dark:to-[#1C1C1E] border-2 border-gold rounded-t-3xl shadow-xl flex flex-col items-center pt-10 pb-8 px-4 z-10 md:-mt-8">
-              <div className="absolute -top-8 bg-gradient-to-br from-yellow-300 to-gold p-3 rounded-full border-4 border-white dark:border-[#151515] shadow-md">
-                <Trophy className="w-8 h-8 text-white" />
+            <div className="order-1 md:order-2 relative bg-gradient-to-b from-amber-100 to-amber-50 dark:from-amber-900/40 dark:to-[#1C1C1E] border-2 border-gold rounded-t-3xl shadow-xl flex flex-col items-center pt-10 pb-8 px-4 z-10 md:-mt-8 animate-in slide-in-from-bottom-12 fade-in duration-700 delay-100 fill-mode-both hover:-translate-y-3 hover:shadow-[0_20px_40px_-15px_rgba(201,162,39,0.3)] transition-all cursor-default">
+              <div className="absolute -top-8 bg-gradient-to-br from-yellow-300 to-gold p-3 rounded-full border-4 border-white dark:border-[#151515] shadow-lg animate-[pulse_3s_ease-in-out_infinite]">
+                <Trophy className="w-8 h-8 text-white drop-shadow-md" />
               </div>
               <Link href={`/members/${top3[0].id}`} className="flex flex-col items-center group">
-                <Avatar url={top3[0].avatarUrl} name={top3[0].nama} size="xl" className="mb-3 ring-4 ring-amber-100 dark:ring-amber-900 shadow-md group-hover:scale-105 transition-transform" />
+                <Avatar url={top3[0].avatarUrl} name={top3[0].nama} size="xl" className="mb-3 ring-4 ring-amber-100 dark:ring-amber-900 shadow-lg group-hover:scale-110 transition-transform duration-300" />
                 <span className="font-black text-xl text-charcoal dark:text-gray-100 group-hover:text-gold transition-colors">{top3[0].nama}</span>
               </Link>
               <span className="text-xs font-bold text-gold mt-1 uppercase tracking-widest px-3 py-1 bg-navy/5 dark:bg-black/20 rounded-full">{getRankInfo(top3[0].totalPoints).currentRank}</span>
@@ -104,12 +104,12 @@ export default function LeaderboardPage() {
 
           {/* Rank 3 (Right) */}
           {top3[2] && (
-            <div className="order-3 md:order-3 relative bg-gradient-to-b from-orange-50 to-white dark:from-orange-900/20 dark:to-[#1C1C1E] border border-orange-200 dark:border-orange-900/50 rounded-t-2xl shadow-lg flex flex-col items-center pt-8 pb-6 px-4">
+            <div className="order-3 md:order-3 relative bg-gradient-to-b from-orange-50 to-white dark:from-orange-900/20 dark:to-[#1C1C1E] border border-orange-200 dark:border-orange-900/50 rounded-t-2xl shadow-lg flex flex-col items-center pt-8 pb-6 px-4 animate-in slide-in-from-bottom-6 fade-in duration-700 delay-300 fill-mode-both hover:-translate-y-2 hover:shadow-2xl transition-all cursor-default">
               <div className="absolute -top-6 bg-orange-100 dark:bg-orange-900/50 p-2 rounded-full border-4 border-white dark:border-[#151515] shadow-sm">
                 <Award className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <Link href={`/members/${top3[2].id}`} className="flex flex-col items-center group">
-                <Avatar url={top3[2].avatarUrl} name={top3[2].nama} size="lg" className="mb-3 ring-4 ring-orange-50 dark:ring-orange-900/20 shadow-sm group-hover:scale-105 transition-transform" />
+                <Avatar url={top3[2].avatarUrl} name={top3[2].nama} size="lg" className="mb-3 ring-4 ring-orange-50 dark:ring-orange-900/20 shadow-sm group-hover:scale-110 transition-transform duration-300" />
                 <span className="font-bold text-lg text-charcoal dark:text-gray-200 group-hover:text-orange-600 transition-colors">{top3[2].nama}</span>
               </Link>
               <span className="text-xs font-bold text-orange-600/70 dark:text-orange-500/70 mt-1 uppercase tracking-widest">{getRankInfo(top3[2].totalPoints).currentRank}</span>
@@ -138,7 +138,11 @@ export default function LeaderboardPage() {
                   const actualRank = index + 4
                   
                   return (
-                    <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
+                    <tr 
+                      key={user.id} 
+                      className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group animate-in slide-in-from-bottom-2 fade-in duration-500 fill-mode-both"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
                       <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <span className="text-sm font-bold text-gray-400 dark:text-gray-500 w-6 inline-block text-center group-hover:text-navy dark:group-hover:text-white transition-colors">
                           {actualRank}
