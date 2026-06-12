@@ -211,8 +211,21 @@ export default function GMDashboard() {
             const { default: jsPDF } = await import('jspdf');
             const { default: autoTable } = await import('jspdf-autotable');
             const doc = new jsPDF();
-            doc.setFontSize(18);
-            doc.text("Laporan Operasional Guild", 14, 22);
+            
+            try {
+              const img = new window.Image();
+              img.src = '/icon-192.png';
+              await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+              });
+              doc.addImage(img, 'PNG', 14, 12, 12, 12);
+              doc.setFontSize(18);
+              doc.text("Laporan Operasional Guild", 29, 20);
+            } catch (err) {
+              doc.setFontSize(18);
+              doc.text("Laporan Operasional Guild", 14, 22);
+            }
             
             doc.setFontSize(10);
             doc.setTextColor(100);
