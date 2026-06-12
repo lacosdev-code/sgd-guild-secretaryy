@@ -131,10 +131,10 @@ export default function QuestSheet({
 
   const isGM          = currentUserRole === 'guild_master'
   const isAssignee    = quest.assignedTo === currentUserId
-  const canSubmit     = isAssignee && quest.status === 'Active' && attachments.length > 0
-  const canSubmitWarn = isAssignee && quest.status === 'Active' && attachments.length === 0
+  const canSubmit     = isAssignee && (quest.status === 'Active' || quest.status === 'ActiveStar') && attachments.length > 0
+  const canSubmitWarn = isAssignee && (quest.status === 'Active' || quest.status === 'ActiveStar') && attachments.length === 0
   const canApprove    = isGM && quest.status === 'Submitted'
-  const isIncomplete  = !quest.detailCompleted && quest.status !== 'Approved' && quest.status !== 'Failed'
+  const isIncomplete  = !quest.detailCompleted && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status)
 
   // ── Submit: update status + notify GM via N8N ──────────────────────────
   async function handleSubmit() {
@@ -189,10 +189,18 @@ export default function QuestSheet({
   }
 
   // ── GM action: calls API route (service role needed for points) ──────────
-  async function handleGMAction(action: 'Approved' | 'Revise' | 'Failed') {
+  async function handleGMAction(action: 'Approved' | 'Rejected' | 'Aborted' | 'Hold') {
     setLoading(true)
     setError(null)
     try {
+      let reason = '';
+      if (['Rejected', 'Aborted', 'Hold'].includes(action)) {
+        reason = window.prompt(`Alasan untuk status ${action}?`) || '';
+        if (!reason.trim()) {
+           throw new Error(`Alasan wajib diisi.`);
+        }
+      }
+
       if (action === 'Approved') {
         const res = await fetch(`/api/quests/${quest.id}/approve`, {
           method: 'POST',
@@ -215,10 +223,15 @@ export default function QuestSheet({
           })
         } catch(e) {}
       } else {
+        const body: any = { status: action };
+        if (action === 'Rejected') body.rejectionReason = reason;
+        if (action === 'Hold') body.holdReason = reason;
+        if (action === 'Aborted') body.abortReason = reason;
+
         const res = await fetch(`/api/quests/${quest.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: action })
+          body: JSON.stringify(body)
         })
         if (!res.ok) throw new Error('Gagal update status quest')
       }
@@ -360,7 +373,7 @@ export default function QuestSheet({
             label="Deadline"
             value={
               quest.deadline ? (
-                <span className="font-mono text-[13px]" style={{ color: new Date(quest.deadline) < new Date() && quest.status !== 'Approved' ? '#993C1D' : undefined }}>
+                <span className="font-mono text-[13px]" style={{ color: new Date(quest.deadline) < new Date() && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status) ? '#993C1D' : undefined }}>
                   {formatDeadline(quest.deadline)}
                 </span>
               ) : (
@@ -498,7 +511,7 @@ export default function QuestSheet({
         </div>
 
         {/* ── Action footer ─────────────────────────────────────────────── */}
-        {(canSubmit || canSubmitWarn || canApprove || (!isGM && !quest.assignedTo && quest.status !== 'Draft') || (isGM && quest.status !== 'Approved' && quest.status !== 'Failed')) && (
+        {(canSubmit || canSubmitWarn || canApprove || (!isGM && !quest.assignedTo && quest.status !== 'Draft') || (isGM && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status))) && (
           <div
             className="px-6 py-4 border-t flex flex-wrap items-center gap-3"
             style={{ background: '#F9F8F6', borderColor: '#E8E5E0' }}
@@ -534,11 +547,20 @@ export default function QuestSheet({
                 <ActionButton variant="primary" loading={loading} onClick={() => handleGMAction('Approved')}>
                   ✓ Validasi & Approve
                 </ActionButton>
-                <ActionButton variant="ghost" loading={loading} onClick={() => handleGMAction('Revise')}>
-                  Minta Revisi
+                <ActionButton variant="ghost" loading={loading} onClick={() => handleGMAction('Rejected')}>
+                  Tolak (Revise)
                 </ActionButton>
-                <ActionButton variant="danger" loading={loading} onClick={() => handleGMAction('Failed')}>
-                  Tolak
+              </div>
+            )}
+            
+            {/* GM: Hold / Abort if active */}
+            {isGM && ['Active', 'ActiveStar', 'Submitted'].includes(quest.status) && (
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto ml-auto">
+                 <ActionButton variant="ghost" loading={loading} onClick={() => handleGMAction('Hold')}>
+                  Hold
+                </ActionButton>
+                <ActionButton variant="danger" loading={loading} onClick={() => handleGMAction('Aborted')}>
+                  Abort
                 </ActionButton>
               </div>
             )}
@@ -546,7 +568,7 @@ export default function QuestSheet({
             <div className="flex-1" />
 
             {/* GM: edit quest */}
-            {isGM && (quest.status === 'Draft' || quest.status === 'Active' || quest.status === 'Submitted') && (
+            {isGM && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status) && (
               <Link
                 href={`/quests/${quest.id}/edit`}
                 className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.12em] uppercase hover:opacity-80 transition-opacity"

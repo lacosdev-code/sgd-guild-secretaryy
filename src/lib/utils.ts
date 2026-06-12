@@ -42,15 +42,23 @@ export function getStatusColor(status: QuestStatus): string {
   switch (status) {
     case 'Draft':
       return 'bg-gray-200 text-gray-800'
+    case 'ActiveStar':
+      return 'bg-indigo-200 text-indigo-900'
     case 'Active':
       return 'bg-blue-200 text-navy'
+    case 'Hold':
+      return 'bg-slate-200 text-slate-900'
     case 'Submitted':
       return 'bg-gold/40 text-navy'
     case 'Approved':
       return 'bg-success text-white'
-    case 'Revise':
+    case 'Rejected':
       return 'bg-orange-200 text-orange-900'
-    case 'Failed':
+    case 'Completed':
+      return 'bg-green-200 text-green-900'
+    case 'Cancelled':
+      return 'bg-gray-300 text-gray-900'
+    case 'Aborted':
       return 'bg-danger text-white'
     default:
       return 'bg-gray-200 text-gray-800'

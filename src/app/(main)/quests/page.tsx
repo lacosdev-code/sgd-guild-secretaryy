@@ -10,36 +10,48 @@ import type { QuestStatus } from '@/types'
 
 // ── Filter tabs ───────────────────────────────────────────────────────────────
 
-const ALL_STATUSES: QuestStatus[] = ['Draft', 'Active', 'Submitted', 'Approved', 'Revise', 'Failed']
+const ALL_STATUSES: QuestStatus[] = ['Draft', 'ActiveStar', 'Active', 'Hold', 'Submitted', 'Approved', 'Rejected', 'Completed', 'Cancelled', 'Aborted']
 
 const STATUS_COLORS: Record<string, string> = {
   Semua: 'text-navy dark:text-white',
   Draft: 'text-gray-600 dark:text-gray-400',
+  ActiveStar: 'text-indigo-600 dark:text-indigo-400',
   Active: 'text-blue-600 dark:text-blue-400',
+  Hold: 'text-slate-600 dark:text-slate-400',
   Submitted: 'text-amber-600 dark:text-amber-400',
   Approved: 'text-emerald-600 dark:text-emerald-400',
-  Revise: 'text-orange-600 dark:text-orange-400',
-  Failed: 'text-red-600 dark:text-red-400',
+  Rejected: 'text-orange-600 dark:text-orange-400',
+  Completed: 'text-green-600 dark:text-green-400',
+  Cancelled: 'text-gray-600 dark:text-gray-400',
+  Aborted: 'text-red-600 dark:text-red-400',
 }
 
 const BADGE_COLORS: Record<string, string> = {
   Semua: 'bg-navy text-gold dark:bg-white dark:text-navy',
   Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-400',
+  ActiveStar: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400',
   Active: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+  Hold: 'bg-slate-50 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400',
   Submitted: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
   Approved: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
-  Revise: 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400',
-  Failed: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+  Rejected: 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400',
+  Completed: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+  Cancelled: 'bg-gray-50 text-gray-700 dark:bg-gray-500/10 dark:text-gray-400',
+  Aborted: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
 }
 
 const ACTIVE_BORDER: Record<string, string> = {
   Semua: 'border-navy dark:border-white',
   Draft: 'border-gray-400 dark:border-gray-500',
+  ActiveStar: 'border-indigo-500 dark:border-indigo-400',
   Active: 'border-blue-500 dark:border-blue-400',
+  Hold: 'border-slate-500 dark:border-slate-400',
   Submitted: 'border-amber-500 dark:border-amber-400',
   Approved: 'border-emerald-500 dark:border-emerald-400',
-  Revise: 'border-orange-500 dark:border-orange-400',
-  Failed: 'border-red-500 dark:border-red-400',
+  Rejected: 'border-orange-500 dark:border-orange-400',
+  Completed: 'border-green-500 dark:border-green-400',
+  Cancelled: 'border-gray-500 dark:border-gray-400',
+  Aborted: 'border-red-500 dark:border-red-400',
 }
 
 function FilterTab({

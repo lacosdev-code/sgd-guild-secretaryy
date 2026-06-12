@@ -44,8 +44,8 @@ export default async function EditQuestPage({ params }: Props) {
     detailCompleted: quest.detailCompleted,
   }
 
-  // Prevent editing quests that are already Approved or Failed
-  if (quest.status === 'Approved' || quest.status === 'Failed') {
+  // Prevent editing quests that are already Approved or Completed/Aborted
+  if (['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status)) {
     redirect(`/quests/${quest.id}`)
   }
 

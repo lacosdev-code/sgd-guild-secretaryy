@@ -34,19 +34,20 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
+  const isGM = (session.user as any).role === 'guild_master'
 
   const quest = await prisma.quest.create({
     data: {
       title: body.title,
       description: body.description || null,
-      assignedTo: body.assignedTo || null,
+      assignedTo: isGM ? (body.assignedTo || null) : null,
       createdBy: session.user.id,
       urgency: body.urgency || 'Routine',
-      difficulty: body.difficulty || null,
+      difficulty: isGM ? (body.difficulty || null) : null,
       deadline: body.deadline ? new Date(body.deadline) : null,
       successParameter: body.successParameter || null,
-      rewardPoints: body.rewardPoints ? parseInt(body.rewardPoints) : null,
-      status: body.status || 'Draft',
+      rewardPoints: isGM && body.rewardPoints ? parseInt(body.rewardPoints) : null,
+      status: isGM ? (body.status || 'Draft') : 'Draft',
       briefAttachmentUrl: body.briefAttachmentUrl || null,
       detailCompleted: body.detailCompleted || false,
     },

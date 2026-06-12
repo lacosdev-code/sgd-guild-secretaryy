@@ -14,7 +14,8 @@ export async function GET(
   const filePath = path.join(UPLOAD_DIR, ...params.path)
 
   // Security: prevent directory traversal
-  if (!filePath.startsWith(UPLOAD_DIR)) {
+  const safeUploadDir = UPLOAD_DIR.endsWith(path.sep) ? UPLOAD_DIR : UPLOAD_DIR + path.sep
+  if (!filePath.startsWith(safeUploadDir)) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 

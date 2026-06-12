@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File
-    const subDir = (formData.get('dir') as string) || 'misc'
+    const rawSubDir = (formData.get('dir') as string) || 'misc'
+    // Sanitize subDir to prevent path traversal
+    const subDir = path.basename(rawSubDir)
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -25,8 +27,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'File terlalu besar (maks 10MB)' }, { status: 413 })
     }
 
-    const ext = path.extname(file.name).toLowerCase() || '.bin'
-    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}${ext}`
+    const ext = path.extname(file.name).toLowerCase()
+    const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.mp4']
+    if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json({ error: 'Tipe file tidak diizinkan.' }, { status: 415 })
+    }
+
+    // Sanitize filename
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')
+    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${safeFileName}`
     const uploadDir = ensureUploadDir(subDir)
     const fullPath = path.join(uploadDir, fileName)
 

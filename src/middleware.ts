@@ -1,5 +1,8 @@
 import { auth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+const rateLimitMap = new Map<string, number[]>()
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth
@@ -10,14 +13,34 @@ export default auth((req) => {
   )
   const isApiFiles = req.nextUrl.pathname.startsWith('/api/files')
 
-  // Allow public routes
-  const isMigrateNow = req.nextUrl.pathname.startsWith('/api/migrate-now')
-  if (isApiAuth || isPublicFile || isMigrateNow) {
+  // Simple In-Memory Rate Limiting for API routes
+  // (Works best in standalone Node.js. For edge/serverless, use Redis)
+  if (req.nextUrl.pathname.startsWith('/api/') && !isApiFiles) {
+    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown'
+    const now = Date.now()
+    const requestLog = rateLimitMap.get(ip) || []
+    
+    // Allow 100 requests per 1 minute window
+    const windowStart = now - 60 * 1000
+    const currentRequests = requestLog.filter(time => time > windowStart)
+    
+    if (currentRequests.length >= 100) {
+      return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 })
+    }
+    
+    currentRequests.push(now)
+    rateLimitMap.set(ip, currentRequests)
+  }
+
+  if (isApiAuth || isPublicFile) {
     return NextResponse.next()
   }
 
   // Redirect to login if not authenticated
   if (!isLoggedIn && !isLoginPage) {
+    if (req.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const loginUrl = new URL('/login', req.nextUrl.origin)
     return NextResponse.redirect(loginUrl)
   }

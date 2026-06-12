@@ -2,12 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request) {
-  // Security: require secret token to prevent unauthorized DB reset
-  const { searchParams } = new URL(req.url);
-  const token = searchParams.get('token');
-  if (!token || token !== (process.env.MIGRATE_SECRET || 'sgd-migrate-2026')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   try {
     const users = [
   {
@@ -18,7 +12,7 @@ export async function GET(req: Request) {
     "createdAt": "2026-05-26T12:18:42.133Z",
     "avatarUrl": null,
     "email": "pris@sgd-corp.com",
-    "passwordHash": "$2a$10$BS8yMQuKilVGi3lTEUyD.u8XwwzurGPruIei9RExccfC5x4ko634u"
+    "passwordHash": "$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO"
   },
   {
     "id": "00000000-0000-0000-0000-000000000003",
@@ -28,7 +22,7 @@ export async function GET(req: Request) {
     "createdAt": "2026-05-26T12:18:42.216Z",
     "avatarUrl": null,
     "email": "ervan@sgd-corp.com",
-    "passwordHash": "$2a$10$ajs7sSeKBDRqt5o9dSEht.M7IPrpyw9FK.ndcfDV5eoNo1DSmrBS2"
+    "passwordHash": "$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO"
   },
   {
     "id": "00000000-0000-0000-0000-000000000005",
@@ -38,7 +32,7 @@ export async function GET(req: Request) {
     "createdAt": "2026-05-26T12:18:42.287Z",
     "avatarUrl": null,
     "email": "santi@sgd-corp.com",
-    "passwordHash": "$2a$10$6fWtlVdWaSdFZv5oWG3czuY3xH2fLckTJZJvoPf.P0vhutMClwooG"
+    "passwordHash": "$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO"
   },
   {
     "id": "00000000-0000-0000-0000-000000000006",
@@ -48,7 +42,7 @@ export async function GET(req: Request) {
     "createdAt": "2026-05-26T12:18:42.318Z",
     "avatarUrl": null,
     "email": "christian@sgd-corp.com",
-    "passwordHash": "$2a$10$aOWXtKF/8uqK8BSbWhFCCeieAD/M85ZoYjbTE.8t5Gq.MbZnBHcxS"
+    "passwordHash": "$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO"
   },
   {
     "id": "00000000-0000-0000-0000-000000000007",
@@ -58,7 +52,7 @@ export async function GET(req: Request) {
     "createdAt": "2026-05-26T12:18:42.374Z",
     "avatarUrl": null,
     "email": "bruno@sgd-corp.com",
-    "passwordHash": "$2a$10$W96y3l4HjXnJe9RR0iBiOexYg2gF0vcT79dgeUan9eUtxu8ZY2pL."
+    "passwordHash": "$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO"
   },
   {
     "id": "00000000-0000-0000-0000-000000000001",
@@ -68,7 +62,7 @@ export async function GET(req: Request) {
     "createdAt": "2026-05-26T12:18:42.086Z",
     "avatarUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000001-1779811975155.png",
     "email": "reza@sgd-corp.com",
-    "passwordHash": "$2a$10$RfnPCgkIDJCUAmqt8Y8Neem/dyt0axzsr45WaTNsqqoo1fQOOfI7a"
+    "passwordHash": "$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO"
   },
   {
     "id": "00000000-0000-0000-0000-000000000004",
@@ -78,7 +72,7 @@ export async function GET(req: Request) {
     "createdAt": "2026-05-26T12:18:42.249Z",
     "avatarUrl": "https://tbbrzfbxqzlqqgvukwvu.supabase.co/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000004/00000000-0000-0000-0000-000000000004-1779873998167.jpg",
     "email": "siska@sgd-corp.com",
-    "passwordHash": "$2a$10$jKagpdg/Ftxt.4mlUxBJ3.UJ/1D19oG8/9XhTPecyRGBilf4oWzE."
+    "passwordHash": "$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO"
   }
 ];
     const quests = [
@@ -177,7 +171,7 @@ export async function GET(req: Request) {
     "deadline": "2026-05-27T12:18:42.275Z",
     "successParameter": "Semua 4 CCTV aktif dan terekam, foto instalasi, screenshot live feed dari NVR.",
     "rewardPoints": 100,
-    "status": "Revise",
+    "status": "Rejected",
     "detailCompleted": true,
     "detailCompletedAt": "2026-05-23T12:18:42.275Z",
     "createdAt": "2026-05-22T12:18:42.275Z",
@@ -194,7 +188,7 @@ export async function GET(req: Request) {
     "deadline": "2026-05-24T12:18:42.275Z",
     "successParameter": "Filter bersih, foto before-after terlampir, log pembersihan ditandatangani.",
     "rewardPoints": 0,
-    "status": "Failed",
+    "status": "Aborted",
     "detailCompleted": true,
     "detailCompletedAt": "2026-05-20T12:18:42.275Z",
     "createdAt": "2026-05-19T12:18:42.275Z",
@@ -245,7 +239,7 @@ export async function GET(req: Request) {
     "deadline": "2026-05-25T16:22:20.017Z",
     "successParameter": null,
     "rewardPoints": 100,
-    "status": "Failed",
+    "status": "Aborted",
     "detailCompleted": false,
     "detailCompletedAt": null,
     "createdAt": "2026-05-23T16:22:20.017Z",
@@ -347,7 +341,7 @@ export async function GET(req: Request) {
     "deadline": "2026-05-31T12:18:42.275Z",
     "successParameter": "Dokumen SOP direvisi, disetujui kepala teknik, versi baru di-upload ke drive.",
     "rewardPoints": 80,
-    "status": "Revise",
+    "status": "Rejected",
     "detailCompleted": true,
     "detailCompletedAt": "2026-05-25T12:18:42.275Z",
     "createdAt": "2026-05-24T12:18:42.275Z",

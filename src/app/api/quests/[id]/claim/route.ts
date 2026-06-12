@@ -13,6 +13,10 @@ export async function POST(
   const quest = await prisma.quest.findUnique({ where: { id: params.id } })
   if (!quest) return NextResponse.json({ error: 'Quest not found' }, { status: 404 })
 
+  if (quest.assignedTo !== session.user.id) {
+    return NextResponse.json({ error: 'Forbidden. You are not assigned to this quest.' }, { status: 403 })
+  }
+
   await prisma.quest.update({
     where: { id: params.id },
     data: { status: 'Submitted' },

@@ -13,12 +13,14 @@ interface NavItem {
 import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users, MessagesSquare } from 'lucide-react'
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
-  { label: 'Guild', href: '/leaderboard', icon: <Trophy size={18} /> },
-  { label: 'Tavern',    href: '/tavern',    icon: <MessagesSquare size={18} /> },
-  { label: 'Quests',    href: '/quests',    icon: <ScrollText size={18} /> },
-  { label: 'Members',   href: '/members',   icon: <Users size={18} /> },
-  { label: 'Profile',   href: '/profile',   icon: <UserCircle size={18} /> },
+  { label: 'Dashboard',   href: '/dashboard',   icon: <LayoutDashboard size={18} /> },
+  { label: 'Arcs',        href: '/arcs',        icon: <ScrollText size={18} /> },
+  { label: 'Projects',    href: '/projects',    icon: <ScrollText size={18} /> },
+  { label: 'Quests',      href: '/quests',      icon: <ScrollText size={18} /> },
+  { label: 'Leaderboards',href: '/leaderboard', icon: <Trophy size={18} /> },
+  { label: 'Tavern',      href: '/tavern',      icon: <MessagesSquare size={18} /> },
+  { label: 'Members',     href: '/members',     icon: <Users size={18} /> },
+  { label: 'Profile',     href: '/profile',     icon: <UserCircle size={18} /> },
 ]
 
 

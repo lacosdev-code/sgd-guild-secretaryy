@@ -222,7 +222,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
                   className="w-full text-left text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-start gap-1.5 hover:underline"
                 >
                   <Bell size={12} className="shrink-0 mt-0.5" />
-                  <span>Aktifkan notifikasi pop-up (seperti WhatsApp) →</span>
+                  <span>Aktifkan notifikasi pop-up →</span>
                 </button>
               )}
             </div>

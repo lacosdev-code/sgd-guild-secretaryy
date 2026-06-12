@@ -90,6 +90,8 @@ function fixDate(d) {
 const users = processTable(db.users).map(u => {
   if (u.createdAt) u.createdAt = fixDate(u.createdAt);
   if (u.updatedAt) u.updatedAt = fixDate(u.updatedAt);
+  // Override password to 'sgd123'
+  u.passwordHash = '$2b$10$Kt08HN/aSUtgck3rg67enuR1nNLUiE6ijrhbdZsZZXsh1YaZ1WGCO';
   return u;
 });
 const quests = processTable(db.quests).map(q => {
@@ -97,6 +99,11 @@ const quests = processTable(db.quests).map(q => {
   if (q.createdAt) q.createdAt = fixDate(q.createdAt);
   if (q.updatedAt) q.updatedAt = fixDate(q.updatedAt);
   if (q.detailCompletedAt) q.detailCompletedAt = fixDate(q.detailCompletedAt);
+  
+  if (q.status === 'Failed') q.status = 'Aborted';
+  if (q.status === 'Revise') q.status = 'Rejected';
+  if (q.status === 'Pending') q.status = 'Submitted';
+  
   return q;
 });
 const attachments = processTable(db.attachments).map(a => {

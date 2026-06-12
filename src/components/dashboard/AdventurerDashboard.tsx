@@ -132,9 +132,9 @@ export default function AdventurerDashboard() {
   const { user } = useUser()
   const { quests, loading, error } = useQuests({ assignedTo: user?.id })
 
-  const activeQuests    = quests.filter((q) => ['Active', 'Submitted', 'Revise', 'Draft'].includes(q.status))
+  const activeQuests    = quests.filter((q) => ['Draft', 'ActiveStar', 'Active', 'Hold', 'Submitted', 'Rejected'].includes(q.status))
   const overdueQuests   = activeQuests.filter(isOverdue)
-  const completedQuests = quests.filter((q) => q.status === 'Approved' || q.status === 'Failed')
+  const completedQuests = quests.filter((q) => ['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(q.status))
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">

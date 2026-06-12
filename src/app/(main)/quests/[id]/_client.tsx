@@ -33,7 +33,7 @@ export default function QuestSheetClient({
   // Guild Master can also upload on behalf of the Adventurer
   const canUpload =
     (quest.assignedTo === currentUserId || currentUserRole === 'guild_master') &&
-    (quest.status === 'Active' || quest.status === 'Revise')
+    (quest.status === 'Active' || quest.status === 'ActiveStar' || quest.status === 'Rejected')
 
   // GM can also view attachments
   const showAttachments =

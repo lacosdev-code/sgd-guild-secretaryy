@@ -70,7 +70,7 @@ function QuestRow({ quest }: { quest: QuestWithAssignee }) {
   
   // Specific warnings
   const warnings = []
-  if (quest.status === 'Draft' || (!quest.detailCompleted && quest.status !== 'Approved' && quest.status !== 'Failed')) {
+  if (quest.status === 'Draft' || (!quest.detailCompleted && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status))) {
     warnings.push('Detail Kurang')
   }
   if (overdue) {
@@ -159,8 +159,8 @@ export default function GMDashboard() {
   
   // Actionable Lists
   const submittedQuests = quests.filter(q => q.status === 'Submitted')
-  const priorityQuests = quests.filter(q => (q.urgency === 'Emergency' || q.urgency === 'Priority') && q.status !== 'Approved' && q.status !== 'Failed')
-  const incompleteQuests = quests.filter(q => !q.detailCompleted && q.status !== 'Approved' && q.status !== 'Failed')
+  const priorityQuests = quests.filter(q => (q.urgency === 'Emergency' || q.urgency === 'Priority') && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(q.status))
+  const incompleteQuests = quests.filter(q => !q.detailCompleted && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(q.status))
   const overdueActiveQuests = quests.filter(q => isOverdue(q))
 
   return (

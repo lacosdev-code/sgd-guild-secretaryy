@@ -55,7 +55,7 @@ export function InstallPWAPrompt() {
         <div className="flex-1">
           <h3 className="font-bold text-navy dark:text-white text-sm">Install Aplikasi SGD</h3>
           <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-            Install untuk notifikasi realtime (seperti WhatsApp) & akses lebih cepat.
+            Install untuk notifikasi realtime & akses lebih cepat.
           </p>
           <div className="flex gap-2 mt-3">
             <button

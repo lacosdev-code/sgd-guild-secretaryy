@@ -101,15 +101,15 @@ export function deriveGMStats(quests: QuestWithAssignee[]) {
     total:      quests.length,
     active:     quests.filter((q) => q.status === 'Active').length,
     submitted:  quests.filter((q) => q.status === 'Submitted').length,
-    incomplete: quests.filter((q) => !q.detailCompleted && q.status !== 'Approved' && q.status !== 'Failed').length,
+    incomplete: quests.filter((q) => !q.detailCompleted && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(q.status)).length,
     overdue:    quests.filter(
-      (q) => q.deadline && new Date(q.deadline) < now && q.status !== 'Approved' && q.status !== 'Failed'
+      (q) => q.deadline && new Date(q.deadline) < now && !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(q.status)
     ).length,
   }
 }
 
 export function isOverdue(quest: { deadline: string | null; status: string }): boolean {
   if (!quest.deadline) return false
-  if (quest.status === 'Approved' || quest.status === 'Failed') return false
+  if (['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status)) return false
   return new Date(quest.deadline) < new Date()
 }

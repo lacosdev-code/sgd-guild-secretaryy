@@ -18,6 +18,10 @@ export async function POST(
   const quest = await prisma.quest.findUnique({ where: { id: params.id } })
   if (!quest) return NextResponse.json({ error: 'Quest not found' }, { status: 404 })
 
+  if (quest.status === 'Approved') {
+    return NextResponse.json({ error: 'Quest already approved' }, { status: 400 })
+  }
+
   // Update quest status
   await prisma.quest.update({
     where: { id: params.id },

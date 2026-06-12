@@ -41,19 +41,25 @@ export async function PATCH(
 
   const body = await req.json()
 
+  const isGM = (session.user as any).role === 'guild_master'
+
   const updateData: any = {}
   if ('title' in body) updateData.title = body.title
   if ('description' in body) updateData.description = body.description
-  if ('assignedTo' in body) updateData.assignedTo = body.assignedTo
   if ('urgency' in body) updateData.urgency = body.urgency
-  if ('difficulty' in body) updateData.difficulty = body.difficulty
   if ('deadline' in body) updateData.deadline = body.deadline ? new Date(body.deadline) : null
   if ('successParameter' in body) updateData.successParameter = body.successParameter
-  if ('rewardPoints' in body) updateData.rewardPoints = body.rewardPoints ? parseInt(body.rewardPoints) : null
-  if ('status' in body) updateData.status = body.status
   if ('briefAttachmentUrl' in body) updateData.briefAttachmentUrl = body.briefAttachmentUrl
   if ('detailCompleted' in body) updateData.detailCompleted = body.detailCompleted
   if (body.detailCompleted === true) updateData.detailCompletedAt = new Date()
+
+  // GM only fields
+  if (isGM) {
+    if ('assignedTo' in body) updateData.assignedTo = body.assignedTo
+    if ('difficulty' in body) updateData.difficulty = body.difficulty
+    if ('rewardPoints' in body) updateData.rewardPoints = body.rewardPoints ? parseInt(body.rewardPoints) : null
+    if ('status' in body) updateData.status = body.status
+  }
 
   const quest = await prisma.quest.update({
     where: { id: params.id },

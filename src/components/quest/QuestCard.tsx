@@ -9,7 +9,7 @@ import type { QuestWithAssignee } from '@/hooks/useQuests'
 // Re-export isOverdue so callers can use it from utils
 export function isOverdue(q: QuestWithAssignee) {
   if (!q.deadline) return false
-  if (q.status === 'Approved' || q.status === 'Failed') return false
+  if (['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(q.status)) return false
   return new Date(q.deadline) < new Date()
 }
 
@@ -20,8 +20,7 @@ interface QuestCardProps {
 export default function QuestCard({ quest }: QuestCardProps) {
   const overdue    = isOverdue(quest)
   const missingDetail = !quest.detailCompleted &&
-    quest.status !== 'Approved' &&
-    quest.status !== 'Failed'
+    !['Approved', 'Completed', 'Cancelled', 'Aborted'].includes(quest.status)
 
   return (
     <Link

@@ -12,6 +12,8 @@ datasource db {
 
 enum UserRole {
   guild_master
+  guild_secretary
+  quest_giver
   adventurer
 }
 
@@ -34,11 +36,32 @@ enum QuestUrgency {
 
 enum QuestStatus {
   Draft
+  ActiveStar
   Active
+  Hold
   Submitted
   Approved
-  Revise
-  Failed
+  Rejected
+  Completed
+  Cancelled
+  Aborted
+}
+
+enum DetailStatus {
+  Complete
+  Detail_Kurang
+  Critical_Missing
+}
+
+enum AbortCategory {
+  Wrong_Direction
+  Duplicated_Quest
+  Client_Situation_Changed
+  Risk_Too_High
+  No_Longer_Needed
+  Reassigned
+  Emergency_Stop
+  Other
 }
 
 model User {
@@ -47,6 +70,8 @@ model User {
   email        String   @unique
   passwordHash String   @map("password_hash")
   role         UserRole @default(adventurer)
+  division     String?
+  status       String   @default("Active") // Active, Inactive, Suspended
   totalPoints  Int      @default(0) @map("total_points")
   avatarUrl    String?  @map("avatar_url")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -55,6 +80,11 @@ model User {
   // Relations
   questsCreated    Quest[]          @relation("QuestCreator")
   questsAssigned   Quest[]          @relation("QuestAssignee")
+  questsApproved   Quest[]          @relation("QuestApprover")
+  questsHeld       Quest[]          @relation("QuestHolder")
+  arcsOwned        Arc[]            @relation("ArcOwner")
+  projectsOwned    Project[]        @relation("ProjectOwner")
+  vaultItems       VaultItem[]
   comments         QuestComment[]
   pointLogs        PointLog[]
   notifications    Notification[]
@@ -65,18 +95,93 @@ model User {
   @@map("users")
 }
 
+model Arc {
+  id                 String   @id @default(uuid())
+  name               String
+  strategicObjective String?  @map("strategic_objective")
+  status             String   @default("Active")
+  ownerId            String   @map("owner_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  owner              User        @relation("ArcOwner", fields: [ownerId], references: [id])
+  projects           Project[]
+  vaultItems         VaultItem[]
+
+  @@map("arcs")
+}
+
+model Project {
+  id              String   @id @default(uuid())
+  arcId           String?  @map("arc_id")
+  name            String
+  classification  String?  // Client or Internal
+  status          String   @default("Active")
+  health          String   @default("Green") // Green, Yellow, Red
+  startDate       DateTime? @map("start_date")
+  targetDate      DateTime? @map("target_date")
+  scopeSummary    String?  @map("scope_summary")
+  ownerId         String   @map("owner_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  arc             Arc?        @relation(fields: [arcId], references: [id], onDelete: SetNull)
+  owner           User        @relation("ProjectOwner", fields: [ownerId], references: [id])
+  quests          Quest[]
+  vaultItems      VaultItem[]
+
+  @@map("projects")
+}
+
+model VaultItem {
+  id            String   @id @default(uuid())
+  title         String
+  type          String   // MOM, SOW, quotation, etc.
+  summary       String?
+  fileUrl       String   @map("file_url")
+  visibility    String   @default("all") // GM only, project team, all
+  arcId         String?  @map("arc_id")
+  projectId     String?  @map("project_id")
+  uploadedById  String   @map("uploaded_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  arc           Arc?     @relation(fields: [arcId], references: [id], onDelete: Cascade)
+  project       Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploader      User     @relation(fields: [uploadedById], references: [id])
+
+  @@map("vault_items")
+}
+
 model Quest {
   id                   String          @id @default(uuid())
   title                String
   description          String?
+  projectId            String?         @map("project_id")
   assignedTo           String?         @map("assigned_to")
   createdBy            String          @map("created_by")
+  approverId           String?         @map("approver_id")
   urgency              QuestUrgency    @default(Routine)
   difficulty           DifficultyRank?
   deadline             DateTime?
   successParameter     String?         @map("success_parameter")
   rewardPoints         Int?            @map("reward_points")
   status               QuestStatus     @default(Draft)
+  detailStatus         DetailStatus    @default(Detail_Kurang) @map("detail_status")
+  rejectionReason      String?         @map("rejection_reason")
+  
+  // Hold fields
+  holdReason           String?         @map("hold_reason")
+  heldById             String?         @map("held_by_id")
+  holdDate             DateTime?       @map("hold_date")
+  expectedResumeDate   DateTime?       @map("expected_resume_date")
+  blockingParty        String?         @map("blocking_party")
+  
+  // Abort fields
+  abortReason          String?         @map("abort_reason")
+  abortCategory        AbortCategory?  @map("abort_category")
+  gmNote               String?         @map("gm_note")
+  pointTreatment       String?         @map("point_treatment")
+
   briefAttachmentUrl   String?         @map("brief_attachment_url")
   detailCompleted      Boolean         @default(false) @map("detail_completed")
   detailCompletedAt    DateTime?       @map("detail_completed_at")
@@ -84,21 +189,27 @@ model Quest {
   updatedAt            DateTime        @updatedAt @map("updated_at")
 
   // Relations
+  project     Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   assignee    User?          @relation("QuestAssignee", fields: [assignedTo], references: [id])
   creator     User           @relation("QuestCreator", fields: [createdBy], references: [id])
+  approver    User?          @relation("QuestApprover", fields: [approverId], references: [id])
+  heldBy      User?          @relation("QuestHolder", fields: [heldById], references: [id])
+  
   comments    QuestComment[]
   pointLogs   PointLog[]
   attachments Attachment[]
+  emailLogs   EmailLog[]
 
   @@map("quests")
 }
 
 model QuestComment {
-  id        String   @id @default(uuid())
-  questId   String   @map("quest_id")
-  userId    String   @map("user_id")
-  content   String
-  createdAt DateTime @default(now()) @map("created_at")
+  id            String   @id @default(uuid())
+  questId       String   @map("quest_id")
+  userId        String   @map("user_id")
+  content       String
+  attachmentUrl String?  @map("attachment_url")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id])
@@ -129,7 +240,7 @@ model PointLog {
   createdAt DateTime @default(now()) @map("created_at")
 
   user  User   @relation(fields: [userId], references: [id])
-  quest Quest? @relation(fields: [questId], references: [id])
+  quest Quest? @relation(fields: [questId], references: [id], onDelete: Cascade)
 
   @@map("point_logs")
 }
@@ -170,4 +281,18 @@ model GuildChat {
   user User @relation(fields: [userId], references: [id])
 
   @@map("guild_chat")
+}
+
+model EmailLog {
+  id           String   @id @default(uuid())
+  recipient    String
+  emailType    String   @map("email_type")
+  questId      String?  @map("quest_id")
+  sentAt       DateTime @default(now()) @map("sent_at")
+  status       String   // Success, Failed
+  errorMessage String?  @map("error_message")
+
+  quest        Quest?   @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@map("email_logs")
 }
