@@ -38,11 +38,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [role, setRole] = useState<UserRole | null>(null)
   const [tick, setTick] = useState(0)
+  const [isFetchingProfile, setIsFetchingProfile] = useState(false)
   const router = useRouter()
 
-  const loading = status === 'loading'
+  const loading = status === 'loading' || isFetchingProfile
 
   const fetchUserProfile = useCallback(async (userId: string) => {
+    setIsFetchingProfile(true)
     try {
       const res = await fetch(`/api/users/${userId}`)
       if (!res.ok) return
@@ -51,6 +53,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setRole(data.role as UserRole)
     } catch (err) {
       console.error('[useUser] fetchUserProfile error:', err)
+    } finally {
+      setIsFetchingProfile(false)
     }
   }, [])
 
