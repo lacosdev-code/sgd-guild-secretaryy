@@ -528,26 +528,31 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
       {/* Image Preview Modal */}
       {previewImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+          onClick={() => setPreviewImage(null)}
+        >
           <button 
             onClick={() => setPreviewImage(null)} 
-            className="absolute top-4 right-4 p-3 text-white hover:bg-white/10 rounded-full transition-colors"
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-3 text-white bg-black/50 hover:bg-white/20 rounded-full transition-colors z-50"
           >
             <X size={24} />
           </button>
           
-          <Image 
-            src={previewImage} 
-            alt="Preview" 
-            fill
-            unoptimized
-            className="object-contain rounded-md"
-          />
+          <div className="relative w-full h-full max-w-5xl max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
+            <Image 
+              src={previewImage} 
+              alt="Preview" 
+              fill
+              unoptimized
+              className="object-contain rounded-md"
+            />
+          </div>
           
           <button 
             type="button"
-            onClick={() => forceDownload(previewImage)}
-            className="absolute bottom-6 px-6 py-2.5 bg-white text-black font-bold text-sm rounded-full flex items-center gap-2 hover:bg-gray-200 transition-colors shadow-lg"
+            onClick={(e) => { e.stopPropagation(); forceDownload(previewImage) }}
+            className="absolute bottom-6 md:bottom-10 px-6 py-2.5 bg-white text-black font-bold text-sm rounded-full flex items-center gap-2 hover:bg-gray-200 transition-colors shadow-2xl z-50"
           >
             <Download size={16} /> Unduh Gambar
           </button>
