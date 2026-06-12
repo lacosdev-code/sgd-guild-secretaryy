@@ -149,16 +149,50 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center text-red-500">
-        <p className="mb-4">Gagal memuat profil pengguna. Sesi Anda mungkin tidak valid.</p>
-        <button 
+      <div className="min-h-screen bg-[#0F1B2D] flex flex-col items-center justify-center p-6">
+        {/* Logo */}
+        <img
+          src="https://ik.imagekit.io/Sgd/sgd.png?tr=w-120,h-120,fo-auto,c-pad_resize,bg-transparent"
+          alt="SGD Logo"
+          width={80}
+          height={80}
+          className="mb-8 opacity-60"
+        />
+
+        {/* Icon error */}
+        <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+        </div>
+
+        {/* Teks */}
+        <h1 className="text-white font-bold text-xl tracking-wide mb-2 text-center">
+          Sesi Tidak Valid
+        </h1>
+        <p className="text-gray-400 text-sm text-center max-w-xs mb-8 leading-relaxed">
+          Gagal memuat profil pengguna. Sesi Anda mungkin telah berakhir atau tidak valid.
+        </p>
+
+        {/* Tombol */}
+        <button
           onClick={async () => {
             await signOut({ callbackUrl: '/login' })
-          }} 
-          className="px-4 py-2 bg-navy text-white rounded hover:bg-navy/90 transition-colors"
+          }}
+          className="
+            bg-[#C9A227] text-[#1B2E52] font-bold
+            px-8 py-3 rounded-xl text-sm tracking-widest uppercase
+            hover:bg-[#C9A227]/90 active:scale-95
+            transition-all duration-200
+          "
         >
           Kembali ke Login
         </button>
+
+        {/* Footer */}
+        <p className="text-gray-600 text-xs mt-12 tracking-widest uppercase">
+          SGD Guild Secretary
+        </p>
       </div>
     )
   }
