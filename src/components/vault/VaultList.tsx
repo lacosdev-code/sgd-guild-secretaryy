@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { FileText, FileSpreadsheet, Image as ImageIcon, Video, Trash2, Download, Search } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
+import { notify } from '@/lib/toast'
 
 interface VaultItem {
   id: string
@@ -60,7 +61,7 @@ export function VaultList({ reloadTrigger }: { reloadTrigger: number }) {
       if (!res.ok) throw new Error('Failed to delete')
       setItems(items.filter(item => item.id !== id))
     } catch {
-      alert('Gagal menghapus dokumen.')
+      notify.warn('Gagal menghapus dokumen.')
     }
   }
 

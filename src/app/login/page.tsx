@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
-
+import { notify } from '@/lib/toast'
 import Image from 'next/image'
 
 // Map error messages to user-friendly text
 function mapErrorMessage(message: string): string {
   if (message.includes('CredentialsSignin') || message.includes('credentials')) {
-    return 'Email atau password salah. Periksa kembali dan coba lagi.'
+    return 'Email atau password salah!'
   }
   if (message.includes('Too many')) {
     return 'Terlalu banyak percobaan login. Coba lagi dalam beberapa menit.'
@@ -55,14 +55,18 @@ export default function LoginPage() {
   const [email, setEmail]         = useState('')
   const [password, setPassword]   = useState('')
   const [showPwd, setShowPwd]     = useState(false)
-  const [error, setError]         = useState<string | null>(null)
   const [loading, setLoading]     = useState(false)
   const router                    = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!email || !password) {
+      notify.warn("Mohon isi semua field!")
+      return
+    }
+
     setLoading(true)
-    setError(null)
 
     try {
       const result = await signIn('credentials', {
@@ -72,14 +76,15 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError(mapErrorMessage(result.error))
+        notify.error(mapErrorMessage(result.error))
         return
       }
 
+      notify.success("Selamat datang kembali!")
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan tidak terduga.')
+      notify.error(err.message || 'Terjadi kesalahan tidak terduga.')
     } finally {
       setLoading(false)
     }
@@ -128,26 +133,6 @@ export default function LoginPage() {
         <div className="bg-white rounded-b-2xl px-10 pb-10 pt-8 shadow-2xl">
 
           <RankDivider />
-
-          {/* Error banner */}
-          {error && (
-            <div
-              className="mb-6 px-4 py-3 rounded-lg border text-sm flex items-start gap-3"
-              style={{
-                background: '#FDF2F0',
-                borderColor: '#993C1D44',
-                color: '#993C1D',
-              }}
-            >
-              <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <span>{error}</span>
-            </div>
-          )}
 
           <form onSubmit={handleLogin} className="space-y-5" noValidate>
 

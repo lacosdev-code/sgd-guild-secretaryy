@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Camera, Loader2 } from 'lucide-react'
 
 import imageCompression from 'browser-image-compression'
+import { notify } from '@/lib/toast'
 
 export default function ProfilePage() {
   const { user, role, loading } = useUser()
@@ -49,11 +50,11 @@ export default function ProfilePage() {
     if (!file || !user) return
 
     if (!file.type.startsWith('image/')) {
-      alert('Hanya file gambar yang diperbolehkan.')
+      notify.warn('Hanya file gambar yang diperbolehkan.')
       return
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran gambar maksimal 5MB.')
+      notify.warn('Ukuran gambar maksimal 5MB.')
       return
     }
 
@@ -98,7 +99,7 @@ export default function ProfilePage() {
       window.location.reload()
     } catch (error: any) {
       console.error('Error uploading avatar:', error)
-      alert('Gagal mengupload foto profil: ' + error.message)
+      notify.warn('Gagal mengupload foto profil: ' + error.message)
     } finally {
       setUploadingAvatar(false)
       if (fileInputRef.current) fileInputRef.current.value = ''

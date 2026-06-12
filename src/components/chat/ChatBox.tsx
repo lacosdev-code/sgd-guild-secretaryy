@@ -6,6 +6,7 @@ import { Send, Image as ImageIcon, Loader2, Download, Paperclip, Mic, X, Trash2 
 import Image from 'next/image'
 import imageCompression from 'browser-image-compression'
 import { useUser } from '@/hooks/useUser'
+import { notify } from '@/lib/toast'
 
 const ChatFile = ({ url, name }: { url: string, name: string }) => {
   return (
@@ -206,7 +207,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       const res = await fetch(`/api/chat?id=${messageId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error(await res.text())
     } catch (err: any) {
-      alert('Gagal menghapus pesan: ' + err.message)
+      notify.warn('Gagal menghapus pesan: ' + err.message)
     }
   }
 
@@ -236,7 +237,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       }, 1000)
     } catch (err) {
       console.error(err)
-      alert('Gagal mengakses mikrofon. Pastikan izin telah diberikan pada browser Anda.')
+      notify.warn('Gagal mengakses mikrofon. Pastikan izin telah diberikan pada browser Anda.')
     }
   }
 
@@ -260,7 +261,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
 
   const uploadAudio = async (blob: Blob, mimeType: string) => {
     if (blob.size === 0) {
-      alert('Rekaman kosong. Coba bicara lebih lama.')
+      notify.warn('Rekaman kosong. Coba bicara lebih lama.')
       return
     }
     
@@ -284,7 +285,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         body: JSON.stringify({ message: `![audio](${data.url})` })
       })
     } catch (err: any) {
-      alert('Gagal mengirim voice note: ' + err.message)
+      notify.warn('Gagal mengirim voice note: ' + err.message)
     } finally {
       setUploadingImg(false)
     }
@@ -295,7 +296,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     if (!file || !currentUserId) return
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('Maksimal ukuran file adalah 10MB!')
+      notify.warn('Maksimal ukuran file adalah 10MB!')
       if (fileInputRef.current) fileInputRef.current.value = ''
       return
     }
@@ -341,7 +342,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       })
     } catch (err: any) {
       console.error(err)
-      alert('Gagal mengupload file: ' + err.message)
+      notify.warn('Gagal mengupload file: ' + err.message)
     } finally {
       setUploadingImg(false)
       if (fileInputRef.current) fileInputRef.current.value = ''

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Paperclip, Loader2, X } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
-import toast from 'react-hot-toast'
+import { notify } from '@/lib/toast'
 import type { Quest, DifficultyRank, QuestUrgency, User } from '@/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -364,7 +364,7 @@ export default function QuestForm({
     if (!file) return
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('Ukuran file maksimal 10MB')
+      notify.warn('Ukuran file maksimal 10MB')
       return
     }
 
@@ -393,7 +393,7 @@ export default function QuestForm({
       const data = await res.json()
       setForm(p => ({ ...p, brief_attachment_url: data.url }))
     } catch (err: any) {
-      alert('Gagal mengupload lampiran: ' + err.message)
+      notify.warn('Gagal mengupload lampiran: ' + err.message)
     } finally {
       setUploadingBrief(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -459,7 +459,7 @@ export default function QuestForm({
         questId = existingQuest!.id
       }
 
-      toast.success(mode === 'create' ? 'Quest berhasil ditambahkan!' : 'Quest berhasil diperbarui!')
+      notify.success(mode === 'create' ? 'Quest berhasil ditambahkan!' : 'Quest berhasil diperbarui!')
       router.push(`/quests/${questId}`)
       router.refresh()
     } catch (err: any) {
