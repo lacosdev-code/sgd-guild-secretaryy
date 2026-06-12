@@ -126,6 +126,7 @@ export default function QuestSheet({
   const [error, setError]     = useState<string | null>(null)
   const [newComment, setNewComment] = useState('')
   const [addingComment, setAddingComment] = useState(false)
+  const [promptModal, setPromptModal] = useState<{ open: boolean; action: 'Rejected' | 'Aborted' | 'Hold'; reason: string } | null>(null)
   const router                = useRouter()
   const criteria              = parseSuccessCriteria(quest.success_parameter)
 
@@ -190,12 +191,19 @@ export default function QuestSheet({
 
   // ── GM action: calls API route (service role needed for points) ──────────
   async function handleGMAction(action: 'Approved' | 'Rejected' | 'Aborted' | 'Hold') {
+    if (['Rejected', 'Aborted', 'Hold'].includes(action)) {
+      setPromptModal({ open: true, action: action as 'Rejected' | 'Aborted' | 'Hold', reason: '' })
+      return
+    }
+    await executeGMAction(action, '')
+  }
+
+  async function executeGMAction(action: 'Approved' | 'Rejected' | 'Aborted' | 'Hold', reason: string) {
     setLoading(true)
     setError(null)
+    setPromptModal(null)
     try {
-      let reason = '';
       if (['Rejected', 'Aborted', 'Hold'].includes(action)) {
-        reason = window.prompt(`Alasan untuk status ${action}?`) || '';
         if (!reason.trim()) {
            throw new Error(`Alasan wajib diisi.`);
         }
@@ -596,6 +604,57 @@ export default function QuestSheet({
           </div>
         )}
       </div>
+
+      {/* Prompt Modal UI */}
+      {promptModal && promptModal.open && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm" style={{ backgroundColor: 'rgba(27, 46, 82, 0.4)' }}>
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 flex items-center justify-between" style={{ background: '#1B2E52' }}>
+              <h3 className="font-bold tracking-widest uppercase text-sm" style={{ color: '#C9A227' }}>
+                Alasan {promptModal.action === 'Rejected' ? 'Tolak/Revise' : promptModal.action}
+              </h3>
+              <button 
+                onClick={() => setPromptModal(null)}
+                className="text-white/50 hover:text-white transition-colors"
+                title="Tutup"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Silakan berikan alasan secara detail untuk tindakan <strong className="text-[#1B2E52] font-semibold">{promptModal.action}</strong> pada quest ini.
+              </p>
+              <textarea
+                autoFocus
+                className="w-full rounded-xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 transition-all bg-gray-50 focus:bg-white min-h-[120px] resize-y"
+                style={{ '--tw-ring-color': '#C9A227' } as React.CSSProperties}
+                placeholder="Tulis alasan atau catatan di sini..."
+                value={promptModal.reason}
+                onChange={(e) => setPromptModal({ ...promptModal, reason: e.target.value })}
+              />
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setPromptModal(null)}
+                  className="px-5 py-2.5 text-xs font-bold tracking-wider uppercase text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => executeGMAction(promptModal.action, promptModal.reason)}
+                  disabled={loading || !promptModal.reason.trim()}
+                  className="px-5 py-2.5 text-xs font-bold tracking-wider uppercase rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: '#1B2E52', color: '#C9A227' }}
+                >
+                  {loading ? 'Menyimpan...' : 'Konfirmasi'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
