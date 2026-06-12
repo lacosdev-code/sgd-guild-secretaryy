@@ -33,8 +33,36 @@ async function main() {
     },
   })
 
+  // Create Bruno
+  const bruno = await prisma.user.upsert({
+    where: { email: 'bruno@sgd-corp.com' },
+    update: { passwordHash },
+    create: {
+      nama: 'Bruno',
+      email: 'bruno@sgd-corp.com',
+      passwordHash: passwordHash,
+      role: 'adventurer',
+      totalPoints: 0,
+    },
+  })
+
+  // Create Siska
+  const siska = await prisma.user.upsert({
+    where: { email: 'siska@sgd-corp.com' },
+    update: { passwordHash },
+    create: {
+      nama: 'Siska',
+      email: 'siska@sgd-corp.com',
+      passwordHash: passwordHash,
+      role: 'quest_giver',
+      totalPoints: 0,
+    },
+  })
+
   console.log(`✅ Guild Master created: ${gm.email}`)
   console.log(`✅ Adventurer created: ${adventurer.email}`)
+  console.log(`✅ Adventurer created: ${bruno.email}`)
+  console.log(`✅ Quest Giver created: ${siska.email}`)
   console.log('📝 Password untuk semua akun: sgd123')
   console.log('\n✅ Seeding selesai!')
 }
