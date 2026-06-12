@@ -10,25 +10,12 @@
   "categories": ["productivity", "business"],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "https://ik.imagekit.io/Sgd/sgd.png?tr=w-192,h-192,fo-auto,c-pad_resize,bg-1B2E52",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
+      "src": "https://ik.imagekit.io/Sgd/sgd.png?tr=w-512,h-512,fo-auto,c-pad_resize,bg-1B2E52",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -39,19 +26,19 @@
       "name": "Dashboard",
       "url": "/dashboard",
       "description": "Buka Dashboard",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "https://ik.imagekit.io/Sgd/sgd.png?tr=w-192,h-192,fo-auto,c-pad_resize,bg-1B2E52", "sizes": "192x192" }]
     },
     {
       "name": "Quests",
       "url": "/quests",
       "description": "Lihat semua Quest",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "https://ik.imagekit.io/Sgd/sgd.png?tr=w-192,h-192,fo-auto,c-pad_resize,bg-1B2E52", "sizes": "192x192" }]
     },
     {
       "name": "Tavern Chat",
       "url": "/tavern",
       "description": "Buka Tavern Chat",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "https://ik.imagekit.io/Sgd/sgd.png?tr=w-192,h-192,fo-auto,c-pad_resize,bg-1B2E52", "sizes": "192x192" }]
     }
   ]
 }
