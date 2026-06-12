@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       status: isGM ? (body.status || 'Draft') : 'Draft',
       briefAttachmentUrl: body.briefAttachmentUrl || null,
       detailCompleted: body.detailCompleted || false,
+      projectId: body.projectId || null,
     },
     include: {
       assignee: { select: { id: true, nama: true } },

@@ -37,6 +37,7 @@ export default async function QuestDetailPage({ params }: Props) {
     id: quest.id,
     title: quest.title,
     description: quest.description,
+    projectId: quest.projectId,
     assignedTo: quest.assignedTo,
     createdBy: quest.createdBy,
     urgency: quest.urgency,

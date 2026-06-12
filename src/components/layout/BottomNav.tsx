@@ -7,24 +7,39 @@ import { cn } from '@/lib/utils'
 import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users, MessagesSquare, MoreHorizontal, FolderGit2, Folders } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 
-const MAIN_NAV_ITEMS = [
-  { label: 'Dash', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
-  { label: 'Quests', href: '/quests', icon: <ScrollText size={20} /> },
-  { label: 'Tavern', href: '/tavern', icon: <MessagesSquare size={20} /> },
-  { label: 'Ranks', href: '/leaderboard', icon: <Trophy size={20} /> },
-]
-
 export default function BottomNav() {
   const pathname = usePathname()
   const { role } = useUser()
   const [showMore, setShowMore] = useState(false)
 
-  const MORE_ITEMS = [
-    { label: 'Arcs', href: '/arcs', icon: <FolderGit2 size={18} /> },
-    { label: 'Projects', href: '/projects', icon: <Folders size={18} /> },
-    ...(role === 'guild_master' ? [{ label: 'Members', href: '/members', icon: <Users size={18} /> }] : []),
-    { label: 'Profile', href: '/profile', icon: <UserCircle size={18} /> },
-  ]
+  const isGM = role === 'guild_master'
+
+  const MAIN_NAV_ITEMS = isGM 
+    ? [
+        { label: 'Dash', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
+        { label: 'Quests', href: '/quests', icon: <ScrollText size={20} /> },
+        { label: 'Members', href: '/members', icon: <Users size={20} /> },
+        { label: 'Projects', href: '/projects', icon: <Folders size={20} /> },
+      ]
+    : [
+        { label: 'Dash', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
+        { label: 'Quests', href: '/quests', icon: <ScrollText size={20} /> },
+        { label: 'Tavern', href: '/tavern', icon: <MessagesSquare size={20} /> },
+        { label: 'Profile', href: '/profile', icon: <UserCircle size={20} /> },
+      ]
+
+  const MORE_ITEMS = isGM
+    ? [
+        { label: 'Arcs', href: '/arcs', icon: <FolderGit2 size={18} /> },
+        { label: 'Tavern', href: '/tavern', icon: <MessagesSquare size={18} /> },
+        { label: 'Ranks', href: '/leaderboard', icon: <Trophy size={18} /> },
+        { label: 'Profile', href: '/profile', icon: <UserCircle size={18} /> },
+      ]
+    : [
+        { label: 'Arcs', href: '/arcs', icon: <FolderGit2 size={18} /> },
+        { label: 'Projects', href: '/projects', icon: <Folders size={18} /> },
+        { label: 'Ranks', href: '/leaderboard', icon: <Trophy size={18} /> },
+      ]
 
   // Close the more menu when a link is clicked
   const handleLinkClick = () => setShowMore(false)

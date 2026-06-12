@@ -122,49 +122,51 @@ export default function LeaderboardPage() {
       {/* Rest of the Leaderboard */}
       {others.length > 0 && (
         <div className="bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden mt-8">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/80 dark:bg-white/[0.02] border-b border-gray-100 dark:border-white/5">
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Rank</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Adventurer</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center">Class</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-right">Total Points</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-white/5">
-              {others.map((user, index) => {
-                const rankInfo = getRankInfo(user.totalPoints)
-                const actualRank = index + 4
-                
-                return (
-                  <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold text-gray-400 dark:text-gray-500 w-6 inline-block text-center group-hover:text-navy dark:group-hover:text-white transition-colors">
-                        {actualRank}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link href={`/members/${user.id}`} className="flex items-center gap-3">
-                        <Avatar url={user.avatarUrl} name={user.nama} size="sm" className="opacity-90 group-hover:opacity-100 transition-opacity" />
-                        <span className="font-semibold text-charcoal dark:text-gray-300">{user.nama}</span>
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 text-[10px] font-bold tracking-widest rounded border border-gray-200 dark:border-white/10">
-                        {rankInfo.currentRank}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className="font-bold text-charcoal dark:text-white text-base">
-                        {user.totalPoints.toLocaleString('id-ID')}
-                      </span>
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1 font-medium">SGD</span>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/80 dark:bg-white/[0.02] border-b border-gray-100 dark:border-white/5">
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Rank</th>
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Adventurer</th>
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center">Class</th>
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-right">Total Points</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 dark:divide-white/5">
+                {others.map((user, index) => {
+                  const rankInfo = getRankInfo(user.totalPoints)
+                  const actualRank = index + 4
+                  
+                  return (
+                    <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <span className="text-sm font-bold text-gray-400 dark:text-gray-500 w-6 inline-block text-center group-hover:text-navy dark:group-hover:text-white transition-colors">
+                          {actualRank}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <Link href={`/members/${user.id}`} className="flex items-center gap-2 sm:gap-3">
+                          <Avatar url={user.avatarUrl} name={user.nama} size="sm" className="opacity-90 group-hover:opacity-100 transition-opacity" />
+                          <span className="font-semibold text-charcoal dark:text-gray-300 truncate max-w-[120px] sm:max-w-none">{user.nama}</span>
+                        </Link>
+                      </td>
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 text-[10px] font-bold tracking-widest rounded border border-gray-200 dark:border-white/10">
+                          {rankInfo.currentRank}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                        <span className="font-bold text-charcoal dark:text-white text-base">
+                          {user.totalPoints.toLocaleString('id-ID')}
+                        </span>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1 font-medium">SGD</span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

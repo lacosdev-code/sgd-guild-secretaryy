@@ -52,6 +52,7 @@ export async function PATCH(
   if ('briefAttachmentUrl' in body) updateData.briefAttachmentUrl = body.briefAttachmentUrl
   if ('detailCompleted' in body) updateData.detailCompleted = body.detailCompleted
   if (body.detailCompleted === true) updateData.detailCompletedAt = new Date()
+  if ('projectId' in body) updateData.projectId = body.projectId
 
   // GM only fields
   if (isGM) {

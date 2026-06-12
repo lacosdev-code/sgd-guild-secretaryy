@@ -41,6 +41,7 @@ const RANK_STYLE: Record<DifficultyRank, { bg: string; color: string; border: st
 interface FormState {
   title: string
   assignedTo: string
+  projectId: string
   urgency: QuestUrgency
   description: string
   deadline: string        // ISO datetime-local string
@@ -253,6 +254,32 @@ function PICSelector(props: { value: string; onChange: (v: string) => void; adve
   )
 }
 
+function ProjectSelector(props: { value: string; onChange: (v: string) => void; projects: any[] }) {
+  const { value, onChange, projects } = props;
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2.5 text-sm bg-white border focus:outline-none transition-colors appearance-none cursor-pointer"
+        style={{ borderColor: '#DDD9D3', color: value ? '#2B3B4E' : '#9CA3AF' }}
+      >
+        <option value="">--- Tanpa Project (Opsional) ---</option>
+        {projects.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ color: '#1B2E5250' }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </div>
+    </div>
+  )
+}
+
 // ── Main form component ───────────────────────────────────────────────────────
 
 interface QuestFormProps {
@@ -271,6 +298,7 @@ export default function QuestForm({
   const router   = useRouter()
 
   const [adventurers, setAdventurers] = useState<User[]>([])
+  const [projects, setProjects] = useState<any[]>([])
   const [saving, setSaving]           = useState(false)
   const [error, setError]             = useState<string | null>(null)
   
@@ -283,6 +311,7 @@ export default function QuestForm({
   const [form, setForm] = useState<FormState>({
     title:             existingQuest?.title ?? '',
     assignedTo:       existingQuest?.assignedTo ?? '',
+    projectId:        existingQuest?.projectId ?? '',
     urgency:           existingQuest?.urgency ?? 'Routine',
     description:       existingQuest?.description ?? '',
     deadline:          existingQuest?.deadline
@@ -296,17 +325,18 @@ export default function QuestForm({
     brief_attachment_url: existingQuest?.brief_attachment_url ?? null,
   })
 
-  // Fetch all adventurers (and GM — some may be assigned to themselves)
+  // Fetch all adventurers and projects
   useEffect(() => {
     ;(async () => {
       try {
-        const res = await fetch('/api/users')
-        if (res.ok) {
-          const data = await res.json()
-          setAdventurers(data)
-        }
+        const [resUsers, resProj] = await Promise.all([
+          fetch('/api/users'),
+          fetch('/api/projects')
+        ])
+        if (resUsers.ok) setAdventurers(await resUsers.json())
+        if (resProj.ok) setProjects(await resProj.json())
       } catch (err) {
-        console.error('Failed to fetch users:', err)
+        console.error('Failed to fetch data:', err)
       }
     })()
   }, [])
@@ -388,6 +418,7 @@ export default function QuestForm({
       success_parameter: form.success_parameter.trim() || null,
       rewardPoints:     form.rewardPoints !== '' ? Number(form.rewardPoints) : null,
       brief_attachment_url: form.brief_attachment_url,
+      projectId:         form.projectId || null,
       status:            computeStatus(),
       updated_at:        new Date().toISOString(),
     }
@@ -545,6 +576,16 @@ export default function QuestForm({
                 value={form.assignedTo}
                 onChange={(val) => setForm(p => ({ ...p, assignedTo: val }))}
                 adventurers={adventurers}
+              />
+            </div>
+
+            {/* Project */}
+            <div>
+              <FieldLabel htmlFor="quest-project">Project (Opsional)</FieldLabel>
+              <ProjectSelector
+                value={form.projectId}
+                onChange={(val) => setForm(p => ({ ...p, projectId: val }))}
+                projects={projects}
               />
             </div>
 
