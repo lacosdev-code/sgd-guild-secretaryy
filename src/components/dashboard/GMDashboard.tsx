@@ -8,22 +8,13 @@ import { formatDeadline, getRankColor, getStatusColor } from '@/lib/utils'
 import type { QuestWithAssignee } from '@/hooks/useQuests'
 
 // ── Stat card ────────────────────────────────────────────────────────────────
-function StatCard({
-  label,
-  value,
-  accent = false,
-  danger = false,
-  warning = false,
-}: {
-  label: string
-  value: number
-  accent?: boolean
-  danger?: boolean
-  warning?: boolean
-}) {
+function StatCard({ label, value, accent, warning, danger, delay = 0 }: { label: string; value: number; accent?: boolean; warning?: boolean; danger?: boolean; delay?: number }) {
   if (accent) {
     return (
-      <div className="bg-[#1B2E52] dark:bg-[#C9A227]/15 border border-transparent dark:border-[#C9A227]/30 rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
+      <div 
+        className="bg-[#1B2E52] dark:bg-[#C9A227]/15 border border-transparent dark:border-[#C9A227]/30 rounded-2xl p-5 flex flex-col gap-1 transition-all hover:shadow-md hover:-translate-y-1 animate-in slide-in-from-bottom-4 fade-in duration-500 fill-mode-both"
+        style={{ animationDelay: `${delay}ms` }}
+      >
         <span className="text-3xl font-bold tabular-nums text-[#C9A227]">{value}</span>
         <span className="text-xs font-semibold uppercase tracking-widest text-[#C9A227]/60">{label}</span>
       </div>
@@ -32,7 +23,10 @@ function StatCard({
   
   if (danger) {
     return (
-      <div className="bg-[#FDF2F0] dark:bg-red-900/20 border border-[#993C1D22] dark:border-red-900/30 rounded-2xl p-5 flex flex-col gap-1 transition-shadow hover:shadow-md">
+      <div 
+        className="bg-[#FDF2F0] dark:bg-red-900/20 border border-[#993C1D22] dark:border-red-900/30 rounded-2xl p-5 flex flex-col gap-1 transition-all hover:shadow-md hover:-translate-y-1 animate-in slide-in-from-bottom-4 fade-in duration-500 fill-mode-both"
+        style={{ animationDelay: `${delay}ms` }}
+      >
         <span className="text-3xl font-bold tabular-nums text-[#993C1D] dark:text-red-400">{value}</span>
         <span className="text-xs font-semibold uppercase tracking-widest text-[#993C1D99] dark:text-red-400/70">{label}</span>
       </div>
