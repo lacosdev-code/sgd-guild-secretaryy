@@ -162,8 +162,40 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
             } : { nama: 'Unknown', avatarUrl: null }
           }
           if (isMounted) {
-            setMessages((prev) => [...prev, newMsg])
+            setMessages((prev) => {
+              // avoid duplicate
+              if (prev.some(m => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg]
+            })
             setTimeout(scrollToBottom, 100)
+
+            // Play sound and show toast if it's from another user and not initial load
+            if (!isFirstLoad.current && newMsg.user_id !== currentUserId) {
+              try {
+                // Generate a soft 'ping' sound using Web Audio API (no external file needed)
+                const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+                if (AudioContext) {
+                  const ctx = new AudioContext();
+                  const osc = ctx.createOscillator();
+                  const gainNode = ctx.createGain();
+
+                  osc.type = 'sine';
+                  osc.frequency.setValueAtTime(800, ctx.currentTime);
+                  osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+
+                  gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                  gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+                  gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+
+                  osc.connect(gainNode);
+                  gainNode.connect(ctx.destination);
+                  osc.start();
+                  osc.stop(ctx.currentTime + 0.2);
+                }
+              } catch (e) {
+                console.log('Audio playback failed', e);
+              }
+            }
           }
         }
       } catch {
