@@ -24,8 +24,8 @@ export default function BottomNav() {
     : [
         { label: 'Dash', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
         { label: 'Quests', href: '/quests', icon: <ScrollText size={20} /> },
-        { label: 'Tavern', href: '/tavern', icon: <MessagesSquare size={20} /> },
-        { label: 'Profile', href: '/profile', icon: <UserCircle size={20} /> },
+        { label: 'Arcs', href: '/arcs', icon: <FolderGit2 size={20} /> },
+        { label: 'Projects', href: '/projects', icon: <Folders size={20} /> },
       ]
 
   const MORE_ITEMS = isGM
@@ -36,9 +36,9 @@ export default function BottomNav() {
         { label: 'Profile', href: '/profile', icon: <UserCircle size={18} /> },
       ]
     : [
-        { label: 'Arcs', href: '/arcs', icon: <FolderGit2 size={18} /> },
-        { label: 'Projects', href: '/projects', icon: <Folders size={18} /> },
+        { label: 'Tavern', href: '/tavern', icon: <MessagesSquare size={18} /> },
         { label: 'Ranks', href: '/leaderboard', icon: <Trophy size={18} /> },
+        { label: 'Profile', href: '/profile', icon: <UserCircle size={18} /> },
       ]
 
   // Close the more menu when a link is clicked
