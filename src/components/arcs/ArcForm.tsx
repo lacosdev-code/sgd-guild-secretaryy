@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { notify } from '@/lib/toast'
 
-export default function ArcForm() {
+export default function ArcForm({ onCreated }: { onCreated?: () => void }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -28,6 +28,7 @@ export default function ArcForm() {
       notify.success('Arc berhasil dibuat')
       e.currentTarget.reset()
       router.refresh()
+      if (onCreated) onCreated()
     } catch (error: unknown) {
     const err = error as Error;
       notify.error('Gagal membuat Arc: ' + err.message)

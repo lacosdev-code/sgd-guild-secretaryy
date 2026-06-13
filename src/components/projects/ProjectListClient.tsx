@@ -3,11 +3,15 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import ProjectForm from './ProjectForm'
+import { useUser } from '@/hooks/useUser'
 
 export default function ProjectListClient({ projects, arcs }: { projects: any[], arcs: any[] }) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'orphan'>('all')
   const [showForm, setShowForm] = useState(false)
+  const { role } = useUser()
+
+  const canCreate = ['guild_master', 'quest_giver', 'guild_secretary'].includes(role || '')
 
   // Filtering logic
   const filteredProjects = projects.filter(proj => {
@@ -31,22 +35,26 @@ export default function ProjectListClient({ projects, arcs }: { projects: any[],
           <h1 className="text-2xl font-bold text-navy dark:text-white">Projects Master</h1>
           <p className="text-sm text-gray-500 mt-1">Pusat komando operasional proyek</p>
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)}
-          className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
-            showForm 
-            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300' 
-            : 'bg-navy text-white hover:bg-navy/90 hover:shadow-lg hover:shadow-navy/20 dark:bg-[#C9A227] dark:text-[#1B2E52]'
-          }`}
-        >
-          {showForm ? 'Batal' : '+ Project Baru'}
-        </button>
+        {canCreate && (
+          <button 
+            onClick={() => setShowForm(!showForm)}
+            className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+              showForm 
+              ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300' 
+              : 'bg-navy text-white hover:bg-navy/90 hover:shadow-lg hover:shadow-navy/20 dark:bg-[#C9A227] dark:text-[#1B2E52]'
+            }`}
+          >
+            {showForm ? 'Batal' : '+ Project Baru'}
+          </button>
+        )}
       </div>
 
       {/* Expandable Form */}
-      <div className={`transition-all duration-500 overflow-hidden ${showForm ? 'max-h-[800px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
-        <ProjectForm arcs={arcs} onCreated={() => setShowForm(false)} />
-      </div>
+      {canCreate && (
+        <div className={`transition-all duration-500 overflow-hidden ${showForm ? 'max-h-[800px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
+          <ProjectForm arcs={arcs} onCreated={() => setShowForm(false)} />
+        </div>
+      )}
 
       {/* Interactive Toolbar: Search & Filters */}
       <div className="space-y-3">

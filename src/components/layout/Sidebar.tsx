@@ -30,6 +30,8 @@ const NAV_ITEMS: NavItem[] = [
 import { useUser } from '@/hooks/useUser'
 import Image from 'next/image'
 
+import PushNotificationManager from '../ui/PushNotificationManager'
+
 export default function Sidebar() {
   const pathname = usePathname()
   const { role } = useUser()
@@ -83,8 +85,9 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer version */}
-      <div className="px-5 py-4 border-t border-white/10">
-        <p className="text-[10px] text-white/25 tracking-wider">v1.0 MVP</p>
+      <div className="px-5 py-4 border-t border-white/10 space-y-4">
+        <PushNotificationManager />
+        <p className="text-[10px] text-white/25 tracking-wider text-center">v1.1 Command Center</p>
       </div>
     </aside>
   )

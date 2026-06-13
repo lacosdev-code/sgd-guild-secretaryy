@@ -7,6 +7,8 @@ import Image from 'next/image'
 import imageCompression from 'browser-image-compression'
 import { useUser } from '@/hooks/useUser'
 import { notify } from '@/lib/toast'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const ChatFile = ({ url, name }: { url: string, name: string }) => {
   return (
@@ -404,7 +406,18 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       return <ChatFile name={fileMatch[1]} url={fileMatch[2]} />
     }
     
-    return <span className="whitespace-pre-wrap break-words">{text}</span>
+    return (
+      <div className="prose prose-sm dark:prose-invert max-w-none break-words
+                   prose-p:leading-relaxed prose-p:my-1
+                   prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline
+                   prose-strong:text-current
+                   prose-code:bg-black/10 dark:prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+                   prose-pre:bg-black/5 dark:prose-pre:bg-white/5 prose-pre:p-2 prose-pre:rounded-lg prose-pre:text-xs">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {text}
+        </ReactMarkdown>
+      </div>
+    )
   }
 
   if (loading) {
