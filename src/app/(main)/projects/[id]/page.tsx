@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getStatusColor, getRankColor, formatDeadline } from '@/lib/utils'
+import DeleteEntityButton from '@/components/common/DeleteEntityButton'
 
 export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
   const session = await auth()
@@ -42,7 +43,12 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               </p>
             )}
           </div>
-          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold text-sm uppercase tracking-wider">{project.health}</span>
+          <div className="flex flex-col items-end gap-2">
+            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold text-sm uppercase tracking-wider">{project.health}</span>
+            {['guild_master', 'quest_giver'].includes((session?.user as any)?.role || '') && (
+              <DeleteEntityButton entityType="projects" id={project.id} redirectPath="/projects" />
+            )}
+          </div>
         </div>
       </div>
 
