@@ -85,6 +85,63 @@ export async function PATCH(
     },
   })
 
+  // --- Notification Triggers ---
+  import('@/lib/notification').then(({ sendNotificationToUser }) => {
+    // 1. Assigned to a new person
+    if ('assignedTo' in validBody && validBody.assignedTo && validBody.assignedTo !== currentQuest.assignedTo) {
+      prisma.notification.create({
+        data: { userId: validBody.assignedTo, title: '⚔ Quest Baru', message: `Quest "${quest.title}" ditugaskan ke kamu.`, link: `/quests/${quest.id}` }
+      }).then()
+      
+      sendNotificationToUser({
+        userId: validBody.assignedTo,
+        title: '⚔ Quest Baru Untukmu',
+        body: `Kamu mendapat penugasan quest baru: "${quest.title}".`,
+        emailType: 'Quest Assigned',
+        questId: quest.id,
+        url: `/quests/${quest.id}`,
+      }).catch(console.error)
+    }
+
+    // 2. Status Changed
+    if ('status' in validBody && validBody.status !== currentQuest.status) {
+      if (validBody.status === 'Completed') {
+        // Notify Creator/GM
+        prisma.notification.create({
+          data: { userId: quest.createdBy, title: 'Quest Selesai', message: `"${quest.title}" menunggu verifikasi.`, link: `/quests/${quest.id}` }
+        }).then()
+
+        sendNotificationToUser({
+          userId: quest.createdBy,
+          title: '🛡 Quest Selesai',
+          body: `Quest "${quest.title}" telah diselesaikan oleh ${quest.assignee?.nama}. Silakan lakukan verifikasi.`,
+          emailType: 'Quest Completed',
+          questId: quest.id,
+          url: `/quests/${quest.id}`,
+        }).catch(console.error)
+      } else if (validBody.status === 'Approved' || validBody.status === 'Rejected') {
+        // Notify Assignee
+        if (quest.assignedTo) {
+          const title = validBody.status === 'Approved' ? '✅ Quest Terverifikasi' : '❌ Quest Ditolak'
+          const msg = validBody.status === 'Approved' ? `Kerja bagus! "${quest.title}" diverifikasi.` : `Revisi dibutuhkan untuk "${quest.title}".`
+          
+          prisma.notification.create({
+            data: { userId: quest.assignedTo, title, message: msg, link: `/quests/${quest.id}` }
+          }).then()
+
+          sendNotificationToUser({
+            userId: quest.assignedTo,
+            title: title,
+            body: msg,
+            emailType: `Quest ${validBody.status}`,
+            questId: quest.id,
+            url: `/quests/${quest.id}`,
+          }).catch(console.error)
+        }
+      }
+    }
+  }).catch(console.error)
+
   return NextResponse.json(quest)
 }
 

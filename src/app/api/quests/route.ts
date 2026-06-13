@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
 
   // Notify the assignee
   if (quest.assignedTo) {
+    // 1. In-app notification
     await prisma.notification.create({
       data: {
         userId: quest.assignedTo,
@@ -75,6 +76,18 @@ export async function POST(req: NextRequest) {
         message: `Kamu mendapat quest baru: "${quest.title}"`,
         link: `/quests/${quest.id}`,
       },
+    })
+    
+    // 2. Email & Push notification
+    import('@/lib/notification').then(({ sendNotificationToUser }) => {
+      sendNotificationToUser({
+        userId: quest.assignedTo as string,
+        title: '⚔ Quest Baru Untukmu',
+        body: `Kamu mendapat quest baru: "${quest.title}". Segera cek rinciannya dan kerjakan!`,
+        emailType: 'Quest Assigned',
+        questId: quest.id,
+        url: `/quests/${quest.id}`,
+      }).catch(console.error)
     })
   }
 
