@@ -415,12 +415,13 @@ export default function QuestForm({
       description:       form.description.trim() || null,
       deadline:          form.deadline ? new Date(form.deadline).toISOString() : null,
       difficulty:        form.difficulty || null,
-      success_parameter: form.success_parameter.trim() || null,
+      successParameter: form.success_parameter.trim() || null,
       rewardPoints:     form.rewardPoints !== '' ? Number(form.rewardPoints) : null,
-      brief_attachment_url: form.brief_attachment_url,
+      briefAttachmentUrl: form.brief_attachment_url,
+      detailCompleted:   allComplete,
       projectId:         form.projectId || null,
       status:            computeStatus(),
-      updated_at:        new Date().toISOString(),
+      updatedAt:         new Date().toISOString(),
     }
 
     try {
