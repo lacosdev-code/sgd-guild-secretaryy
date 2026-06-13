@@ -29,7 +29,8 @@ export async function GET(
   return new NextResponse(fileBuffer, {
     headers: {
       'Content-Type': mimeType,
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      // private: browser may cache, but CDN/proxy must not. No immutable since files can be updated/deleted.
+      'Cache-Control': 'private, max-age=3600',
     },
   })
 }

@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
 
   const { message } = await req.json()
   if (!message?.trim()) return NextResponse.json({ error: 'Message required' }, { status: 400 })
+  if (message.trim().length > 2000) return NextResponse.json({ error: 'Pesan maksimal 2000 karakter.' }, { status: 400 })
 
   const chat = await prisma.guildChat.create({
     data: {

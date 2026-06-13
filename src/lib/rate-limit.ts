@@ -57,7 +57,7 @@ export function checkChatLimit(userId: string): boolean {
 
   // 1 minute in ms
   const WINDOW_MS = 60 * 1000
-  const MAX_MESSAGES = 50
+  const MAX_MESSAGES = 15
 
   if (!state || now > state.resetAt) {
     chatLimits.set(userId, { count: 1, resetAt: now + WINDOW_MS })

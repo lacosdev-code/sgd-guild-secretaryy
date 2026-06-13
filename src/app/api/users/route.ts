@@ -7,11 +7,14 @@ export async function GET() {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const isGM = (session.user as any)?.role === 'guild_master'
+
   const users = await prisma.user.findMany({
     select: {
       id: true,
       nama: true,
-      email: true,
+      // Only Guild Masters can see everyone's email
+      email: isGM,
       role: true,
       totalPoints: true,
       avatarUrl: true,
