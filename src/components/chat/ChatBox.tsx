@@ -207,7 +207,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       isMounted = false
       eventSource.close()
     }
-  }, [])
+  }, [currentUserId])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()

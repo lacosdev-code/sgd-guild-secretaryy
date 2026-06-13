@@ -12,19 +12,6 @@ import type { QuestStatus } from '@/types'
 
 const ALL_STATUSES: QuestStatus[] = ['Draft', 'ActiveStar', 'Active', 'Hold', 'Submitted', 'Approved', 'Rejected', 'Completed', 'Cancelled', 'Aborted']
 
-const STATUS_COLORS: Record<string, string> = {
-  Semua: 'text-navy dark:text-white',
-  Draft: 'text-gray-600 dark:text-gray-400',
-  ActiveStar: 'text-indigo-600 dark:text-indigo-400',
-  Active: 'text-blue-600 dark:text-blue-400',
-  Hold: 'text-slate-600 dark:text-slate-400',
-  Submitted: 'text-amber-600 dark:text-amber-400',
-  Approved: 'text-emerald-600 dark:text-emerald-400',
-  Rejected: 'text-orange-600 dark:text-orange-400',
-  Completed: 'text-green-600 dark:text-green-400',
-  Cancelled: 'text-gray-600 dark:text-gray-400',
-  Aborted: 'text-red-600 dark:text-red-400',
-}
 
 const BADGE_COLORS: Record<string, string> = {
   Semua: 'bg-navy text-gold dark:bg-white dark:text-navy',
@@ -40,19 +27,6 @@ const BADGE_COLORS: Record<string, string> = {
   Aborted: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
 }
 
-const ACTIVE_BORDER: Record<string, string> = {
-  Semua: 'border-navy dark:border-white',
-  Draft: 'border-gray-400 dark:border-gray-500',
-  ActiveStar: 'border-indigo-500 dark:border-indigo-400',
-  Active: 'border-blue-500 dark:border-blue-400',
-  Hold: 'border-slate-500 dark:border-slate-400',
-  Submitted: 'border-amber-500 dark:border-amber-400',
-  Approved: 'border-emerald-500 dark:border-emerald-400',
-  Rejected: 'border-orange-500 dark:border-orange-400',
-  Completed: 'border-green-500 dark:border-green-400',
-  Cancelled: 'border-gray-500 dark:border-gray-400',
-  Aborted: 'border-red-500 dark:border-red-400',
-}
 
 function FilterTab({
   label,

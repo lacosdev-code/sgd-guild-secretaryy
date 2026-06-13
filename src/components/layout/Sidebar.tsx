@@ -10,7 +10,7 @@ interface NavItem {
   icon: React.ReactNode
 }
 
-import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users, MessagesSquare, Database, Activity } from 'lucide-react'
+import { LayoutDashboard, ScrollText, UserCircle, Trophy, Users, MessagesSquare, Activity } from 'lucide-react'
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard',   href: '/dashboard',   icon: <LayoutDashboard size={18} /> },

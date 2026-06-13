@@ -9,6 +9,7 @@ import { Camera, Loader2 } from 'lucide-react'
 
 import imageCompression from 'browser-image-compression'
 import { notify } from '@/lib/toast'
+import Image from 'next/image'
 
 export default function ProfilePage() {
   const { user, role, loading } = useUser()
@@ -151,7 +152,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-[#0F1B2D] flex flex-col items-center justify-center p-6">
         {/* Logo */}
-        <img
+        <Image
           src="https://ik.imagekit.io/Sgd/sgd.png?tr=w-120,h-120,fo-auto,c-pad_resize,bg-transparent"
           alt="SGD Logo"
           width={80}

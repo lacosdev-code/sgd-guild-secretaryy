@@ -1,28 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+
 import Link from 'next/link'
 
-async function createArc(formData: FormData) {
-  'use server'
-  const session = await auth()
-  if (!session?.user?.id) return
-  const name = formData.get('name') as string
-  const strategicObjective = formData.get('strategicObjective') as string
-  
-  if (!name) return
-
-  await prisma.arc.create({
-    data: {
-      name,
-      strategicObjective,
-      ownerId: session.user.id
-    }
-  })
-  revalidatePath('/arcs')
-}
-
+import ArcForm from '@/components/arcs/ArcForm'
 export default async function ArcsPage() {
   const session = await auth()
   if (!session) redirect('/login')
@@ -36,26 +18,10 @@ export default async function ArcsPage() {
     <div className="p-6">
       <h1 className="text-2xl font-bold text-navy dark:text-white mb-6">Master Arcs (Kampanye)</h1>
       
-      <form action={createArc} className="bg-white dark:bg-[#1B2E52] p-6 rounded-2xl border border-gray-100 dark:border-[#2A3F6B] shadow-sm mb-8 max-w-2xl animate-slide-up-fade">
-        <h2 className="font-bold text-lg tracking-wide mb-5 text-navy dark:text-white">Buat Arc Baru</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold tracking-widest uppercase mb-1.5 text-gray-500 dark:text-[#C9A227]/70">Nama Arc</label>
-            <input type="text" name="name" required className="w-full bg-gray-50 dark:bg-[#0F1B2D] border border-gray-200 dark:border-[#2A3F6B] rounded-xl p-3 text-sm focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] transition-all dark:text-white" placeholder="Contoh: RS Bella Support Arc" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold tracking-widest uppercase mb-1.5 text-gray-500 dark:text-[#C9A227]/70">Objektif Strategis (Opsional)</label>
-            <input type="text" name="strategicObjective" className="w-full bg-gray-50 dark:bg-[#0F1B2D] border border-gray-200 dark:border-[#2A3F6B] rounded-xl p-3 text-sm focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] transition-all dark:text-white" placeholder="Target besar kampanye ini..." />
-          </div>
-          <button type="submit" className="bg-navy dark:bg-[#C9A227] text-white dark:text-[#1B2E52] px-6 py-2.5 rounded-xl hover:opacity-90 text-sm font-bold tracking-wide transition-opacity mt-2 flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-            Tambah Arc
-          </button>
-        </div>
-      </form>
+      <ArcForm />
 
       <div className="grid gap-4 md:grid-cols-2 max-w-4xl">
-        {arcs.map((arc, index) => (
+        {arcs.map((arc: any, index: number) => (
           <Link href={`/arcs/${arc.id}`} key={arc.id} className="block group">
             <div 
               className="bg-white dark:bg-[#1B2E52] p-5 rounded-2xl border border-gray-100 dark:border-[#2A3F6B] transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-[#C9A227]/50 animate-slide-up-fade relative overflow-hidden"
