@@ -71,7 +71,8 @@ export function useQuests(options: UseQuestsOptions = {}): UseQuestsReturn {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         if (!cancelled) setQuests(data)
-      } catch (err: any) {
+      } catch (error: unknown) {
+    const err = error as Error;
         if (!cancelled) setError(err.message)
       } finally {
         if (!cancelled) setLoading(false)

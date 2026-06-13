@@ -20,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (!quest) return NextResponse.json({ error: 'Quest not found' }, { status: 404 })
 
     // Check permission: must be assignee or guild_master
-    if (quest.assignedTo !== session.user.id && (session.user as any).role !== 'guild_master') {
+    if (quest.assignedTo !== session.user.id && (session.user as { role?: string }).role !== 'guild_master') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -34,7 +34,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     })
 
     return NextResponse.json(attachment, { status: 201 })
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }

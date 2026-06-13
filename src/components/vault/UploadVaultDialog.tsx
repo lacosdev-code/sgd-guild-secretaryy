@@ -33,7 +33,7 @@ export function UploadVaultDialog({ onClose, onSuccess }: UploadVaultDialogProps
           setProjects(data)
         }
       } catch (err) {
-        console.error('Failed to fetch options', err)
+
       }
     }
     fetchOptions()
@@ -74,7 +74,8 @@ export function UploadVaultDialog({ onClose, onSuccess }: UploadVaultDialogProps
       if (!recordRes.ok) throw new Error(await recordRes.text())
       
       onSuccess()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       setError(err.message || 'Gagal mengunggah dokumen.')
     } finally {
       setLoading(false)

@@ -64,7 +64,7 @@ export async function DELETE(req: NextRequest) {
   if (!chat) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Only the creator or a guild_master can delete
-  if (chat.userId !== session.user.id && (session.user as any).role !== 'guild_master') {
+  if (chat.userId !== session.user.id && (session.user as { role?: string }).role !== 'guild_master') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

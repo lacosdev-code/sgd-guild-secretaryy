@@ -28,7 +28,8 @@ export default function ArcForm() {
       notify.success('Arc berhasil dibuat')
       e.currentTarget.reset()
       router.refresh()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       notify.error('Gagal membuat Arc: ' + err.message)
     } finally {
       setLoading(false)

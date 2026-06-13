@@ -21,10 +21,11 @@ export default function LeaderboardPage() {
         const data = await res.json()
 
         if (isMounted) {
-          const adventurers = data.filter((u: any) => u.role === 'adventurer')
+          const adventurers = data.filter((u: { id: string, [key: string]: any }) => u.role === 'adventurer')
           setUsers(adventurers)
         }
-      } catch (err: any) {
+      } catch (error: unknown) {
+    const err = error as Error;
         if (isMounted) setError(err.message || 'Gagal memuat leaderboard.')
       } finally {
         if (isMounted) setLoading(false)

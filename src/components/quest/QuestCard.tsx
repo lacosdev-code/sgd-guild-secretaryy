@@ -66,7 +66,7 @@ export default function QuestCard({ quest, index = 0 }: QuestCardProps) {
                   <circle cx="12" cy="7" r="4" />
                 </svg>
                 <span className="truncate max-w-[140px]">
-                  {(quest as any).assignee?.nama ?? <em className="text-gray-400 opacity-80">Unassigned</em>}
+                  {(quest as { assignee?: { nama: string } }).assignee?.nama ?? <em className="text-gray-400 opacity-80">Unassigned</em>}
                 </span>
               </div>
 

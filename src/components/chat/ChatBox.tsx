@@ -91,7 +91,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       document.body.removeChild(a)
       window.URL.revokeObjectURL(blobUrl)
     } catch (err) {
-      console.error('Download error:', err)
+
       window.open(url, '_blank')
     }
   }
@@ -116,7 +116,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         const data = await res.json()
         if (isMounted) {
           // Normalize the format from Prisma to match the UI component's expectations
-          const normalized = data.map((msg: any) => ({
+          const normalized = data.map((msg: { id: string, [key: string]: any }) => ({
             id: msg.id,
             message: msg.message,
             created_at: msg.createdAt,
@@ -130,7 +130,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
           setTimeout(scrollToBottom, 100)
         }
       } catch (err) {
-        console.error('Error fetching messages:', err)
+
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -193,7 +193,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
                   osc.stop(ctx.currentTime + 0.2);
                 }
               } catch (e) {
-                console.log('Audio playback failed', e);
+
               }
             }
           }
@@ -225,7 +225,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
       })
       if (!res.ok) throw new Error(await res.text())
     } catch (err) {
-      console.error('Error sending message:', err)
+
       setNewMessage(msgText)
     } finally {
       setSending(false)
@@ -238,7 +238,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     try {
       const res = await fetch(`/api/chat?id=${messageId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error(await res.text())
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       notify.warn('Gagal menghapus pesan: ' + err.message)
     }
   }
@@ -268,7 +269,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         setRecordingTime(prev => prev + 1)
       }, 1000)
     } catch (err) {
-      console.error(err)
+
       notify.warn('Gagal mengakses mikrofon. Pastikan izin telah diberikan pada browser Anda.')
     }
   }
@@ -316,7 +317,8 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: `![audio](${data.url})` })
       })
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       notify.warn('Gagal mengirim voice note: ' + err.message)
     } finally {
       setUploadingImg(false)
@@ -344,7 +346,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
           const compressedBlob = await imageCompression(file, options)
           finalFile = new File([compressedBlob], file.name, { type: file.type })
         } catch (err) {
-          console.error('Compression failed:', err)
+
         }
       }
 
@@ -372,8 +374,9 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: markdownMsg })
       })
-    } catch (err: any) {
-      console.error(err)
+    } catch (error: unknown) {
+    const err = error as Error;
+
       notify.warn('Gagal mengupload file: ' + err.message)
     } finally {
       setUploadingImg(false)

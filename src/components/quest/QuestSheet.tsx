@@ -164,7 +164,8 @@ export default function QuestSheet({
       }
 
       router.refresh()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       setError(err.message)
     } finally {
       setLoading(false)
@@ -182,7 +183,8 @@ export default function QuestSheet({
         throw new Error(msg || 'Gagal mengambil quest ini.')
       }
       router.refresh()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       setError(err.message)
     } finally {
       setLoading(false)
@@ -244,7 +246,8 @@ export default function QuestSheet({
         if (!res.ok) throw new Error('Gagal update status quest')
       }
       router.refresh()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       setError(err.message)
     } finally {
       setLoading(false)
@@ -266,8 +269,9 @@ export default function QuestSheet({
 
       setNewComment('')
       router.refresh()
-    } catch (err: any) {
-      console.error(err)
+    } catch (error: unknown) {
+    const err = error as Error;
+
       setError('Gagal mengirim update.')
     } finally {
       setAddingComment(false)

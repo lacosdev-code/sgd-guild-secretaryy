@@ -121,7 +121,7 @@ export default function QuestsPage() {
       if (search.trim()) {
         const s = search.toLowerCase()
         const inTitle    = q.title.toLowerCase().includes(s)
-        const inAssignee = (q as any).assignee?.nama?.toLowerCase().includes(s)
+        const inAssignee = (q as { assignee?: { nama: string } }).assignee?.nama?.toLowerCase().includes(s)
         return inTitle || inAssignee
       }
       return true

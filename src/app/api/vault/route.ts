@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
   const projectId = searchParams.get('projectId')
 
   // Filter based on role
-  const isGuildMaster = (session.user as any).role === 'guild_master'
-  const where: any = {}
+  const isGuildMaster = (session.user as { role?: string }).role === 'guild_master'
+  const where: Record<string, unknown> = {}
 
   if (!isGuildMaster) {
     where.visibility = { not: 'GM only' }
@@ -52,7 +52,8 @@ export async function GET(req: NextRequest) {
     })
 
     return NextResponse.json(itemsWithStatus)
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
@@ -91,7 +92,8 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json(newItem, { status: 201 })
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }

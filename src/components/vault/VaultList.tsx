@@ -46,7 +46,7 @@ export function VaultList({ reloadTrigger }: { reloadTrigger: number }) {
         const data = await res.json()
         setItems(data)
       } catch (err) {
-        console.error(err)
+
       } finally {
         setLoading(false)
       }

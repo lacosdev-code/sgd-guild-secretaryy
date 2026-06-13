@@ -39,7 +39,8 @@ export async function POST(req: Request) {
     await Promise.all(pushPromises)
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }

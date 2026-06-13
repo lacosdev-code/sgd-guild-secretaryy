@@ -602,7 +602,8 @@ export async function GET() {
     if (pointLogs.length) await prisma.pointLog.createMany({ data: pointLogs as any });
 
     return NextResponse.json({ success: true, message: 'Migration via Prisma createMany executed successfully!' });
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

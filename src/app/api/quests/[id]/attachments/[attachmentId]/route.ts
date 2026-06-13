@@ -20,7 +20,7 @@ export async function DELETE(
     }
 
     // Must be Guild Master or the uploader
-    const isGM = (session.user as any).role === 'guild_master'
+    const isGM = (session.user as { role?: string }).role === 'guild_master'
     if (attachment.uploadedBy !== session.user.id && !isGM) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
@@ -42,7 +42,8 @@ export async function DELETE(
     })
 
     return new NextResponse(null, { status: 204 })
-  } catch (err: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     // Sanitize error exposure
     console.error('Attachment delete error:', err)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

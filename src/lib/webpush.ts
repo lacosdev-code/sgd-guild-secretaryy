@@ -38,8 +38,9 @@ export async function sendPushNotification(userId: string, payload: { title: str
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         pushPayload
       )
-    } catch (err: any) {
-      if (err.statusCode === 410 || err.statusCode === 404) {
+    } catch (error: unknown) {
+    const err = error as Error;
+      if ((err as any).statusCode === 410 || (err as any).statusCode === 404) {
         await prisma.pushSubscription.delete({ where: { id: sub.id } })
       } else {
         console.error('Error sending push notification:', err)

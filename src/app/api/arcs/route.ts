@@ -25,7 +25,8 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json(arc)
-  } catch (err: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

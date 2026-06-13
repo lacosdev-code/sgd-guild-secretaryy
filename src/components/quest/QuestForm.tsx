@@ -336,7 +336,7 @@ export default function QuestForm({
         if (resUsers.ok) setAdventurers(await resUsers.json())
         if (resProj.ok) setProjects(await resProj.json())
       } catch (err) {
-        console.error('Failed to fetch data:', err)
+
       }
     })()
   }, [])
@@ -379,7 +379,7 @@ export default function QuestForm({
           const compressedBlob = await imageCompression(file, options)
           finalFile = new File([compressedBlob], file.name, { type: file.type })
         } catch (err) {
-          console.error('Compression failed:', err)
+
         }
       }
 
@@ -392,7 +392,8 @@ export default function QuestForm({
       
       const data = await res.json()
       setForm(p => ({ ...p, brief_attachment_url: data.url }))
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       notify.warn('Gagal mengupload lampiran: ' + err.message)
     } finally {
       setUploadingBrief(false)
@@ -463,7 +464,8 @@ export default function QuestForm({
       notify.success(mode === 'create' ? 'Quest berhasil ditambahkan!' : 'Quest berhasil diperbarui!')
       router.push(`/quests/${questId}`)
       router.refresh()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       setError(err.message || 'Terjadi kesalahan saat menyimpan quest.')
     } finally {
       setSaving(false)

@@ -48,7 +48,7 @@ export async function PATCH(
   }
   const validBody = parsed.data
 
-  const isGM = (session.user as any).role === 'guild_master'
+  const isGM = (session.user as { role?: string }).role === 'guild_master'
 
   const currentQuest = await prisma.quest.findUnique({ where: { id: params.id } })
   if (!currentQuest) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
@@ -96,7 +96,7 @@ export async function DELETE(
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const isGM = (session.user as any).role === 'guild_master'
+  const isGM = (session.user as { role?: string }).role === 'guild_master'
 
   const currentQuest = await prisma.quest.findUnique({ where: { id: params.id } })
   if (!currentQuest) return NextResponse.json({ error: 'Not Found' }, { status: 404 })

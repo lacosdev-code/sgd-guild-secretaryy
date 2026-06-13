@@ -21,7 +21,8 @@ export async function GET() {
     })
 
     return NextResponse.json(projects)
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
@@ -50,7 +51,8 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json(project)
-  } catch (err: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

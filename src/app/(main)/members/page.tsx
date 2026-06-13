@@ -14,7 +14,7 @@ export default function MembersPage() {
   const [error, setError] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const { data: session } = useSession()
-  const currentUserRole = (session?.user as any)?.role || null
+  const currentUserRole = (session?.user as { role?: string })?.role || null
 
   const fetchUsers = useCallback(async (isMounted: boolean) => {
     if (!isMounted) return
@@ -27,7 +27,7 @@ export default function MembersPage() {
       const data = await res.json()
       
       // map to snake_case for UI compatibility
-      const mapped = data.map((u: any) => ({
+      const mapped = data.map((u: { id: string, [key: string]: any }) => ({
         id: u.id,
         nama: u.nama,
         role: u.role,
@@ -37,8 +37,9 @@ export default function MembersPage() {
       }))
       
       if (isMounted) setUsers(mapped)
-    } catch (err: any) {
-      console.error(err)
+    } catch (error: unknown) {
+    const err = error as Error;
+
       if (isMounted) setError(err.message || 'Terjadi kesalahan saat memuat data')
     } finally {
       if (isMounted) setLoading(false)

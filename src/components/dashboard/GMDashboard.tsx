@@ -112,7 +112,7 @@ function QuestRow({ quest }: { quest: QuestWithAssignee }) {
           </p>
         </div>
         <p className="text-xs text-gray-400 mt-0.5">
-          {(quest as any).assignee?.nama ?? 'Unassigned'}
+          {(quest as { assignee?: { nama: string } }).assignee?.nama ?? 'Unassigned'}
           {quest.deadline && (
             <span className={`ml-2 ${overdue ? 'text-danger font-medium' : ''}`}>
               · {formatDeadline(quest.deadline)}
@@ -256,7 +256,7 @@ export default function GMDashboard() {
 
             const tableData = quests.map(q => [
               q.title,
-              (q as any).assignee?.nama || 'Unassigned',
+              (q as { assignee?: { nama: string } }).assignee?.nama || 'Unassigned',
               q.urgency,
               q.status,
               q.deadline ? new Date(q.deadline).toLocaleDateString('id-ID') : '-',

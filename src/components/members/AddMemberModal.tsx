@@ -27,7 +27,8 @@ export function AddMemberModal({ onClose, onSuccess }: AddMemberModalProps) {
       } else {
         setError(result.error || 'Terjadi kesalahan')
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       setError(err.message || 'Terjadi kesalahan server')
     } finally {
       setLoading(false)

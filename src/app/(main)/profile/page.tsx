@@ -33,7 +33,7 @@ export default function ProfilePage() {
         const data = await res.json()
         if (data && isMounted) setPointLogs(data)
       } catch (err) {
-        console.error(err)
+
       } finally {
         if (isMounted) setLogsLoading(false)
       }
@@ -71,7 +71,7 @@ export default function ProfilePage() {
         const compressedBlob = await imageCompression(file, options)
         file = new File([compressedBlob], file.name, { type: file.type })
       } catch (err) {
-        console.error('Compression failed, using original:', err)
+
       }
 
       // Upload to storage API
@@ -98,8 +98,9 @@ export default function ProfilePage() {
 
       // Refresh window
       window.location.reload()
-    } catch (error: any) {
-      console.error('Error uploading avatar:', error)
+    } catch (e: unknown) {
+    const error = e as Error;
+
       notify.warn('Gagal mengupload foto profil: ' + error.message)
     } finally {
       setUploadingAvatar(false)
@@ -134,7 +135,8 @@ export default function ProfilePage() {
       setPasswordSuccess('Password berhasil diubah! Gunakan password baru ini untuk login berikutnya.')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (error: any) {
+    } catch (e: unknown) {
+    const error = e as Error;
       setPasswordError(error.message)
     }
     setPasswordLoading(false)

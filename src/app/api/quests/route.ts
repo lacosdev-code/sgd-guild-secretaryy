@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   }
   const validBody = parsed.data
 
-  const isGM = (session.user as any).role === 'guild_master'
+  const isGM = (session.user as { role?: string }).role === 'guild_master'
 
   const quest = await prisma.quest.create({
     data: {

@@ -9,7 +9,7 @@ export default async function GMLogsPage() {
   if (!session) redirect('/login')
   
   // Restricted to GM only
-  if ((session.user as any).role !== 'guild_master') {
+  if ((session.user as { role?: string }).role !== 'guild_master') {
     return (
       <div className="p-6">
         <div className="bg-red-50 text-red-500 p-4 rounded-lg border border-red-200">

@@ -64,7 +64,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
         if (res.ok) {
           const data = await res.json()
           // map camelCase to snake_case for UI compatibility
-          const mapped = data.map((n: any) => ({
+          const mapped = data.map((n: { id: string, [key: string]: any }) => ({
             id: n.id,
             user_id: n.userId,
             title: n.title,
@@ -74,10 +74,10 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
             created_at: n.createdAt,
           }))
 
-          const unread = mapped.filter((n: any) => !n.is_read)
+          const unread = mapped.filter((n: { id: string, [key: string]: any }) => !n.is_read)
           
           if (prevCountRef.current > 0 && unread.length > prevCountRef.current) {
-            const newest = mapped.find((n: any) => !n.is_read)
+            const newest = mapped.find((n: { id: string, [key: string]: any }) => !n.is_read)
             if (newest) {
               playNotifSound()
               showBrowserNotification(newest.title || '⚔ SGD Guild', {
@@ -92,7 +92,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
           setUnreadCount(unread.length)
         }
       } catch (err) {
-        console.error('Failed to fetch notifications', err)
+
       }
     }
     
@@ -150,7 +150,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
           body: JSON.stringify({ subscription })
         })
       } catch (err) {
-        console.error('Failed to subscribe to push notifications', err)
+
       }
     }
   }
@@ -165,7 +165,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (e) {
-      console.error(e)
+
     }
   }
 
@@ -175,7 +175,7 @@ export function NotificationsDropdown({ userId }: { userId: string }) {
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       setUnreadCount(0)
     } catch (e) {
-      console.error(e)
+
     }
   }
 

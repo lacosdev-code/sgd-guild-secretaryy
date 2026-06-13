@@ -25,7 +25,7 @@ export async function DELETE(
     }
 
     // Only the uploader or a guild_master can delete
-    const isGuildMaster = (session.user as any).role === 'guild_master'
+    const isGuildMaster = (session.user as { role?: string }).role === 'guild_master'
     if (item.uploadedById !== session.user.id && !isGuildMaster) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
@@ -41,7 +41,8 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }

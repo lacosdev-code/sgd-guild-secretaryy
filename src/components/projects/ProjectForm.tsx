@@ -28,7 +28,8 @@ export default function ProjectForm({ arcs }: { arcs: any[] }) {
       notify.success('Project berhasil dibuat')
       e.currentTarget.reset()
       router.refresh()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       notify.error('Gagal membuat Project: ' + err.message)
     } finally {
       setLoading(false)

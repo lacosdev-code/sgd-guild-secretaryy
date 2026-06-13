@@ -32,7 +32,8 @@ export async function createUser(data: FormData) {
     })
 
     return { success: true }
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     return { success: false, error: error.message || 'Terjadi kesalahan sistem' }
   }
 }

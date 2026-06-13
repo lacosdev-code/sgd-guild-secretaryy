@@ -9,7 +9,7 @@ export default async function NewQuestPage() {
   if (!session?.user) redirect('/login')
 
   // Role check — GM only
-  const role = (session.user as any).role
+  const role = (session.user as { role?: string }).role
   if (role !== 'guild_master') {
     redirect('/dashboard')
   }

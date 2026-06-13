@@ -261,7 +261,7 @@ export default function AttachmentUpload({
         const compressedBlob = await imageCompression(file, options)
         file = new File([compressedBlob], file.name, { type: file.type })
       } catch (err) {
-        console.error('Compression failed, using original:', err)
+
       }
     }
 

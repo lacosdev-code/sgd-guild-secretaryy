@@ -29,7 +29,7 @@ export default function MemberProfilePage() {
         
         if (userData && isMounted) setUser(userData)
       } catch (err) {
-        console.error(err)
+
       } finally {
         if (isMounted) setLoading(false)
       }

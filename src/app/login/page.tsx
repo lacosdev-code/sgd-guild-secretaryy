@@ -83,7 +83,8 @@ export default function LoginPage() {
       notify.success("Selamat datang kembali!")
       router.push('/dashboard')
       router.refresh()
-    } catch (err: any) {
+    } catch (error: unknown) {
+    const err = error as Error;
       notify.error(err.message || 'Terjadi kesalahan tidak terduga.')
     } finally {
       setLoading(false)

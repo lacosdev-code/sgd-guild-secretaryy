@@ -100,7 +100,7 @@ export default async function QuestDetailPage({ params }: Props) {
       attachments={mappedAttachments as any}
       comments={mappedComments as any}
       currentUserId={session.user.id}
-      currentUserRole={(session.user as any).role as any}
+      currentUserRole={(session.user as { role?: string }).role as any}
     />
   )
 }

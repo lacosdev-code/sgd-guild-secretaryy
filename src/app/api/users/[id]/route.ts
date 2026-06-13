@@ -49,7 +49,7 @@ export async function PATCH(
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   
   // Only users can edit their own profile, or admins
-  if (session.user.id !== params.id && (session.user as any).role !== 'guild_master') {
+  if (session.user.id !== params.id && (session.user as { role?: string }).role !== 'guild_master') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

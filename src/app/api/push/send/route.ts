@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     results.forEach((result, idx) => {
       if (result.status === 'rejected') {
         const err = result.reason as any
-        if (err.statusCode === 410 || err.statusCode === 404) {
+        if ((err as any).statusCode === 410 || (err as any).statusCode === 404) {
           failedEndpoints.push(subscriptions[idx].endpoint)
         }
       }
@@ -77,7 +77,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, results })
-  } catch (error: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[API Error]', error) // log server-side
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
