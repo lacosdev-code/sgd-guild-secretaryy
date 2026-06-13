@@ -10,10 +10,10 @@ export const questSchema = z.object({
   successParameter: z.string().optional().nullable(),
   briefAttachmentUrl: z.string().url().optional().nullable(),
   detailCompleted: z.boolean().optional(),
-  projectId: z.string().uuid("ID Project tidak valid").optional().nullable(),
+  projectId: z.string().optional().nullable(),
   
   // GM Only fields (validated conditionally or allowed as optional)
-  assignedTo: z.string().uuid().optional().nullable(),
+  assignedTo: z.string().optional().nullable(),
   rewardPoints: z.union([z.string(), z.number()]).transform(val => Number(val)).optional().nullable(),
   status: z.enum([
     'Draft', 'ActiveStar', 'Active', 'Hold', 'Submitted', 
@@ -29,8 +29,8 @@ export const projectSchema = z.object({
   name: z.string().min(3, "Nama minimal 3 karakter").max(100),
   health: z.enum(['Sehat', 'Sakit', 'Krisis']).optional(),
   targetKpi: z.string().optional().nullable(),
-  ownerId: z.string().uuid("ID Owner tidak valid").optional().nullable(),
-  arcId: z.string().uuid("ID Arc tidak valid").optional().nullable(),
+  ownerId: z.string().optional().nullable(),
+  arcId: z.string().optional().nullable(),
 })
 
 export const projectUpdateSchema = projectSchema.partial()
@@ -42,6 +42,6 @@ export const vaultItemSchema = z.object({
   summary: z.string().max(1000).optional().nullable(),
   fileUrl: z.string().url("URL file tidak valid"),
   visibility: z.string().default('all'),
-  arcId: z.string().uuid().optional().nullable(),
-  projectId: z.string().uuid().optional().nullable(),
+  arcId: z.string().optional().nullable(),
+  projectId: z.string().optional().nullable(),
 })
