@@ -1,12 +1,19 @@
-import withPWAInit from "@ducanh2912/next-pwa";
+import withPWA from "@ducanh2912/next-pwa";
 
-const withPWA = withPWAInit({
+const nextConfig = withPWA({
   dest: "public",
-  register: true,
-  skipWaiting: true,
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  swcMinify: true,
+  disable: process.env.NODE_ENV === "development",
+  workboxOptions: {
+    disableDevLogs: true,
+  },
+})({
+  images: {
+    domains: ["ik.imagekit.io"],
+  },
 });
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
-
-export default withPWA(nextConfig);
+export default nextConfig;
