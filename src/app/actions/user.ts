@@ -7,6 +7,7 @@ export async function createUser(data: FormData) {
   const nama = data.get('nama') as string
   const email = data.get('email') as string
   const password = data.get('password') as string
+  const role = data.get('role') as string || 'adventurer'
 
   if (!nama || !email || !password) {
     return { success: false, error: 'Nama, Email, dan Password harus diisi' }
@@ -26,7 +27,7 @@ export async function createUser(data: FormData) {
         nama,
         email,
         passwordHash,
-        role: 'adventurer',
+        role: role as any,
         totalPoints: 0,
       },
     })

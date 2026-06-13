@@ -32,7 +32,7 @@ export async function sendNotificationToUser(payload: NotificationPayload) {
     // 1. Send Email via Resend
     if (process.env.RESEND_API_KEY) {
       try {
-        await resend.emails.send({
+        const { error: resendError } = await resend.emails.send({
           from: 'SGD Guild Secretary <onboarding@resend.dev>', // Use custom domain if verified
           to: user.email,
           subject: payload.title,
@@ -46,8 +46,13 @@ export async function sendNotificationToUser(payload: NotificationPayload) {
             </div>
           `
         })
+
+        if (resendError) {
+          emailError = resendError.message
+          emailStatus = 'Failed'
+        }
       } catch (err: any) {
-        emailError = err.message
+        emailError = err.message || 'Unknown error'
         emailStatus = 'Failed'
       }
     } else {

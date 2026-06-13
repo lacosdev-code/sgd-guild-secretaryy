@@ -84,6 +84,20 @@ export function AddMemberModal({ onClose, onSuccess }: AddMemberModalProps) {
             </div>
 
             <div>
+              <label className="block text-sm font-bold text-navy dark:text-white mb-2">Role (Jabatan)</label>
+              <select
+                name="role"
+                defaultValue="adventurer"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-navy border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-gold focus:border-transparent transition-all outline-none text-navy dark:text-white appearance-none"
+              >
+                <option value="adventurer">Adventurer (Member Biasa)</option>
+                <option value="guild_secretary">Guild Secretary</option>
+                <option value="quest_giver">Quest Giver</option>
+                <option value="guild_master">Guild Master</option>
+              </select>
+            </div>
+
+            <div>
               <label className="block text-sm font-bold text-navy dark:text-white mb-2">Temporary Password</label>
               <div className="relative">
                 <input
