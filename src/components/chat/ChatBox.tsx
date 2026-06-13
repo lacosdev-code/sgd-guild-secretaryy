@@ -386,7 +386,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
   }
 
-  const renderMessageContent = (text: string) => {
+  const renderMessageContent = (text: string, isMine: boolean) => {
     const imgRegex = /^!\[image\]\((.*?)\)$/
     const audioRegex = /^!\[audio\]\((.*?)\)$/
     const fileRegex = /^\[(.*?)\]\((.*?)\)$/
@@ -407,12 +407,13 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
     
     return (
-      <div className="prose prose-sm dark:prose-invert max-w-none break-words
+      <div className={`prose prose-sm max-w-none break-words
                    prose-p:leading-relaxed prose-p:my-1
                    prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline
                    prose-strong:text-current
                    prose-code:bg-black/10 dark:prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-                   prose-pre:bg-black/5 dark:prose-pre:bg-white/5 prose-pre:p-2 prose-pre:rounded-lg prose-pre:text-xs">
+                   prose-pre:bg-black/5 dark:prose-pre:bg-white/5 prose-pre:p-2 prose-pre:rounded-lg prose-pre:text-xs
+                   ${isMine ? 'prose-p:text-white prose-strong:text-white text-white' : 'dark:prose-invert'}`}>
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {text}
         </ReactMarkdown>
@@ -473,7 +474,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
                       : 'bg-gray-100 dark:bg-white/5 text-charcoal dark:text-gray-200 rounded-bl-sm border border-gray-200/50 dark:border-white/5'
                   }`}
                 >
-                  {renderMessageContent(msg.message)}
+                  {renderMessageContent(msg.message, isMine)}
                 </div>
                 <div className={`flex items-center gap-2 mt-1 mx-1 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
                   <span className="text-[10px] text-gray-400">
