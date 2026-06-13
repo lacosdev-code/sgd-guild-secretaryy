@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
 
 export async function GET() {
+  // SECURITY: Only guild_master accounts can run this migration.
+  const session = await auth();
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user?.id || userRole !== 'guild_master') {
+    return NextResponse.json({ error: 'Unauthorized: Guild Master only.' }, { status: 401 });
+  }
+
   try {
     const users = [
   {
