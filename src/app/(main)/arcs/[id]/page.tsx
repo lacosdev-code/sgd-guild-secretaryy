@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import DeleteEntityButton from '@/components/common/DeleteEntityButton'
+import ArcActionButtons from '@/components/arcs/ArcActionButtons'
 
 export default async function ArcDetailPage({ params }: { params: { id: string } }) {
   const session = await auth()
@@ -39,7 +40,10 @@ export default async function ArcDetailPage({ params }: { params: { id: string }
           <div className="flex flex-col items-end gap-2">
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-sm uppercase tracking-wider">{arc.status}</span>
             {['guild_master', 'quest_giver'].includes((session?.user as any)?.role || '') && (
-              <DeleteEntityButton entityType="arcs" id={arc.id} redirectPath="/arcs" />
+              <div className="flex gap-2">
+                <ArcActionButtons arc={arc} />
+                <DeleteEntityButton entityType="arcs" id={arc.id} redirectPath="/arcs" />
+              </div>
             )}
           </div>
         </div>

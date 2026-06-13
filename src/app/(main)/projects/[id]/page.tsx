@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getStatusColor, getRankColor, formatDeadline } from '@/lib/utils'
 import DeleteEntityButton from '@/components/common/DeleteEntityButton'
+import ProjectActionButtons from '@/components/projects/ProjectActionButtons'
 
 export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
   const session = await auth()
@@ -16,13 +17,13 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       quests: {
         orderBy: { createdAt: 'desc' },
         include: {
-          assignee: {
-            select: { nama: true }
-          }
+          assignee: { select: { nama: true } }
         }
       }
     }
   })
+
+  const arcs = await prisma.arc.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } })
 
   if (!project) {
     return <div className="p-6">Project tidak ditemukan.</div>
@@ -46,7 +47,10 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
           <div className="flex flex-col items-end gap-2">
             <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold text-sm uppercase tracking-wider">{project.health}</span>
             {['guild_master', 'quest_giver'].includes((session?.user as any)?.role || '') && (
-              <DeleteEntityButton entityType="projects" id={project.id} redirectPath="/projects" />
+              <div className="flex gap-2">
+                <ProjectActionButtons project={project} arcs={arcs} />
+                <DeleteEntityButton entityType="projects" id={project.id} redirectPath="/projects" />
+              </div>
             )}
           </div>
         </div>
