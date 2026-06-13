@@ -47,7 +47,7 @@ function FilterTab({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2 text-[11px] font-bold tracking-widest uppercase border rounded-full transition-all duration-300 whitespace-nowrap ${activeStyle}`}
+      className={`flex items-center gap-2 px-4 py-2 text-[11px] font-bold tracking-widest uppercase border rounded-full transition-all duration-300 whitespace-nowrap snap-center ${activeStyle}`}
     >
       {label}
       {count != null && count > 0 && (
@@ -160,7 +160,7 @@ export default function QuestsPage() {
         <SearchBar value={search} onChange={setSearch} />
 
         {/* Filter chips (Responsive) */}
-        <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide bg-gray-50/50 dark:bg-[#0F1B2D]">
+        <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide snap-x bg-gray-50/50 dark:bg-[#0F1B2D]">
           <FilterTab
             label="Semua"
             count={quests.length}

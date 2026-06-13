@@ -75,3 +75,13 @@ input[type='number']                            { -moz-appearance: textfield; }
   animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
 }
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { notify } from '@/lib/toast'
 
-export default function ProjectForm({ arcs }: { arcs: any[] }) {
+export default function ProjectForm({ arcs, onCreated }: { arcs: any[], onCreated?: () => void }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -28,6 +28,7 @@ export default function ProjectForm({ arcs }: { arcs: any[] }) {
       notify.success('Project berhasil dibuat')
       e.currentTarget.reset()
       router.refresh()
+      if (onCreated) onCreated()
     } catch (error: unknown) {
     const err = error as Error;
       notify.error('Gagal membuat Project: ' + err.message)
