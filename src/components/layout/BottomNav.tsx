@@ -18,7 +18,7 @@ export default function BottomNav() {
     ? [
         { label: 'Dash', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
         { label: 'Quests', href: '/quests', icon: <ScrollText size={20} /> },
-        { label: 'Members', href: '/members', icon: <Users size={20} /> },
+        { label: 'Arcs', href: '/arcs', icon: <FolderGit2 size={20} /> },
         { label: 'Projects', href: '/projects', icon: <Folders size={20} /> },
       ]
     : [
@@ -30,7 +30,7 @@ export default function BottomNav() {
 
   const MORE_ITEMS = isGM
     ? [
-        { label: 'Arcs', href: '/arcs', icon: <FolderGit2 size={18} /> },
+        { label: 'Members', href: '/members', icon: <Users size={18} /> },
         { label: 'Tavern', href: '/tavern', icon: <MessagesSquare size={18} /> },
         { label: 'Ranks', href: '/leaderboard', icon: <Trophy size={18} /> },
         { label: 'Profile', href: '/profile', icon: <UserCircle size={18} /> },
