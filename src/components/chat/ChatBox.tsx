@@ -9,6 +9,7 @@ import { useUser } from '@/hooks/useUser'
 import { notify } from '@/lib/toast'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 const ChatFile = ({ url, name }: { url: string, name: string }) => {
   return (
@@ -75,6 +76,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const isFirstLoad = useRef(true)
   
   const { role } = useUser()
@@ -234,14 +236,13 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
     }
   }
 
-  const handleDeleteMessage = async (messageId: string) => {
-    if (!confirm('Hapus pesan ini?')) return
-    
+  const executeDeleteMessage = async (messageId: string) => {
     try {
       const res = await fetch(`/api/chat?id=${messageId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error(await res.text())
+      notify.success('Pesan dihapus')
     } catch (error: unknown) {
-    const err = error as Error;
+      const err = error as Error;
       notify.warn('Gagal menghapus pesan: ' + err.message)
     }
   }
@@ -482,7 +483,7 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
                   </span>
                   {canDelete && (
                     <button 
-                      onClick={() => handleDeleteMessage(msg.id)}
+                      onClick={() => setConfirmDeleteId(msg.id)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-400 hover:text-red-500 rounded"
                       title="Hapus Pesan"
                     >
@@ -607,6 +608,16 @@ export function ChatBox({ currentUserId }: { currentUserId: string }) {
           </button>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Hapus Pesan?"
+        description="Pesan ini akan dihapus secara permanen dari Tavern."
+        onConfirm={() => {
+          if (confirmDeleteId) executeDeleteMessage(confirmDeleteId)
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }

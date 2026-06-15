@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { FileText, FileSpreadsheet, Image as ImageIcon, Video, Trash2, Download, Search } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 import { notify } from '@/lib/toast'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 interface VaultItem {
   id: string
@@ -35,6 +36,7 @@ export function VaultList({ reloadTrigger }: { reloadTrigger: number }) {
   const [items, setItems] = useState<VaultItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const { user, role } = useUser()
 
   useEffect(() => {
@@ -54,12 +56,12 @@ export function VaultList({ reloadTrigger }: { reloadTrigger: number }) {
     fetchItems()
   }, [reloadTrigger])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Hapus dokumen ini?')) return
+  const executeDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/vault/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
       setItems(items.filter(item => item.id !== id))
+      notify.success('Dokumen berhasil dihapus')
     } catch {
       notify.warn('Gagal menghapus dokumen.')
     }
@@ -168,7 +170,7 @@ export function VaultList({ reloadTrigger }: { reloadTrigger: number }) {
                         </a>
                         {canDelete && (
                           <button 
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => setConfirmDeleteId(item.id)}
                             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
                             title="Hapus"
                           >
@@ -184,6 +186,16 @@ export function VaultList({ reloadTrigger }: { reloadTrigger: number }) {
           </tbody>
         </table>
       </div>
+      
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Hapus Dokumen?"
+        description="Dokumen ini akan dihapus secara permanen dan tidak dapat dikembalikan."
+        onConfirm={() => {
+          if (confirmDeleteId) executeDelete(confirmDeleteId)
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }

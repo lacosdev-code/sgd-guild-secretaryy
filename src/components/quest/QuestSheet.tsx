@@ -9,6 +9,7 @@ import { formatDeadline } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import type { Quest, Attachment, User } from '@/types'
 import type { UserRole } from '@/types'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -127,6 +128,7 @@ export default function QuestSheet({
   const [newComment, setNewComment] = useState('')
   const [addingComment, setAddingComment] = useState(false)
   const [promptModal, setPromptModal] = useState<{ open: boolean; action: 'Rejected' | 'Aborted' | 'Hold'; reason: string } | null>(null)
+  const [confirmClaim, setConfirmClaim] = useState(false)
   const router                = useRouter()
   const criteria              = parseSuccessCriteria(quest.success_parameter)
 
@@ -596,11 +598,7 @@ export default function QuestSheet({
               <ActionButton
                 variant="primary"
                 loading={loading}
-                onClick={() => {
-                  if (confirm(`Yakin ingin mengambil tanggung jawab operasional quest "${quest.title}"?`)) {
-                    handleClaimQuest()
-                  }
-                }}
+                onClick={() => setConfirmClaim(true)}
               >
                 ✋ Claim
               </ActionButton>
@@ -659,6 +657,19 @@ export default function QuestSheet({
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmClaim}
+        title="Ambil Tanggung Jawab?"
+        description={<>Yakin ingin mengambil tanggung jawab operasional quest <strong className="text-white">{quest.title}</strong>?</>}
+        confirmText="Ya, Claim"
+        variant="primary"
+        onConfirm={() => {
+          setConfirmClaim(false)
+          handleClaimQuest()
+        }}
+        onCancel={() => setConfirmClaim(false)}
+      />
     </div>
   )
 }
