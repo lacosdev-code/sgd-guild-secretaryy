@@ -12,7 +12,8 @@ export default function ProjectForm({ arcs, onCreated }: { arcs: any[], onCreate
     e.preventDefault()
     setLoading(true)
 
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     const name = formData.get('name') as string
     const arcId = formData.get('arcId') as string
 
@@ -26,7 +27,7 @@ export default function ProjectForm({ arcs, onCreated }: { arcs: any[], onCreate
       if (!res.ok) throw new Error(await res.text())
       
       notify.success('Project berhasil dibuat')
-      e.currentTarget.reset()
+      form.reset()
       router.refresh()
       if (onCreated) onCreated()
     } catch (error: unknown) {

@@ -12,7 +12,8 @@ export default function ArcForm({ onCreated }: { onCreated?: () => void }) {
     e.preventDefault()
     setLoading(true)
 
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     const name = formData.get('name') as string
     const strategicObjective = formData.get('strategicObjective') as string
 
@@ -26,7 +27,7 @@ export default function ArcForm({ onCreated }: { onCreated?: () => void }) {
       if (!res.ok) throw new Error(await res.text())
       
       notify.success('Arc berhasil dibuat')
-      e.currentTarget.reset()
+      form.reset()
       router.refresh()
       if (onCreated) onCreated()
     } catch (error: unknown) {
