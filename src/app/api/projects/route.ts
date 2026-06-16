@@ -8,16 +8,14 @@ export async function GET() {
 
   try {
     const projects = await prisma.project.findMany({
-      where: {
-        status: 'Active'
+      include: {
+        arc: { select: { id: true, name: true } },
+        _count: { select: { quests: true } }
       },
-      select: {
-        id: true,
-        name: true
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: [
+        { isArchived: 'asc' },
+        { createdAt: 'desc' }
+      ]
     })
 
     return NextResponse.json(projects)

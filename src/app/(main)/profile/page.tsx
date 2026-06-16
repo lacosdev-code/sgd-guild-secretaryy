@@ -6,10 +6,13 @@ import { useUser } from '@/hooks/useUser'
 import { getRankInfo } from '@/lib/rankUtils'
 import { Avatar } from '@/components/ui/Avatar'
 import { Camera, Loader2 } from 'lucide-react'
-
 import imageCompression from 'browser-image-compression'
 import { notify } from '@/lib/toast'
 import Image from 'next/image'
+import { ProgressionCard } from '@/components/progression/ProgressionCard'
+import { SkillRadarChart } from '@/components/progression/SkillRadarChart'
+import { ProgressionEditor } from '@/components/progression/ProgressionEditor'
+import { calcExpProgress, getRarity, RARITY_STYLES } from '@/lib/progression'
 
 export default function ProfilePage() {
   const { user, role, loading } = useUser()
@@ -21,6 +24,8 @@ export default function ProfilePage() {
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState('')
+  const [progression, setProgression] = useState<any>(null)
+  const [progressionLoading, setProgressionLoading] = useState(true)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
@@ -41,6 +46,12 @@ export default function ProfilePage() {
 
     if (!loading && user) {
       fetchLogs()
+      // Fetch progression data
+      setProgressionLoading(true)
+      fetch(`/api/users/${user.id}/progression`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data) setProgression(data) })
+        .finally(() => setProgressionLoading(false))
     }
     return () => { isMounted = false }
   }, [user, loading])
@@ -306,8 +317,50 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* ── Progression Framework Card ─────────────────────────────────────── */}
+      {!progressionLoading && progression && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-navy dark:text-white tracking-tight">SGD Awakening &amp; Progression</h2>
+          <ProgressionCard
+            totalPoints={user.totalPoints}
+            employeeLevel={progression.employeeLevel ?? 1}
+            awakeningLevel={progression.awakeningLevel ?? 1}
+            workLevel={progression.workLevel ?? 'F'}
+            nama={user.nama}
+          />
+
+          {/* Skill Radar */}
+          <div className="bg-[#0F1B2D] rounded-2xl border border-white/10 p-5">
+            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-4">Skill Profile</p>
+            <SkillRadarChart
+              skills={progression.skills ?? []}
+              color="#C9A227"
+            />
+          </div>
+
+          {/* GM Editor (only visible to GM/Secretary) */}
+          {(role === 'guild_master' || role === 'guild_secretary') && (
+            <div className="bg-[#0F1B2D] rounded-2xl border border-white/10 p-5">
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-4">Edit Progression (GM Only)</p>
+              <ProgressionEditor
+                userId={user.id}
+                awakeningLevel={progression.awakeningLevel ?? 1}
+                workLevel={progression.workLevel ?? 'F'}
+                skills={progression.skills ?? []}
+                onSaved={() => {
+                  fetch(`/api/users/${user.id}/progression`)
+                    .then(r => r.json())
+                    .then(data => setProgression(data))
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-100 dark:border-white/5 p-6 md:p-8">
         <h2 className="text-lg font-bold text-navy dark:text-white mb-6 tracking-tight">Point History</h2>
+
 
         {logsLoading ? (
           <p className="text-charcoal/50 dark:text-gray-500 text-sm">Loading logs...</p>

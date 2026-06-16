@@ -67,17 +67,21 @@ enum AbortCategory {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  nama         String
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         UserRole @default(adventurer)
-  division     String?
-  status       String   @default("Active") // Active, Inactive, Suspended
-  totalPoints  Int      @default(0) @map("total_points")
-  avatarUrl    String?  @map("avatar_url")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  nama            String
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  role            UserRole @default(adventurer)
+  division        String?
+  status          String   @default("Active") // Active, Inactive, Suspended
+  totalPoints     Int      @default(0) @map("total_points")
+  avatarUrl       String?  @map("avatar_url")
+  // Progression Framework fields
+  employeeLevel   Int      @default(1)  @map("employee_level")
+  awakeningLevel  Int      @default(1)  @map("awakening_level") // 1-7
+  workLevel       String   @default("F") @map("work_level")     // F,E,D,C,B,A,S
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
   questsCreated    Quest[]          @relation("QuestCreator")
@@ -93,6 +97,7 @@ model User {
   pushSubscriptions PushSubscription[]
   chatMessages     GuildChat[]
   attachments      Attachment[]
+  skills           UserSkill[]
 
   @@map("users")
 }
@@ -114,18 +119,20 @@ model Arc {
 }
 
 model Project {
-  id              String   @id @default(uuid())
-  arcId           String?  @map("arc_id")
+  id              String    @id @default(uuid())
+  arcId           String?   @map("arc_id")
   name            String
-  classification  String?  // Client or Internal
-  status          String   @default("Active")
-  health          String   @default("Green") // Green, Yellow, Red
+  classification  String?   // Client or Internal
+  status          String    @default("Active")
+  health          String    @default("Green") // Green, Yellow, Red
   startDate       DateTime? @map("start_date")
   targetDate      DateTime? @map("target_date")
-  scopeSummary    String?  @map("scope_summary")
-  ownerId         String   @map("owner_id")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  scopeSummary    String?   @map("scope_summary")
+  ownerId         String    @map("owner_id")
+  isArchived      Boolean   @default(false) @map("is_archived")
+  archivedAt      DateTime? @map("archived_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   arc             Arc?        @relation(fields: [arcId], references: [id], onDelete: SetNull)
   owner           User        @relation("ProjectOwner", fields: [ownerId], references: [id])
@@ -299,4 +306,17 @@ model EmailLog {
   quest        Quest?   @relation(fields: [questId], references: [id], onDelete: Cascade)
 
   @@map("email_logs")
+}
+
+model UserSkill {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  skillName  String   @map("skill_name")  // e.g. "Problem Solving", "Komunikasi"
+  skillLevel String   @default("F") @map("skill_level") // F,E,D,C,B,A,S
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillName])
+  @@map("user_skills")
 }

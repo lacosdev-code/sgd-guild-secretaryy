@@ -659,12 +659,23 @@ export default function QuestForm({
 
             {/* Deadline */}
             <div>
-              <FieldLabel htmlFor="quest-deadline" hint="Kapan batas akhir misi ini?">Deadline</FieldLabel>
+              <FieldLabel htmlFor="quest-deadline" hint="Kapan batas akhir misi ini? Jam default: 17:00">Deadline</FieldLabel>
               <input
                 id="quest-deadline"
                 type="datetime-local"
                 value={form.deadline}
-                onChange={set('deadline')}
+                onChange={(e) => {
+                  let val = e.target.value
+                  // If user only picks a date (no time), default to 17:00
+                  if (val && val.length === 10) {
+                    val = `${val}T17:00`
+                  } else if (val && !val.includes('T')) {
+                    val = `${val}T17:00`
+                  } else if (val && val.endsWith('T00:00')) {
+                    val = val.replace('T00:00', 'T17:00')
+                  }
+                  setForm(prev => ({ ...prev, deadline: val }))
+                }}
                 className={inputClass}
                 style={inputStyle}
                 min={new Date().toISOString().slice(0, 16)}
