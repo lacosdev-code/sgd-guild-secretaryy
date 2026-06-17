@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { WORK_SKILL_LEVELS, DEFAULT_SKILLS, getAwakeningName, getLevelLabel, type WorkSkillLevel } from '@/lib/progression'
 import { notify } from '@/lib/toast'
 import { Loader2, ChevronUp, ChevronDown, Save } from 'lucide-react'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
 
 interface Skill {
   skillName: string
@@ -25,6 +27,8 @@ export function ProgressionEditor({ userId, awakeningLevel, workLevel, skills, o
     Object.fromEntries(skills.map(s => [s.skillName, s.skillLevel]))
   )
   const [saving, setSaving] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const { width, height } = useWindowSize()
 
   const handleSave = async () => {
     setSaving(true)
@@ -40,6 +44,8 @@ export function ProgressionEditor({ userId, awakeningLevel, workLevel, skills, o
       })
       if (!res.ok) throw new Error(await res.text())
       notify.success('Progression berhasil disimpan!')
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 5000) // hide after 5 seconds
       onSaved?.()
     } catch (e: unknown) {
       const err = e as Error
@@ -51,6 +57,11 @@ export function ProgressionEditor({ userId, awakeningLevel, workLevel, skills, o
 
   return (
     <div className="space-y-5">
+      {showConfetti && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999, pointerEvents: 'none' }}>
+          <Confetti width={width} height={height} numberOfPieces={300} recycle={false} gravity={0.15} colors={['#C9A227', '#1B2E52', '#ffffff', '#ffd700']} />
+        </div>
+      )}
       {/* Awakening Level */}
       <div className="bg-white/5 rounded-xl p-4 border border-white/10">
         <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-3">Awakening Level (1–7)</p>
@@ -136,7 +147,7 @@ export function ProgressionEditor({ userId, awakeningLevel, workLevel, skills, o
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full py-3 rounded-xl bg-gold text-navy font-bold text-sm flex items-center justify-center gap-2 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-gold/20"
+        className="w-full py-3 rounded-xl bg-gold text-navy font-bold text-sm flex items-center justify-center gap-2 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-[0_0_15px_rgba(201,162,39,0.5)]"
       >
         {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {saving ? 'Menyimpan...' : 'Simpan Progression'}
