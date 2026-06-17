@@ -29,36 +29,9 @@ export async function sendNotificationToUser(payload: NotificationPayload) {
     let emailError = ''
     let emailStatus = 'Success'
 
-    // 1. Send Email via Resend
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const { error: resendError } = await resend.emails.send({
-          from: 'SGD Guild Secretary <onboarding@resend.dev>', // Use custom domain if verified
-          to: user.email,
-          subject: payload.title,
-          html: `
-            <div style="font-family: sans-serif; padding: 20px; background: #F5F3EE;">
-              <div style="background: white; padding: 20px; border-radius: 8px;">
-                <h2 style="color: #1B2E52; margin-top: 0;">${payload.title}</h2>
-                <p style="color: #4B5563;">${payload.body.replace(/\n/g, '<br/>')}</p>
-                ${payload.url ? `<a href="https://secretary.sgd-corp.com${payload.url}" style="display: inline-block; background: #C9A227; color: #1B2E52; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px;">Lihat Detail</a>` : ''}
-              </div>
-            </div>
-          `
-        })
-
-        if (resendError) {
-          emailError = resendError.message
-          emailStatus = 'Failed'
-        }
-      } catch (err: any) {
-        emailError = err.message || 'Unknown error'
-        emailStatus = 'Failed'
-      }
-    } else {
-      emailStatus = 'Failed'
-      emailError = 'RESEND_API_KEY missing'
-    }
+    // Email sending disabled by user request
+    emailStatus = 'Disabled'
+    emailError = 'Email notification is disabled'
 
     // 2. Send Push Notifications
     if (user.pushSubscriptions && user.pushSubscriptions.length > 0) {
