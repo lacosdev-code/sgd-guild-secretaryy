@@ -19,6 +19,8 @@ interface UserProfile {
   role: UserRole
   totalPoints: number
   avatarUrl?: string | null
+  progression?: any
+  class?: string
   createdAt: string
 }
 

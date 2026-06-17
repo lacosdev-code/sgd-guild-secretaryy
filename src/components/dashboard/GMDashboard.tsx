@@ -204,9 +204,11 @@ export default function GMDashboard() {
           {user && (
             <div className="space-y-4">
               <ProgressionCard
-                progression={user.progression || {}}
-                role={user.role}
-                userClass={user.class}
+                totalPoints={user.totalPoints}
+                employeeLevel={user.progression?.employeeLevel ?? 1}
+                awakeningLevel={user.progression?.awakeningLevel ?? 1}
+                workLevel={user.progression?.workLevel ?? 'F'}
+                nama={user.nama}
               />
               {user.progression?.skills && (
                 <div className="bg-[#0F1B2D] rounded-2xl border border-white/10 p-5 shadow-sm">

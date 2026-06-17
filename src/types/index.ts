@@ -18,6 +18,8 @@ export interface User {
   status: string;
   totalPoints: number;
   avatarUrl?: string | null;
+  progression?: any;
+  class?: string;
   created_at: string;
 }
 
