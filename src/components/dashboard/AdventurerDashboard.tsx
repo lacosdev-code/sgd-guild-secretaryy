@@ -8,6 +8,7 @@ import type { QuestWithAssignee } from '@/hooks/useQuests'
 import type { QuestStatus } from '@/types'
 
 import { ProgressionCard } from '@/components/progression/ProgressionCard'
+import { SkillRadarChart } from '@/components/progression/SkillRadarChart'
 
 // ── Points display ────────────────────────────────────────────────────────────
 function PointsCard({ points }: { points: number }) {
@@ -168,11 +169,22 @@ export default function AdventurerDashboard() {
           </div>
           
           {user && (
-            <ProgressionCard
-              progression={user.progression || {}}
-              role={user.role}
-              userClass={user.class}
-            />
+            <div className="space-y-4">
+              <ProgressionCard
+                progression={user.progression || {}}
+                role={user.role}
+                userClass={user.class}
+              />
+              {user.progression?.skills && (
+                <div className="bg-[#0F1B2D] rounded-2xl border border-white/10 p-5 shadow-sm">
+                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-4">Skill Profile</p>
+                  <SkillRadarChart
+                    skills={user.progression.skills}
+                    color="#C9A227"
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
 
