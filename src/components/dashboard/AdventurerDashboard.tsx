@@ -7,6 +7,8 @@ import { formatDeadline, getRankColor, getStatusColor } from '@/lib/utils'
 import type { QuestWithAssignee } from '@/hooks/useQuests'
 import type { QuestStatus } from '@/types'
 
+import { ProgressionCard } from '@/components/progression/ProgressionCard'
+
 // ── Points display ────────────────────────────────────────────────────────────
 function PointsCard({ points }: { points: number }) {
   return (
@@ -141,26 +143,36 @@ export default function AdventurerDashboard() {
 
       {/* ── Greeting + points ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
-        <div className="sm:col-span-2">
-          <h1 className="text-xl font-bold text-charcoal">
-            Halo, <span style={{ color: '#1B2E52' }}>{user?.nama}</span>
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Berikut adalah daftar tugas operasional Anda hari ini.
-          </p>
+        <div className="sm:col-span-2 space-y-6">
+          <div>
+            <h1 className="text-xl font-bold text-charcoal">
+              Halo, <span style={{ color: '#1B2E52' }}>{user?.nama}</span>
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Berikut adalah daftar tugas operasional Anda hari ini.
+            </p>
 
-          {overdueQuests.length > 0 && (
-            <div
-              className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm border"
-              style={{ background: '#FDF2F0', borderColor: '#993C1D22', color: '#993C1D' }}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                <path d="M12 9v4M12 17h.01" />
-              </svg>
-              <strong>{overdueQuests.length}</strong>&nbsp;quest melewati deadline operasional!
-            </div>
+            {overdueQuests.length > 0 && (
+              <div
+                className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm border"
+                style={{ background: '#FDF2F0', borderColor: '#993C1D22', color: '#993C1D' }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                  <path d="M12 9v4M12 17h.01" />
+                </svg>
+                <strong>{overdueQuests.length}</strong>&nbsp;quest melewati deadline operasional!
+              </div>
+            )}
+          </div>
+          
+          {user && (
+            <ProgressionCard
+              progression={user.progression || {}}
+              role={user.role}
+              userClass={user.class}
+            />
           )}
         </div>
 

@@ -7,6 +7,8 @@ import { useQuests, deriveGMStats, isOverdue } from '@/hooks/useQuests'
 import { formatDeadline, getRankColor, getStatusColor } from '@/lib/utils'
 import type { QuestWithAssignee } from '@/hooks/useQuests'
 
+import { ProgressionCard } from '@/components/progression/ProgressionCard'
+
 // ── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, accent, warning, danger, delay = 0 }: { label: string; value: number; accent?: boolean; warning?: boolean; danger?: boolean; delay?: number }) {
   if (accent) {
@@ -179,21 +181,33 @@ export default function GMDashboard() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
 
-      {/* ── Greeting ─────────────────────────────────────────────────── */}
-      <div>
-        <h1 className="text-xl font-bold text-[#1B2E52] dark:text-white">
-          Selamat datang, <span className="text-[#C9A227]">{user?.nama}</span>
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-300 mt-0.5">
-          Fokuskan perhatian Anda pada daftar prioritas operasional hari ini.
-        </p>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* ── Greeting ─────────────────────────────────────────────────── */}
+        <div>
+          <h1 className="text-xl font-bold text-[#1B2E52] dark:text-white">
+            Selamat datang, <span className="text-[#C9A227]">{user?.nama}</span>
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-300 mt-0.5">
+            Fokuskan perhatian Anda pada daftar prioritas operasional hari ini.
+          </p>
+          
+          {/* ── Alert banners ─────────────────────────────────────────────── */}
+          <div className="space-y-2 mt-4">
+            <AlertBanner count={stats.submitted} label="quest menunggu persetujuan (Awaiting Approval)" type="info" />
+            <AlertBanner count={stats.overdue} label="quest melewati deadline" type="danger" />
+            <AlertBanner count={stats.incomplete} label="quest belum memiliki detail operasional lengkap" type="warning" />
+          </div>
+        </div>
 
-      {/* ── Alert banners ─────────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <AlertBanner count={stats.submitted} label="quest menunggu persetujuan (Awaiting Approval)" type="info" />
-        <AlertBanner count={stats.overdue} label="quest melewati deadline" type="danger" />
-        <AlertBanner count={stats.incomplete} label="quest belum memiliki detail operasional lengkap" type="warning" />
+        <div>
+          {user && (
+            <ProgressionCard
+              progression={user.progression || {}}
+              role={user.role}
+              userClass={user.class}
+            />
+          )}
+        </div>
       </div>
 
       {/* ── Stat grid ─────────────────────────────────────────────────── */}
