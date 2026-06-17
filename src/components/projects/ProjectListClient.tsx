@@ -215,10 +215,10 @@ export default function ProjectListClient({ projects: initialProjects, arcs }: {
                   setConfirmArchive({ id: proj.id, name: proj.name, archive: !proj.isArchived })
                 }}
                 disabled={archivingId === proj.id}
-                className={`absolute bottom-3 right-14 z-10 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                className={`absolute bottom-3 right-14 z-10 shadow-sm transition-all duration-200 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border hover:scale-105 active:scale-95 ${
                   proj.isArchived
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300'
+                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/30'
+                    : 'bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20 hover:text-red-700 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/30'
                 }`}
                 title={proj.isArchived ? 'Aktifkan kembali' : 'Arsipkan project'}
               >
